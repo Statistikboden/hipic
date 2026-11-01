@@ -23,6 +23,11 @@ Find the original SAS datasets in AllQsbyQ and import them into R for inspection
 ```{r import-data}
 
 library(haven)
+library(dplyr)
+library(magrittr)
+library(misty)
+
+
 
 CHILD_RAW <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat")
 PARENT_RAW <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat")
@@ -301,6 +306,7 @@ The scoring key provided by DeFruyt identifies the questions along each domain/f
 
 
 
+
 #Items identified as requireing reverse scoring in DeFruyt's key (questions are moving in opposite directions from other questions in the instrument):
 
 
@@ -425,11 +431,11 @@ score_hipic <- function(DATA, PREFIX) {
     CO_ORD = rowSums( select(., starts_with(paste0(PREFIX, CO_ORD, "_"))) ),
     CO_ACH = rowSums( select(., starts_with(paste0(PREFIX, CO_ACH, "_"))) ),
   
-# Conscientiousness
-CO = CO_CNC + CO_PER + CO_ORD + CO_ACH  
+    # Conscientiousness
+    CO = CO_CNC + CO_PER + CO_ORD + CO_ACH  
     
     
-  ) %>% select( ID4, ES_ANX:CO)
+  ) %>% select( SG, ID4:MVF, AGEEXAM, ES_ANX:CO)
 
 }
 
@@ -456,6 +462,161 @@ write.csv(PARENT_SCORED,
 ```
 
 
+## E.  Find mean differences between nutritional groups across all domains and facets.  Produce results separately for males and females.
+
+
+``` {r mean-diffs}
+
+
+
+#BEGIN FUNCTION DEFINITION
+
+
+
+
+hipic_mean_diffs <- function(DATA) {
+
+
+
+options(scipen = 999)
+cat("\014")
+
+analysis_vars <- names(DATA)[
+  match("ES_ANX", names(DATA)):ncol(DATA)]
+
+runs <- c(0,1,2)
+
+
+
+for (variable in analysis_vars) {
+  print(variable)
+}
+
+BASE <- data.frame()
+
+
+
+for ( sex in runs  ) {
+
+
+for (variable in analysis_vars) {
+  
+  
+  test_formula <- reformulate("CVPK", response = variable)
+  
+  test_result <- misty::test.welch(
+    test_formula,
+    # data = DATA[DATA$MVF == sex, ],
+    data = DATA[ if (sex < 2) DATA$MVF == sex else TRUE, ],
+    descript = TRUE
+  )
+  
+  r<- test_result$result
+  con <- r$group == 0
+  mal <- r$group == 1
+  
+  print(variable)
+  print(r$t)
+  print(r$pval)
+  
+  
+  x <- DATA[[variable]][
+        DATA$CVPK %in% c(0, 1) &
+        !is.na(DATA[[variable]]) &
+                        (if (sex < 2) DATA$MVF == sex else TRUE)
+  ]
+  
+  
+#   if(sex <2) {
+# 
+# 
+#      x <- DATA[[variable]][DATA$CVPK %in% c(0,1) &
+#                                   DATA$MVF == sex &
+#                                     !is.na(DATA[[variable]])]  }
+# 
+# else {
+# 
+#       x <- DATA[[variable]][DATA$CVPK %in% c(0,1) &
+#                 !is.na(DATA[[variable]])]   }
+  
+  
+#  x <- DATA$ES_ANX[ DATA$CVPK %in% c(0, 1) &  !is.na(DATA$ES_ANX) ]
+ 
+  
+   
+  temp <- data.frame(
+    MODEL = sprintf("%02d", sex   ),
+    VARNAME  = variable,
+    
+    `_STAT_` = c("MEAN", "STD", "N",
+                 "TTEST WELCH", "PVALUE"),
+    
+    MAL = c(r$m[mal], r$sd[mal], r$n[mal],
+            NA_real_, NA_real_),
+    
+    CON = c(r$m[con], r$sd[con], r$n[con],
+            NA_real_, NA_real_),
+    
+    ALL = c(mean(x), sd(x), length(x),
+            r$t[!is.na(r$t)],
+            r$pval[!is.na(r$pval)]),
+    
+    check.names = FALSE  )
+  
+  BASE <- rbind(BASE, temp)
+  
+  
+}
+
+}
+    return(BASE)
+}
+
+
+
+BASEC <- hipic_mean_diffs(CHILD_SCORED)
+BASEP <- hipic_mean_diffs(PARENT_SCORED)
+
+```
+
+
+## E1.  If you need to export the results of the Mean Differences analysis, run this block:
+
+
+
+``` {r mean-diffs-print}
+
+library(openxlsx)
+
+file_path <- "/Users/Kevin/OneDrive/Documents/Excel/HiPIC Exploratory.xlsx"
+
+wb <- if (file.exists(file_path)) {
+  openxlsx::loadWorkbook(file_path)
+} else {
+  openxlsx::createWorkbook()
+}
+
+if (!"BASEC" %in% names(wb)) {
+  openxlsx::addWorksheet(wb, "BASEC")
+}
+openxlsx::writeData(wb, "BASEC", BASEC)
+openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
+
+
+wb <- if (file.exists(file_path)) {
+  openxlsx::loadWorkbook(file_path)
+} else {
+  openxlsx::createWorkbook()
+}
+
+if (!"BASEP" %in% names(wb)) {
+  openxlsx::addWorksheet(wb, "BASEP")
+}
+openxlsx::writeData(wb, "BASEP", BASEP)
+openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
+
+
+```
 
 
 
