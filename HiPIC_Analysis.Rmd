@@ -1,0 +1,466 @@
+---
+title: "HiPIC Personality Inventory — Data Preparation and Analysis"
+author: "Kevin Williams"
+date: "2026-10-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = TRUE,
+                      messgae = FALSE)
+```
+
+
+### Step 1 — Import & Inspect the original SAS datasets
+
+
+Find the original SAS datasets in AllQsbyQ and import them into R for inspection.  There should be one dataset for the self-reports completed by children and another for reports completed by their parents.
+
+
+
+
+```{r import-data}
+
+library(haven)
+
+CHILD_RAW <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat")
+PARENT_RAW <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat")
+
+```
+
+## A. Initial Data Quality Assessment
+
+Before making any modifications, we examine the original datasets
+for missing values. This establishes a baseline against which
+subsequent exclusions and imputations can be verified.
+
+
+
+
+```{r inspect-missingness, message=FALSE, warning=FALSE}
+
+# Dimensions of the original datasets
+dim(CHILD_RAW)
+dim(PARENT_RAW)
+
+# Total missing values across all variables
+sum(is.na(CHILD_RAW))
+sum(is.na(PARENT_RAW))
+
+cat("The CHILD dataset contains", nrow(CHILD_RAW),
+    "observations and", ncol(CHILD_RAW), "variables.\n")
+
+
+cat("The PARENT dataset contains", nrow(PARENT_RAW),
+    "observations and", ncol(PARENT_RAW), "variables.\n")
+
+
+
+# Number of observations containing at least one missing value
+sum(!complete.cases(CHILD_RAW))
+sum(!complete.cases(PARENT_RAW))
+
+
+library(magrittr)
+library(dplyr)
+
+CHILD_MISSING <- CHILD_RAW %>%
+  mutate(N_MISSING = rowSums(is.na(pick(11:154)))) %>%
+  filter(N_MISSING > 0) %>%
+  select(ID4, DOE, N_MISSING)
+
+
+PARENT_MISSING <- PARENT_RAW %>%
+  mutate(N_MISSING = rowSums(is.na(pick(13:156)))) %>%
+  filter(N_MISSING > 0) %>%
+  select(ID4, DOE, N_MISSING)
+
+
+#rowSums(is.na(dplyr::select(CHILD_RAW, starts_with("HC"))))
+#rowSums(is.na(dplyr::select(PARENT_RAW, starts_with("HP"))))
+
+```
+
+
+## B. Remove Disqualified Observations
+
+Any observation from both the Child and Parent datasets where a substantial portion of the survey was unanswered (approx. gt 1%). For remaining observations with NA values in select questions, use a simply mean substitution, where the rounded average for that question by nutritional group + sex (CVPK + MVF) serves as a proxy for missing values.
+
+
+``` {r mean-substitution}
+
+
+library(magrittr)
+
+
+# excluding by subsetting from values in a datatable
+
+# CHILD_EXCLUDE <- subset(CHILD_MISSING, N_MISSING > 3  | is.na(DOE) , select = ID4)
+# PARENT_EXCLUDE <- subset(PARENT_MISSING, N_MISSING > 3 | is.na(DOE) , select = ID4)
+# 
+# 
+# CHILD <-  CHILD_RAW %>% subset(!(ID4 %in% CHILD_EXCLUDE$ID4))
+# PARENT <- PARENT_RAW %>% subset(!(ID4 %in% PARENT_EXCLUDE$ID4))
+# 
+
+
+# excluding based on values in a vector
+
+
+CHILD_EXCLUDE <- CHILD_MISSING %>% filter( N_MISSING > 3 | is.na(DOE)) %>% pull(ID4)
+PARENT_EXCLUDE <- PARENT_MISSING %>% filter( N_MISSING > 3 | is.na(DOE)) %>% pull(ID4)
+
+
+CHILD <-  CHILD_RAW %>% filter( !ID4 %in% CHILD_EXCLUDE)
+PARENT <- PARENT_RAW %>% filter( !ID4 %in% PARENT_EXCLUDE)
+
+
+
+#use the GROUPBY and ACROSS functions to find the CVPK/MVF mean and then apply those to questions that are missing:
+
+
+CHILD <- CHILD %>%
+  group_by(CVPK, MVF) %>%
+  mutate(across(last_col(offset = 143):last_col(),
+                function(x) {
+                  ifelse(is.na(x),
+                         round(mean(x, na.rm = TRUE)),
+                         x)
+                })) %>%
+  ungroup()
+
+
+
+PARENT <- PARENT %>%
+  group_by(CVPK, MVF) %>%
+  mutate(across(last_col(offset = 143):last_col(),
+                function(x) {
+                  ifelse(is.na(x),
+                         round(mean(x, na.rm = TRUE)),
+                         x)
+                })) %>%
+  ungroup()
+
+
+
+#Confirm no missing values .....
+
+sum(!complete.cases(CHILD))
+sum(!complete.cases(PARENT))
+
+
+
+```
+
+
+
+
+
+## C. Variable Names and Alignment
+
+
+
+The child self-report and parent assessment versions of the HiPIC contain 144 corresponding items, but the questions are presented in different sequences. The child version distributes items across domains and facets, whereas the parent version groups related items together.
+
+To ensure consistency in scoring, parent responses were mapped to their corresponding child-item positions using the original questionnaire content. The resulting datasets share a common item-numbering system, permitting application of De Fruyt's scoring key to both respondent groups.
+
+The original imported datasets were preserved without modification.
+
+
+
+```{r child-parent-crosswalk}
+
+HIPIC_CROSSWALK <- read.csv( "/Volumes/FDrive/AllQsbyQ/HIPIC/HiPIC_Questionnaire_Concordance_144.csv", stringsAsFactors = FALSE )
+
+dim(HIPIC_CROSSWALK)
+names(HIPIC_CROSSWALK)
+
+
+library(sqldf)
+
+
+
+PARENT_ALIGNED <-
+
+sqldf("  select Q_NEW,
+                concat('P', substr(CHILD_PREPEND,2)) as PARENT_PREPEND,
+                PARENT_Q_WORDING,
+                BNS_NAME_C,
+                BNS_NAME_P,
+                Q_ORIG
+                
+                
+        from 
+        
+        
+        ( select    PARENT_PREPEND,
+                    PARENT_Q_WORDING,
+                    BNS_NAME_P,
+                    Q as Q_ORIG
+          
+          from HIPIC_CROSSWALK )  a inner join
+        
+         (select CHILD_PREPEND,
+                 BNS_NAME_C,
+                 Q as Q_NEW
+                  
+          from HIPIC_CROSSWALK)  b  on a.BNS_NAME_P = b.BNS_NAME_C  " )
+  
+  
+
+
+#alternate dply solution
+
+
+# library(dplyr)
+# 
+# PARENT_ALIGNED <- HIPIC_CROSSWALK %>%
+#   select(PARENT_Q_WORDING, BNS_NAME_P, Q_ORIG = Q) %>%
+#   inner_join(
+#     HIPIC_CROSSWALK %>%
+#       select(CHILD_PREPEND, BNS_NAME_C, Q_NEW = Q),
+#     by = c("BNS_NAME_P" = "BNS_NAME_C"),
+#     keep = TRUE
+#   ) %>%
+#   transmute(
+#     Q_NEW,
+#     PARENT_PREPEND = paste0("P", substring(CHILD_PREPEND, 2)),
+#     PARENT_Q_WORDING,
+#     BNS_NAME_C,
+#     BNS_NAME_P,
+#     Q_ORIG
+#   )
+
+
+
+# With the crosswalk created and QC'd, the next step is to rename the variables in the Children's dataset to be more descriptive.
+
+
+
+CHILD_NAMES <- with(
+  HIPIC_CROSSWALK,
+  paste0(
+    CHILD_PREPEND, "_",
+    BNS_NAME_C, "_",
+    gsub(" ", "", CHILD_Q_WORDING)
+  )
+)
+
+
+  
+#names(CHILD)[11:154] <- CHILD_NAMES
+names(CHILD)[tail(seq_along(CHILD), 144)] <- CHILD_NAMES
+
+CHILD_NAMES
+
+
+
+
+
+#repeat the process for the Parents dataset
+
+
+
+PARENT_NAMES <- with(
+  PARENT_ALIGNED,
+  paste0(
+    PARENT_PREPEND, "_",
+    BNS_NAME_C, "_",
+    gsub(" ", "", PARENT_Q_WORDING)
+  )
+)
+
+
+
+
+#names(PARENT)[13:156] <- PARENT_NAMES
+names(PARENT)[tail(seq_along(PARENT), 144)] <- PARENT_NAMES
+
+PARENT_NAMES
+
+
+#validation
+length(CHILD_NAMES)
+length(unique(CHILD_NAMES))
+
+length(PARENT_NAMES)
+length(unique(PARENT_NAMES))
+
+
+
+```
+
+
+## D. Item-Level Reverse Scoring
+
+The scoring key provided by DeFruyt identifies the questions along each domain/facet that require reverse scoring.
+
+
+``` {r reverse-secoring}
+
+
+
+#Items identified as requireing reverse scoring in DeFruyt's key (questions are moving in opposite directions from other questions in the instrument):
+
+
+REVERSE_ITEMS <- c(  1, 5, 8, 16, 17, 20, 27, 35, 37, 41,
+                     42, 44, 49, 50, 53, 55, 60, 62, 63, 79,
+                     80, 84, 87, 89, 99, 103, 107, 110, 120,
+                     121, 122, 124, 129, 138, 139, 143  )
+
+
+
+# use an ACROSS statement to compute a revers score for the items in the REVERSE_ITEMS vector
+
+
+CHILD_REVERSED <-CHILD %>% mutate(across( starts_with( paste0("C", REVERSE_ITEMS, "_")),
+                    function(x) 6 - x )
+                        )
+
+PARENT_REVERSED <-PARENT %>% mutate(across( starts_with( paste0("P", REVERSE_ITEMS, "_")),
+              function(x) 6 - x )
+                  )          
+
+
+
+
+write.csv(PARENT_REVERSED,
+          "PARENT_REVERSED.csv",
+          row.names = FALSE)
+
+
+write.csv(PARENT,
+          "PARENT.csv",
+          row.names = FALSE)
+
+
+# Assign questions for each facet to unique vector
+
+#Emotional Stability
+
+ES_ANX <- c(4, 22, 40, 58, 76, 94, 112, 130)
+ES_CON <- c(9, 27, 45, 63, 81, 99, 117, 135)
+
+#Extroversion
+
+EX_ENE <- c(15, 33, 51, 69, 87, 105, 123, 141)
+EX_EXP <- c(6, 24, 42, 60, 78, 96, 114, 132)
+EX_OPT <- c(11,29, 47,65, 83, 101, 119, 137)
+EX_SHY <- c(1, 19, 37, 55, 73, 91, 109, 127)
+
+#Imagination 
+
+IM_CRE <- c(5, 23, 41, 59, 77, 95, 113, 131)
+IM_INT <- c(14, 32, 50, 68,86, 104, 122, 140)
+IM_CUR <- c(10, 28, 46, 64, 82, 100, 118, 136)
+
+#Benevolence
+
+BE_ALT <- c(18, 36, 54, 72, 90, 108, 126, 144)
+BE_DOM <- c(16, 34, 52, 70, 88, 106, 124, 142)
+BE_EGO <- c(2, 20, 38, 56, 74, 92, 110, 128)
+BE_COM <- c(12, 30, 48, 66, 84, 102, 120, 138)
+BE_IRR <- c(7, 25, 43, 61, 79, 97, 115, 133)
+
+#Conscientiousness
+
+CO_CNC <- c(13, 31, 49, 67, 85, 103, 121, 139)
+CO_PER <- c(17, 35, 53, 71, 89, 107, 125, 143)
+CO_ORD <- c(8, 26, 44, 62, 80, 98, 116, 134)
+CO_ACH <- c(3, 21, 39, 57, 75, 93, 111, 129)
+
+
+
+
+
+# Compute dacets & domain scores based on DeFruyt's formulas 
+
+
+# Since code is similar except for the files called, the files creatd and the vaiable prefix, consider a simple function  -not quite a SAS do loop, but still more efficient that duplicate blocks of code
+
+
+#SCORE HIPIC FUNCTION
+
+
+
+score_hipic <- function(DATA, PREFIX) {
+
+  DATA %>%
+  mutate(
+    ES_ANX = rowSums( select(., starts_with(paste0(PREFIX, ES_ANX, "_"))) ),
+    ES_CON = rowSums( select(., starts_with(paste0(PREFIX, ES_CON, "_"))) ),
+    
+        # Emotional Stability
+        ES = (48 - ES_ANX) + ES_CON,
+    
+    EX_ENE = rowSums( select(., starts_with(paste0(PREFIX, EX_ENE, "_"))) ),
+    EX_EXP = rowSums( select(., starts_with(paste0(PREFIX, EX_EXP, "_"))) ),
+    EX_OPT = rowSums( select(., starts_with(paste0(PREFIX, EX_OPT, "_"))) ),
+    EX_SHY = rowSums( select(., starts_with(paste0(PREFIX, EX_SHY, "_"))) ),
+    
+      # Extraversion
+      EX = EX_ENE + EX_EXP + EX_OPT + (48 - EX_SHY),  
+    
+    
+    IM_CRE = rowSums( select(., starts_with(paste0(PREFIX, IM_CRE, "_"))) ),
+    IM_INT = rowSums( select(., starts_with(paste0(PREFIX, IM_INT, "_"))) ),
+    IM_CUR = rowSums( select(., starts_with(paste0(PREFIX, IM_CUR, "_"))) ),
+
+      # Imagination
+      IM = IM_CRE + IM_INT + IM_CUR,
+
+    
+    BE_ALT = rowSums( select(., starts_with(paste0(PREFIX, BE_ALT, "_"))) ),
+    BE_DOM = rowSums( select(., starts_with(paste0(PREFIX, BE_DOM, "_"))) ),
+    BE_EGO = rowSums( select(., starts_with(paste0(PREFIX, BE_EGO, "_"))) ),
+    BE_COM = rowSums( select(., starts_with(paste0(PREFIX, BE_COM, "_"))) ),
+    BE_IRR = rowSums( select(., starts_with(paste0(PREFIX, BE_IRR, "_"))) ),
+    
+      # Benevolence
+      BE = BE_ALT + (48 - BE_DOM) + (48 - BE_EGO) + BE_COM + (48 - BE_IRR),
+    
+    CO_CNC = rowSums( select(., starts_with(paste0(PREFIX, CO_CNC, "_"))) ),
+    CO_PER = rowSums( select(., starts_with(paste0(PREFIX, CO_PER, "_"))) ),
+    CO_ORD = rowSums( select(., starts_with(paste0(PREFIX, CO_ORD, "_"))) ),
+    CO_ACH = rowSums( select(., starts_with(paste0(PREFIX, CO_ACH, "_"))) ),
+  
+# Conscientiousness
+CO = CO_CNC + CO_PER + CO_ORD + CO_ACH  
+    
+    
+  ) %>% select( ID4, ES_ANX:CO)
+
+}
+
+
+
+
+
+CHILD_SCORED  <- score_hipic(CHILD_REVERSED, "C")
+PARENT_SCORED <- score_hipic(PARENT_REVERSED, "P")
+
+
+
+
+
+
+
+
+write.csv(PARENT_SCORED,
+          "QC",
+          row.names = FALSE)
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
