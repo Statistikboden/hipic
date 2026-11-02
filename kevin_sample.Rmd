@@ -1,0 +1,227 @@
+---
+# YAML HEADER
+
+title: "HiPIC Exploratory Analysis"
+subtitle: "Trying to create a customized deck with xaringanthemer"  
+author:  "Kevin Williams"
+date: '`r Sys.Date()`'
+output:
+  
+  xaringan::moon_reader: 
+    css: 
+       - "xaringan-themer.css"
+#       - "_css/kevin_css.css"
+      
+    seal: false                     # Prevents Moonreader from Generating a title page
+    nature: 
+        highlightLines: true        # Code for Highlighting text
+        highlightStyle: github      # Highlighting syntax for code
+        highlightSpans: true
+        ratio: 4;3                     # Slide ratio (4:3 is another common format)
+        # self_contained: false
+        slideNumberFormat: "%current%"  # Slide number format
+        countIncrementalSlides: false  
+    
+    lib_dir: libs
+    
+--- 
+class: title-slide, bottom, left, inverse, hide-count
+
+background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/austin-pacheco-FtL07GM9Q7Y-unsplash.jpg)
+background-size: cover
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+
+library(xaringanthemer)
+
+style_duo_accent(
+  
+  primary_color = "#006cc5",
+  secondary_color = "#ccdbee",
+    
+  # fonts
+  header_font_google = google_font("Helvetica Neue"),
+  text_font_google = google_font("Helvetica Neue"),
+  code_font_google = google_font("Fira Mono"),
+  
+  # H1-H3 font sizes
+  header_h1_font_size= "2.5rem",
+  header_h2_font_size = "2.0rem",
+  header_h3_font_size = "1.85rem",
+  base_font_size =      "1.15rem",
+  
+  code_font_size=       "0.55rem",
+  code_inline_background_color =  "0.55rem",
+  code_highlight_color = "rgb(0, 108, 197, 0.2)",
+
+  
+  #colors
+  inverse_header_color=           "#FFFFFF",
+  inverse_link_color=             "#ef8de4",
+  title_slide_text_color=         "#FFFFFF",
+  title_slide_background_color=   "#ec9120",
+  header_background_color=        "#006cc5",
+  header_background_text_color=   "#006cc5",
+  header_color=                   "#006cc5",
+  link_color =                    "#ef8de4",
+  black = "#000000",
+  white = "#FFFFFF"
+  
+)
+  
+  
+```
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE, warning= FALSE)
+
+knitr::opts_chunk$set(
+  fig.width=9, fig.height=3.5, 
+  fig.retina=3, 
+  dpi=300,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+  
+)
+```
+
+```{css echo=FALSE}
+
+
+.hide-count .remark-slide-number {
+  display: none;
+}
+
+.hide-count-title  .title-slide-number {
+  display: none;
+}
+
+.table-hover > tbody > tr:hover { 
+  background-color: "#ccdbee";
+}
+
+
+.arrow
+{
+  position:absolute;
+  top: 290px;
+  right: 160px;
+  z-index: 2;
+}
+
+.bigx
+{
+  position:absolute;
+  top: 100px;
+  right: 200px;
+  z-index: 2;
+}
+
+
+.smallx
+{
+  position:absolute;
+  top: 78px;
+  right: 175px;
+  z-index: 2;
+}
+
+
+.oval1
+{
+  position:absolute;
+  top: 31px;
+  right: 165px;
+  z-index: 2;
+}
+
+.childemoji
+{
+  position:absolute;
+  top: 180px;
+  left: 250px;
+  opacity: 0.75;
+  z-index: 2;
+}
+
+
+.senioremoji
+{
+  position:absolute;
+  top: 180px;
+  right: 300px;
+  opacity: 1;
+  z-index: 2;
+}
+
+```
+
+```{r xaringanExtra, echo=FALSE}
+xaringanExtra::use_xaringan_extra(c("tile_view", "animate_css", "panelset", "tile"))
+
+# xaringanExtra::use_xaringan_extra(c("tile_view", "animate_css", "panelset", "tile", "scribble"))
+```
+
+
+# HiPIC Exploratory Analysis
+### Hierarchical Personality Inventory for Children
+### <br>
+### USING THE R PROGRAMMING LANGUAGE
+#### Prepared by Kevin Williams  | Preliminary Findings   |   October 30, 2026
+#### Updated `r Sys.Date()`
+#### <br>
+
+---
+layout: true
+<!-- background-image: url(https://i.imgur.com/5rlX8bi.png) -->
+background-image: url(images/statistikboden_lblå.svg)
+background-position: 2% 98.5%
+background-size: 60px 60px
+
+---
+## So why Redo this in R?
+
+
+<center><img src= "images/rlogo-transparent.jpeg" height="350px" /></center>
+
+---
+## So why redo this in R?
+
+1. Excellent <font color="#006cc5">**learning opportunity**</font color>
+
+--
+
+1. Provides another chance to <font color="#006cc5">**validate SAS results**</font color> prior to publication
+
+--
+
+1. R provides a wider variety of add-on packages that can enhance preliminary output - <font color="#006cc5">**makes sharing with collaborators fun**</font color>
+
+--
+
+1. Data scientists — particularly in the social sciences — have made a marked <font color="#006cc5">**shift to R and Python**</font color> and away from SAS and SPSS
+
+<br>
+
+
+<!-- ![](_images/dsVSpap.png) -->
+
+<center><img src=""images/rlogo-transparent.jpeg" height="350px" /></center>
+
+---
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 1
+### Import and cleanse the SAS datasets containing the Child Self-Report and Parental Report raw scores from the [BNS F:\ Drive](https://nytimes.com) repository.
+
+
+---
+## Data Clean-Up
