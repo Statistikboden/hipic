@@ -3,6 +3,7 @@
 
 title: "HiPIC Exploratory Analysis"
 subtitle: "Trying to create a customized deck with xaringanthemer"  
+knit: (function(input, ...) rmarkdown::render(input, output_file = "hipic-update.html"))
 author:  "Kevin Williams"
 date: '`r Sys.Date()`'
 output:
