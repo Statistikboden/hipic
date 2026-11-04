@@ -1,0 +1,10 @@
+# Confidential source data
+*.csv
+*.sas7bdat
+*.rds
+*.RData
+
+# RStudio session files
+.Rhistory
+.RData
+.Rproj.user/

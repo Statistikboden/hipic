@@ -113,8 +113,8 @@ library(magrittr)
 # excluding based on values in a vector
 
 
-CHILD_EXCLUDE <- CHILD_MISSING %>% filter( N_MISSING > 3 | is.na(DOE)) %>% pull(ID4)
-PARENT_EXCLUDE <- PARENT_MISSING %>% filter( N_MISSING > 3 | is.na(DOE)) %>% pull(ID4)
+CHILD_EXCLUDE <- CHILD_MISSING %>% filter( N_MISSING >= 3 | is.na(DOE)) %>% pull(ID4)
+PARENT_EXCLUDE <- PARENT_MISSING %>% filter( N_MISSING >= 3 | is.na(DOE)) %>% pull(ID4)
 
 
 CHILD <-  CHILD_RAW %>% filter( !ID4 %in% CHILD_EXCLUDE)
@@ -159,10 +159,167 @@ sum(!complete.cases(PARENT))
 ```
 
 
+## C.  Examine Cohort Demographic Data - ensure that the nutritional groups are reasonably balanced and that there isn't a statistically significant differece between them along demographic characteristics that might be used in later analyses.
+
+
+``` {r cohort-demographics}
+
+
+demog <-   
+    
+  
+function(DATA) {
+  
+  
+  temp <- deparse(substitute(DATA));
+  DSN <- get(paste0(temp, "_RAW"))  
+
+#  MDSN <-  get(paste0(str_sub(temp,1,1), "MISS"))
+  
+  #Goodness of Fit
+  
+  cat("\n====", "Goodness of Fit (Before)", "====\n")
+  DSN %>% select(CVPK) %>% table() %>%  rstatix::chisq_test(., p= c(0.5, 0.5)) %>% print(.)
+  
+  
+  #Missingness
+  
+  MDSN <- DSN %>%
+    select(ID4, CVPK, last_col(offset=143) : last_col()) %>%
+    rowwise() %>% 
+    mutate(MISSING = sum(is.na(c_across(last_col(offset = 143):last_col())))) %>%
+    ungroup() %>%
+    filter(MISSING >= 3) %>%
+    select(ID4, CVPK, MISSING) 
+  
+  
+  cat("\n====", "Exclusions by Nutritional Group", "====\n")
+
+  EXCL_TAB <- DSN %>%
+    mutate(EXCLUDED = ID4 %in% pull(MDSN, ID4)) %$%
+    table(CVPK, EXCLUDED)
+
+  print(EXCL_TAB)                                         # counts
+  print(round(100 * prop.table(EXCL_TAB, margin = 1), 1)) # row %: % excluded per group
+  print(fisher.test(EXCL_TAB))                            # the p-value for the table
+  
+  
+  
+  
+  
+  
+  cat("\n====", "Goodness of Fit (After)", "====\n")
+  
+  cat("Excluded for >= 3 missing items:", nrow(MDSN), "\n")
+  
+  ANALYSIS <-  DSN %>% anti_join( MDSN[, c("ID4")], by="ID4") %>% select(ID4, CVPK, MVF, AGEEXAM) 
+            
+  ANALYSIS %>% select (CVPK) %>% table() %>% rstatix::chisq_test(., p= c(0.5, 0.5)) %>% print()
+    
+  
+  # Mean Nutritional Groups
+  
+  cat("\n====", "Mean Age by Nutritional Group", "====\n")
+  DSN %>% filter(!ID4 %in% pull(MDSN, ID4))  %>%                 #PRESERVED FOR EDUC PURPOSES - ALT METHOD
+    misty::test.welch( AGEEXAM ~ CVPK, data = .,  descript=T)  
+    
+  
+  
+  
+  # Percent Male
+  
+  
+  cat("\n====", "Percentage of Male Subjects by Nutritional Group", "====\n")
+  ANALYSIS %$% 
+    sjPlot::plot_xtab(CVPK, MVF, margin = "row",
+                      bar.pos = "stack", coord.flip = F,
+                      title = "Sex Distribution by Nutritional Group",
+                      axis.titles = c("CVPK"),
+                      legend.title = "Sex",
+                      geom.colors = c("#006cc5", "#cbcccb"),
+                      show.summary = TRUE) %>% print(.)
+  
+  
+   PCT <-  
+   ANALYSIS  %$% 
+    chisq.test(CVPK, MVF, correct = F) %>% .$observed %T>% print() %>% prop.table(margin = 1) %>% round(3) *100 
+   
+   print(PCT)
+ 
+   ANALYSIS %$% chisq.test(CVPK, MVF, correct = F) %>% print()
+  
+   
+   
+   # ---- Summary table: MAL (1) first, CON (0) second ----
+
+  orig_n  <- table(DSN$CVPK)                     # original N per group
+  final_n <- table(ANALYSIS$CVPK)                # final N per group
+  excl_n  <- EXCL_TAB[, "TRUE"]                  # excluded per group
+  male_n  <- table(ANALYSIS$CVPK, ANALYSIS$MVF)[, "0"]   # MVF 0 = male
+
+  age_txt <- sapply(c("1", "0"), function(g) {
+    x <- ANALYSIS$AGEEXAM[ANALYSIS$CVPK == as.numeric(g)]
+    sprintf("%.2f (%.2f)", mean(x), sd(x))
+  })
+
+  fmt_p <- function(p) sub("^0", "", sprintf("%.3f", p))   # 0.4487 -> ".449"
+
+  col_for <- function(g) {
+    c(orig_n[g],
+      sprintf("%d (%.1f%%)", excl_n[g], 100 * excl_n[g] / orig_n[g]),
+      final_n[g],
+      age_txt[g],
+      sprintf("%d (%.1f%%)", male_n[g], 100 * male_n[g] / final_n[g]))
+  }
+
+  TAB <- tibble(
+    ` ` = c("Original N", ">2% of items missing, n (%)", "Final analytic N",
+            "Testing age, years, mean (SD)", "Male, n (%)"),
+    MAL = unname(col_for("1")),
+    CON = unname(col_for("0")),
+    p   = c(fmt_p(chisq.test(table(DSN$CVPK))$p.value),
+            fmt_p(fisher.test(EXCL_TAB)$p.value),
+            fmt_p(chisq.test(table(ANALYSIS$CVPK))$p.value),
+            fmt_p(t.test(AGEEXAM ~ CVPK, data = ANALYSIS)$p.value),
+            fmt_p(chisq.test(ANALYSIS$CVPK, ANALYSIS$MVF, correct = FALSE)$p.value)))
+
+  cat("\n====", "Summary Table", "====\n")
+  print(knitr::kable(TAB))
+  invisible(TAB)  
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+  
+}
+    
+#   demog(PARENT) 
+#   demog(CHILD)
+    
+   
+   
+    TAB_P <- demog(PARENT)
+    TAB_C <- demog(CHILD)
+    
+saveRDS(TAB_C, "tab_child.rds")
+saveRDS(TAB_P, "tab_parent.rds")
+
+
+```
 
 
 
-## C. Variable Names and Alignment
+## D. Variable Names and Alignment
 
 
 
@@ -297,7 +454,7 @@ length(unique(PARENT_NAMES))
 ```
 
 
-## D. Item-Level Reverse Scoring
+## E. Item-Level Reverse Scoring
 
 The scoring key provided by DeFruyt identifies the questions along each domain/facet that require reverse scoring.
 
@@ -456,6 +613,48 @@ PARENT_SCORED <- score_hipic(PARENT_REVERSED, "P")
 write.csv(PARENT_SCORED,
           "QC",
           row.names = FALSE)
+
+
+
+
+
+
+
+
+# Prepare a Facets Crosswalk summary for Slide Deck if needed.
+
+    FACETS <- list(
+      Anxiety = ES_ANX, `Self-Confidence` = ES_CON,
+      Energy = EX_ENE, Expressiveness = EX_EXP, Optimism = EX_OPT, Shyness = EX_SHY,
+      Creativity = IM_CRE, Intellect = IM_INT, Curiosity = IM_CUR,
+      Altruism = BE_ALT, Dominance = BE_DOM, Egocentrism = BE_EGO,
+      Compliance = BE_COM, Irritability = BE_IRR,
+      Concentration = CO_CNC, Perseverance = CO_PER, Order = CO_ORD,
+      `Achievement Motivation` = CO_ACH)
+    
+    FACET_KEY <- stack(FACETS)   # one row per item: values = item #, ind = facet name
+    nrow(FACET_KEY)              # check: should be 144
+    
+    
+    
+    XWALK_SLIDE <- PARENT_ALIGNED %>%
+      arrange(Q_ORIG) %>%
+      slice(1:16) %>%
+      left_join(FACET_KEY, by = c("Q_NEW" = "values")) %>%
+      transmute(`Parent #`       = Q_ORIG,
+                `Parent Wording` = PARENT_Q_WORDING,
+                `Child #`        = Q_NEW,
+                `SAS Varname`       = BNS_NAME_C,
+                Facet            = as.character(ind))
+    
+    XWALK_SLIDE                               # look before saving
+    saveRDS(XWALK_SLIDE, "tab_crosswalk.rds")
+
+
+
+
+
+
 
 
 
@@ -710,6 +909,160 @@ hipic_quest_distrib(CHILD_REVERSED)
 
 
 
+```{r scree-plots-children}
+
+
+set.seed(2026)
+PA_C <- psych::fa.parallel(C_ITEMS, fm = "minres", fa = "fa", plot = FALSE)
+
+png("images/scree_items_child.png", width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))          # margins: bottom, left, top, right (in lines of text)
+plot(1:20, PA_C$fa.values[1:20], type = "b", pch = 19, col = "#006cc5",
+     xlab = "Factor", ylab = "Eigenvalue", main = "")
+lines(1:20, PA_C$fa.sim[1:20], lty = 2, col = "grey40")
+legend("topright", c("Actual data", "Random data (parallel analysis)"),
+       col = c("#006cc5", "grey40"), lty = c(1, 2), pch = c(19, NA), bty = "n")
+dev.off()
+
+
+
+EIG_C <- tibble(Factor     = 1:10,
+                Eigenvalue = round(EV_C[1:10], 2),
+                Difference = round(EV_C[1:10] - EV_C[2:11], 2),
+                Proportion = round(EV_C[1:10] / 144, 3),
+                Cumulative = round(cumsum(EV_C)[1:10] / 144, 3))
+saveRDS(EIG_C, "eig_child.rds")
+
+
+
+
+
+# loadings, with columns put in size order and renamed F1–F5
+LV <- unclass(FA5_C$loadings)[, c("MR1", "MR2", "MR3", "MR5", "MR4")]
+colnames(LV) <- paste0("F", 1:5)
+
+LOAD_C <- as_tibble(LV) %>%
+  mutate(Q       = as.integer(sub("^C(\\d+)_.*", "\\1", rownames(LV))),
+         Primary = apply(abs(LV), 1, which.max),     # factor each item loads on most
+         Max     = apply(abs(LV), 1, max)) %>%       # that item's largest loading
+  left_join(HIPIC_CROSSWALK %>% select(Q, Item = CHILD_Q_WORDING), by = "Q") %>%
+  arrange(Primary, desc(Max))                        # group by factor, strongest first
+
+TOP_C <- LOAD_C %>%
+  group_by(Primary) %>% slice_head(n = 10) %>% ungroup() %>%
+  mutate(across(F1:F5, ~ ifelse(abs(.x) < .30, "", sprintf("%.2f", .x)))) %>%
+  select(`#` = Q, Item, F1:F5)
+
+saveRDS(TOP_C, "top_load_child.rds")
+
+
+LOAD_C %>% filter(Max >= .30) %>% count(Primary)   # items whose best loading is ≥ .30, by factor
+sum(LOAD_C$Max < .30)                              # items below .30 on every factor
+
+
+
+#curious about Alphas
+
+
+
+
+# That’s a very common next step, and it’s worth being ready for it, because high alphas here would be easy to get and easy to over-read. Alpha above .70 is a reasonable minimum. It isn’t evidence that the factors are real traits, and in this dataset there are four reasons it would mislead:
+# 
+# The items were chosen because they correlate in this sample. Building scales from this sample’s loadings and then computing alpha on the same sample is circular: the alpha is inflated by the same chance patterns that shaped the loadings. A meaningful alpha has to come from an independent sample.
+# Alpha rises with the number of items. F1 has 30-plus items loading above .30. With that many items, alpha will almost certainly exceed .90 even if the items are only modestly related, so a high value says little.
+# High alpha doesn’t mean one trait. Alpha measures how consistently items move together, not why. F1 (overall positive self-description) and F2 (the agreement-direction pattern) hold together largely because of how children answer. Both would probably produce excellent alphas that reflect response style rather than personality.
+# At n = 74, alpha itself is imprecise. The confidence intervals around it are wide.
+
+# The honest summary for Galler: “All five factors are internally consistent in this sample (α = .72–.96). Because the scales were derived from the same 74 children, these alphas are optimistic, and the highest values belong to the two factors carrying the most response-style variance. They’re strong candidates to confirm in an independent sample.” That keeps her momentum towards a paper, but points it at the confirmation step rather than the write-up.
+
+
+
+ALPHAS_C <- sapply(1:5, function(k) {
+  q     <- LOAD_C %>% filter(Primary == k, Max >= .30) %>% pull(Q)
+  items <- CHILD_REVERSED %>% select(starts_with(paste0("C", q, "_")))
+  psych::alpha(items, check.keys = TRUE)$total$raw_alpha
+})
+
+round(ALPHAS_C, 2)
+
+
+sapply(1:5, function(k) LOAD_C %>% filter(Primary == k, Max >= .30) %>% nrow())   # items per factor
+
+sapply(1:5, function(k) {
+  q     <- LOAD_C %>% filter(Primary == k, Max >= .30) %>% pull(Q)
+  items <- CHILD_REVERSED %>% select(starts_with(paste0("C", q, "_")))
+  psych::alpha(items, check.keys = TRUE)$total$average_r
+})
+
+#CHILD %$% cor(C34_BOSS_Iactliketheboss, C124_GIVEINPEERS_Ireadilygiveintopeers)
+
+```
+```{r scree-plots-parents}
+
+set.seed(2026)
+PA_P <- psych::fa.parallel(P_ITEMS, fm = "minres", fa = "fa", plot = FALSE)
+
+png("images/scree_items_parent.png", width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))
+plot(1:20, PA_P$fa.values[1:20], type = "b", pch = 19, col = "#006cc5",
+     xlab = "Factor", ylab = "Eigenvalue", main = "")
+lines(1:20, PA_P$fa.sim[1:20], lty = 2, col = "grey40")
+legend("topright", c("Actual data", "Random data (parallel analysis)"),
+       col = c("#006cc5", "grey40"), lty = c(1, 2), pch = c(19, NA), bty = "n")
+dev.off()
+
+
+EIG_P <- tibble(Factor     = 1:10,
+                Eigenvalue = round(EV_P[1:10], 2),
+                Difference = round(EV_P[1:10] - EV_P[2:11], 2),
+                Proportion = round(EV_P[1:10] / 144, 3),
+                Cumulative = round(cumsum(EV_P)[1:10] / 144, 3))
+saveRDS(EIG_P, "eig_parent.rds")
+
+
+# loadings: parent varimax size order is MR1, MR2, MR4, MR3, MR5
+LV <- unclass(FA5_PVMAX$loadings)[, c("MR1", "MR2", "MR4", "MR3", "MR5")]
+colnames(LV) <- paste0("F", 1:5)
+
+# wording comes from PARENT_ALIGNED (child-form position -> parent wording), NOT HIPIC_CROSSWALK
+LOAD_P <- as_tibble(LV) %>%
+  mutate(Q       = as.integer(sub("^P(\\d+)_.*", "\\1", rownames(LV))),
+         Primary = apply(abs(LV), 1, which.max),
+         Max     = apply(abs(LV), 1, max)) %>%
+  left_join(PARENT_ALIGNED %>% select(Q = Q_NEW, Item = PARENT_Q_WORDING), by = "Q") %>%
+  arrange(Primary, desc(Max))
+
+TOP_P <- LOAD_P %>%
+  group_by(Primary) %>% slice_head(n = 10) %>% ungroup() %>%
+  mutate(across(F1:F5, ~ ifelse(abs(.x) < .30, "", sprintf("%.2f", .x)))) %>%
+  select(`#` = Q, Item, F1:F5)
+
+saveRDS(TOP_P, "top_load_parent.rds")
+
+
+LOAD_P %>% filter(Max >= .30) %>% count(Primary)
+sum(LOAD_P$Max < .30)
+
+
+ALPHAS_P <- sapply(1:5, function(k) {
+  q     <- LOAD_P %>% filter(Primary == k, Max >= .30) %>% pull(Q)
+  items <- PARENT_REVERSED %>% select(starts_with(paste0("P", q, "_")))
+  psych::alpha(items, check.keys = TRUE)$total$raw_alpha
+})
+
+round(ALPHAS_P, 2)
+
+
+sapply(1:5, function(k) LOAD_P %>% filter(Primary == k, Max >= .30) %>% nrow())
+
+sapply(1:5, function(k) {
+  q     <- LOAD_P %>% filter(Primary == k, Max >= .30) %>% pull(Q)
+  items <- PARENT_REVERSED %>% select(starts_with(paste0("P", q, "_")))
+  psych::alpha(items, check.keys = TRUE)$total$average_r
+})
+
+#PARENT %$% cor(P34_BOSS_actsliketheboss, P124_GIVEINPEERS_readilygivesintopeers)
+```
 
 
 

@@ -17,7 +17,7 @@ output:
         highlightLines: true        # Code for Highlighting text
         highlightStyle: github      # Highlighting syntax for code
         highlightSpans: true
-        ratio: 4;3                     # Slide ratio (4:3 is another common format)
+        ratio: "16:9"                # FIXED: was 4;3 (ignored, so slides fell back to 16:9). Try "16:9" later to compare.
         # self_contained: false
         slideNumberFormat: "%current%"  # Slide number format
         countIncrementalSlides: false  
@@ -25,7 +25,7 @@ output:
     lib_dir: libs
     
 --- 
-class: title-slide, bottom, left, inverse, hide-count
+class: title-slide, left,middle, left, inverse, hide-count
 
 background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/austin-pacheco-FtL07GM9Q7Y-unsplash.jpg)
 background-size: cover
@@ -40,8 +40,10 @@ style_duo_accent(
   secondary_color = "#ccdbee",
     
   # fonts
-  header_font_google = google_font("Helvetica Neue"),
-  text_font_google = google_font("Helvetica Neue"),
+  # FIXED: Helvetica Neue is not a Google Font, so it is now named as a system font,
+  #        with fallbacks for machines that don't have it (e.g. Windows -> Arial).
+  header_font_family = "'Helvetica Neue', Helvetica, Arial, sans-serif",
+  text_font_family   = "'Helvetica Neue', Helvetica, Arial, sans-serif",
   code_font_google = google_font("Fira Mono"),
   
   # H1-H3 font sizes
@@ -51,7 +53,7 @@ style_duo_accent(
   base_font_size =      "1.15rem",
   
   code_font_size=       "0.55rem",
-  code_inline_background_color =  "0.55rem",
+  # code_inline_background_color =  "0.55rem",   # FIXED: needs a colour, not a size; theme default now applies
   code_highlight_color = "rgb(0, 108, 197, 0.2)",
 
   
@@ -74,7 +76,7 @@ style_duo_accent(
 
 
 ```{r setup, include=FALSE}
-options(htmltools.dir.version = FALSE, warning= FALSE)
+options(htmltools.dir.version = FALSE)   # FIXED: removed warning = FALSE (not a real R option; opts_chunk below handles warnings)
 
 knitr::opts_chunk$set(
   fig.width=9, fig.height=3.5, 
@@ -101,8 +103,9 @@ knitr::opts_chunk$set(
   display: none;
 }
 
+/* FIXED: removed quotes around the colour (quoted values are invalid CSS, so the rule was ignored) */
 .table-hover > tbody > tr:hover { 
-  background-color: "#ccdbee";
+  background-color: #ccdbee;
 }
 
 
@@ -159,10 +162,58 @@ knitr::opts_chunk$set(
   z-index: 2;
 }
 
+.rlogo-watermark {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);   /* centres it horizontally */
+  opacity: 0.2;                  /* 0 = invisible, 1 = solid */
+}
+
+.rlogo-watermark2 {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);   /* centres it horizontally */
+  opacity: 0.10;                  /* 0 = invisible, 1 = solid */
+}
+
+.pink { color: #ef8de4; }
+
+
+.footnote-center {
+  position: absolute;
+  bottom: 6em;          /* raise or lower the footnote */
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+
+.pull-left h3, .pull-right h3 {
+  font-size: 1.4rem;    /* adjust to taste */
+}
+
+
+.blue { color: #006cc5; }
+
+
+
+.crosswalk td, .crosswalk th {
+  padding: 4px 20px;          /* 4px above/below, 20px left/right: increase the 20 for more space */
+}
+
+.crosswalk tbody tr:nth-child(8) td {
+  border-bottom: 2px solid #cbcccb;   /* grey line under row 8 */
+}
+
+
+
 ```
 
 ```{r xaringanExtra, echo=FALSE}
-xaringanExtra::use_xaringan_extra(c("tile_view", "animate_css", "panelset", "tile"))
+xaringanExtra::use_xaringan_extra(c("tile_view", "animate_css", "panelset"))
 
 # xaringanExtra::use_xaringan_extra(c("tile_view", "animate_css", "panelset", "tile", "scribble"))
 ```
@@ -184,7 +235,7 @@ background-position: 2% 98.5%
 background-size: 60px 60px
 
 ---
-## So why Redo this in R?
+## So why redo this in R?
 
 
 <center><img src= "images/rlogo-transparent.jpeg" height="350px" /></center>
@@ -192,26 +243,28 @@ background-size: 60px 60px
 ---
 ## So why redo this in R?
 
-1. Excellent <font color="#006cc5">**learning opportunity**</font color>
+1. Excellent <font color="#006cc5">**learning opportunity**</font>
 
 --
 
-1. Provides another chance to <font color="#006cc5">**validate SAS results**</font color> prior to publication
+1. Provides another chance to <font color="#006cc5">**validate SAS results**</font> prior to publication
 
 --
 
-1. R provides a wider variety of add-on packages that can enhance preliminary output - <font color="#006cc5">**makes sharing with collaborators fun**</font color>
+1. R provides a wider variety of add-on packages that can enhance preliminary output - <font color="#006cc5">**makes sharing with collaborators fun**</font>
 
 --
 
-1. Data scientists — particularly in the social sciences — have made a marked <font color="#006cc5">**shift to R and Python**</font color> and away from SAS and SPSS
+1. Data scientists — particularly in the social sciences — have made a marked <font color="#006cc5">**shift to R and Python**</font> and away from SAS and SPSS
 
 <br>
 
 
 <!-- ![](_images/dsVSpap.png) -->
 
-<center><img src=""images/rlogo-transparent.jpeg" height="350px" /></center>
+<!-- FIXED: closing tags above were </font color> (now </font>); the image below had a doubled quote and never loaded. -->
+<!-- NOTE: now that it loads, a 350px image under four bullets will likely run off the slide; delete or shrink if so. -->
+<img class="rlogo-watermark" src="images/rlogo-transparent.jpeg" height="350px" />
 
 ---
 class: hide-count, inverse
@@ -220,8 +273,259 @@ background-size: cover
 
 
 ## Task No. 1
-### Import and cleanse the SAS datasets containing the Child Self-Report and Parental Report raw scores from the [BNS F:\ Drive](https://nytimes.com) repository.
+### Import the SAS datasets containing the .pink[Child Self-Report] and .pink[Parental Report] raw scores, and prepare an overview of the two populations.
+
+<!-- TODO: the link above is a placeholder; replace with the real URL (e.g. GitHub) -->
+
+---
+
+## Descriptive Stats
+
+.pull-left[
+### Child Self-Report
+
+```{r tab-child, echo=FALSE}
+knitr::kable(readRDS("tab_child.rds"), format = "html",
+             align     = c("l", "c", "c", "c"),
+             col.names = c("", "MAL", "CON", "<em>p</em>"),
+             escape    = FALSE,
+             table.attr = 'style="font-size: 90%; margin-left: 0;"')
+```
+]
+
+.pull-right[
+### Parent Report
+
+```{r tab-parent, echo=FALSE}
+knitr::kable(readRDS("tab_parent.rds"), format = "html",
+             align     = c("l", "c", "c", "c"),
+             col.names = c("", "MAL", "CON", "<em>p</em>"),
+             escape    = FALSE,
+             table.attr = 'style="font-size: 90%; margin-left: 0;"')
+```
+]
+
+
+.footnote-center[p-values: Original and final N, χ² goodness-of-fit against a 50:50 split; missing items,<br>Fisher's exact test; age, Welch t-test; sex, Pearson χ².]
 
 
 ---
-## Data Clean-Up
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 2
+### Examine the responses in the .pink[Child Self-Report] and .pink[Parental Report] and perform any necessary data clean-up, and prepare for evaluation using the HiPIC scoring key.
+
+
+---
+
+## Data Preparation
+
+- .blue[**Equivalent Items:**] All 144 items appear on both forms, differing only in perspective — first person on the Child form ("I talk to people easily") and third person on the Parent form ("Talks to people easily").
+
+- .blue[**Different Item Order:**] The Child form spreads each facet's items across the questionnaire, whereas the Parent form groups related items together.
+
+- .blue[**Realignment:**] Parent items were renumbered to the corresponding positions on the Child form using a crosswalk, allowing a single scoring key to assign every item on each instrument to the correct facet and domain.
+
+- .blue[**Reverse Scoring:**] The 36 reverse-keyed items were rescored as $x' = 6 - x$, where $x$ is the original response (1–5).
+
+- .blue[**Missing Responses:**] Remaining missing answers (respondents with fewer than 3 missing items) were replaced with the item mean for the respondent's nutritional group × sex subgroup, rounded to the nearest whole response.
+
+<img class="rlogo-watermark2" src="images/rlogo-transparent.jpeg" height="350px" />
+
+
+---
+class: crosswalk
+
+## Data Preparation, cont.
+```{r tab-crosswalk, echo=FALSE}
+knitr::kable(readRDS("tab_crosswalk.rds"), format = "html",
+             align      = c("c", "l", "c", "l", "l"),
+             table.attr = 'style="font-size: 75%;"')
+```
+
+
+
+---
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 3
+### Review .pink[Mean Differences by Nutritional Group] (PEM vs. Controls) for both instruments, reporting data separately by sex.
+
+
+---
+## Group Differences: Child Self-Report
+
+<img src="images/mean-diffs-children.png"
+     style="display: block; margin: 0 auto; width: 85%;
+            box-shadow: 4px 6px 14px rgba(0, 0, 0, 0.30);" />
+
+<p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
+Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+</p>
+
+---
+## Group Differences: Parent Report
+
+<img src="images/mean-diffs-parents.png"
+     style="display: block; margin: 0 auto; width: 85%;
+            box-shadow: 4px 6px 14px rgba(0, 0, 0, 0.30);" />
+
+<p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
+Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+</p>
+
+
+---
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 4
+### Examine the structure underlying the 144 HiPIC items to assess whether the Domain and Facet data can support a .pink[Factor Analysis,] and how many factors the data suggest.
+---
+
+## Sample Size & Factorability
+
+- .blue[**The Goal:**] Identify the structure underlying the 144 HiPIC items, without assuming any scoring key in advance.
+
+- .blue[**The Sample:**] With fewer respondents than items — 74 children and 77 parents for 144 items — every item correlation rests on the same few dozen people:
+
+$$\frac{p\,(p-1)}{2} = \frac{144 \times 143}{2} = 10{,}296 \text{ unique correlations}$$
+
+- .blue[**The Precision:**] Each correlation is estimated with considerable noise; at n = 74, a true correlation of zero can appear as large as:
+
+$$\pm \frac{1.96}{\sqrt{n}} = \pm \frac{1.96}{\sqrt{74}} \approx \pm .23$$
+
+- .blue[**What That Means:**] Together, the correlations can describe at most 73 (children) and 76 (parents) independent dimensions, so standard adequacy tests (KMO, Bartlett's) cannot be computed at item level.
+
+- .blue[**Our Approach:**] Item-level results are treated as exploratory, using methods suited to this situation, with the number of factors checked by parallel analysis.
+
+- .blue[**A Second Lens:**] At facet level, the standard tests apply, and the data are clearly suitable (KMO = .85 children, .80 parents), providing a firmer result alongside the exploratory one.
+
+<img class="rlogo-watermark2" src="images/rlogo-transparent.jpeg" height="350px" />
+
+
+---
+
+
+## Scree Plot & Eigenvalues - Child Self-Report
+
+
+
+.pull-left[
+<img src="images/scree_items_child.png" style="width: 100%;" />
+]
+
+.pull-right[
+```{r eig-child, echo=FALSE}
+knitr::kable(readRDS("eig_child.rds"), format = "html",
+             align = "c", table.attr = 'style="font-size: 75%; margin-top: 2em;"')
+```
+]
+
+---
+
+## How Many Factors?
+
+| Guide | Suggests | Basis |
+|:--|:--:|:--|
+| Scree Elbow | 2–3 | Where the eigenvalue curve flattens |
+| Parallel Analysis | 6 | Factors whose eigenvalues exceed those of random data |
+| Theory (HiPIC & NEO) | 5 | Both models specify five domains |
+
+- .blue[**Our Choice:**] Five factors, the number both models predict and the structure under test, with six examined as a sensitivity check.
+
+---
+
+## Five-Factor Solution (Varimax): Child Self-Report
+
+| Factor | % Var | Defining Items | Interpretation |
+|:--|:--:|:--|:--|
+| F1 | 13.6 | Perseveres, understands quickly, defends the weak, sees the sunny side | Broad positive self-description, spanning all domains |
+| F2 | 7.9 | Acts like the boss, lashes out, manipulates; makes a mess, gives up (reversed) | Problem behaviour, spanning several domains |
+| F3 | 5.8 | Afraid of failure, quick to worry, easily depressed | Anxiety |
+| F4 | 4.3 | Confident, rich imagination, notices everything | Intellect / imagination |
+| F5 | 3.7 | Talks about feelings, talks all day, makes others laugh | Expressiveness |
+
+---
+
+## Five-Factor Solution (Varimax): Child Self-Report, cont.
+
+.pull-left[
+```{r top-child-1, echo=FALSE}
+knitr::kable(readRDS("top_load_child.rds")[1:20, ], format = "html",
+             align = c("c", "l", rep("c", 5)),
+             table.attr = 'style="font-size: 60%;"')
+```
+]
+
+.pull-right[
+```{r top-child-2, echo=FALSE}
+knitr::kable(readRDS("top_load_child.rds")[21:30, ], format = "html",
+             align = c("c", "l", rep("c", 5)),
+             table.attr = 'style="font-size: 60%;"')
+```
+<br>
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
+Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying Excel file.
+</p>
+]
+
+
+---
+
+## Five-Factor Solution (Varimax): Parent Report
+
+| Factor | % Var | Defining Items | Interpretation |
+|:--|:--:|:--|:--|
+| F1 | 18.4 | Expresses self well, likes to learn, wants to shine, has confidence | Competence / overall impression, spanning domains |
+| F2 | 7.6 | Quick to panic, quick to worry, afraid of failure, cries over setbacks | Anxiety |
+| F3 | 6.9 | Quick to argue, lashes out, finds it hard to share, gets own way | Antagonism |
+| F4 | 5.0 | Goes laughing through life, has plenty of nerve, bursts with enthusiasm | Extraversion |
+| F5 | 3.1 | Shows concern for other children | Altruism (weak: only 2 items load primarily here) |
+
+
+---
+
+## Five-Factor Solution (Varimax): Parent Report, cont.
+
+.pull-left[
+```{r top-parent-1, echo=FALSE}
+knitr::kable(readRDS("top_load_parent.rds")[1:20, ], format = "html",
+             align = c("c", "l", rep("c", 5)),
+             table.attr = 'style="font-size: 55%;"')
+```
+]
+
+.pull-right[
+```{r top-parent-2, echo=FALSE}
+knitr::kable(readRDS("top_load_parent.rds")[21:30, ], format = "html",
+             align = c("c", "l", rep("c", 5)),
+             table.attr = 'style="font-size: 55%;"')
+```
+<br>
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
+Top 10 items per factor shown (F1–F3); loadings below .30 not shown.<br>Full loadings in the accompanying Excel file.
+</p>
+]
+
+---
+
+## Five-Factor Solution (Varimax): Parent Report, cont.
+
+```{r top-parent-3, echo=FALSE}
+knitr::kable(readRDS("top_load_parent.rds")[31:42, ], format = "html",
+             align = c("c", "l", rep("c", 5)),
+             table.attr = 'style="font-size: 55%;"')
+```
+
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
+F4: top 10 items shown. F5: only 2 items load primarily on this factor (≥ .30).<br>Loadings below .30 not shown. Full loadings in the accompanying Excel file.
+</p>
