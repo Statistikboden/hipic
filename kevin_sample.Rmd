@@ -432,6 +432,25 @@ knitr::kable(readRDS("eig_child.rds"), format = "html",
 
 ---
 
+## Scree Plot & Eigenvalues - Parent Report
+
+.pull-left[
+<img src="images/scree_items_parent.png" style="width: 100%;" />
+]
+
+.pull-right[
+```{r eig-parent, echo=FALSE}
+knitr::kable(readRDS("eig_parent.rds"), format = "html",
+             align = "c", table.attr = 'style="font-size: 75%;"')
+```
+
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
+Parallel analysis retains 6 factors (actual eigenvalues above random).<br>Table: eigenvalues of the correlation matrix; plot: factor-analysis eigenvalues.
+</p>
+]
+
+---
+
 ## How Many Factors?
 
 | Guide | Suggests | Basis |

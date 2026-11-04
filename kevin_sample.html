@@ -4,7 +4,7 @@
     <title>HiPIC Exploratory Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Kevin Williams" />
-    <meta name="date" content="2026-11-03" />
+    <meta name="date" content="2026-11-04" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view/tile-view.js"></script>
@@ -154,7 +154,7 @@ background-size: cover
 ### &lt;br&gt;
 ### USING THE R PROGRAMMING LANGUAGE
 #### Prepared by Kevin Williams  | Preliminary Findings   |   October 30, 2026
-#### Updated 2026-11-03
+#### Updated 2026-11-04
 #### &lt;br&gt;
 
 ---
@@ -627,6 +627,104 @@ background-size: cover
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
+]
+
+---
+
+## Scree Plot &amp; Eigenvalues - Parent Report
+
+.pull-left[
+&lt;img src="images/scree_items_parent.png" style="width: 100%;" /&gt;
+]
+
+.pull-right[
+&lt;table style="font-size: 75%;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; Factor &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Eigenvalue &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Difference &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Proportion &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Cumulative &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 28.83 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 12.03 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.200 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.200 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 16.80 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 10.63 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.117 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.317 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 6.17 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.79 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.043 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.360 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 5.38 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.66 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.037 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.397 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 4.72 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.15 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.033 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.430 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 4.57 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.50 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.032 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.462 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 4.06 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.37 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.028 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.490 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.69 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.33 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.026 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.515 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 9 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.36 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.17 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.023 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.539 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.19 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.17 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.022 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.561 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;"&gt;
+Parallel analysis retains 6 factors (actual eigenvalues above random).&lt;br&gt;Table: eigenvalues of the correlation matrix; plot: factor-analysis eigenvalues.
+&lt;/p&gt;
 ]
 
 ---
