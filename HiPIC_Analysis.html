@@ -620,12 +620,7 @@ function(DATA) {
   invisible(TAB)  
    
    
-   
-   
-   
-   
-   
-   
+
    
    
    
@@ -2723,7 +2718,7 @@ if (!&quot;BASEP&quot; %in% names(wb)) {
 }
 openxlsx::writeData(wb, &quot;BASEP&quot;, BASEP)
 openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)</code></pre>
-<p>#F Let’s examine the questions on both surveys that had the highest
+<p>#F Examine the questions on both surveys that had the highest
 concentration of answers along any one response.</p>
 <pre class="r"><code>#DEFINE FUNCTION
 
@@ -2845,11 +2840,763 @@ hipic_quest_distrib(PARENT_REVERSED)</code></pre>
 ## 12 Q052   Q052     &quot;&quot;    C52_MANIPULATE_Imanipulateothers                1 0.622
 ## 13 Q043   Q043     &quot;&quot;    C43_LASHOUT_Iamquicktolashout                   1 0.608
 ## 14 Q084   Q084     &quot;Y&quot;   C84_NOAUTHOR_Iresistauthority                   5 0.608</code></pre>
-<p>```{r-scree-plots}</p>
-<p>set.seed(2026) png(“scree_items_child.png”, width = 1600, height =
-1000, res = 200) psych::fa.parallel(C_ITEMS, fm = “minres”, fa = “fa”,
-main = “Children: Item-Level Scree”) dev.off()</p>
-<p>```</p>
+</div>
+<div id="prepare-for-fa-to-avoid-bombs-in-.rmd-knitting-later" class="section level1">
+<h1>Prepare for FA to avoid bombs in .rmd knitting later</h1>
+<pre class="r"><code>set.seed(2026)
+PA_C &lt;- psych::fa.parallel(C_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
+<pre><code>## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0</code></pre>
+<pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined.
+## Chi square is based upon observed residuals.</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined for the null model either.
+## The Chi square is thus based upon observed correlations.</code></pre>
+<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
+<pre><code>## Parallel analysis suggests that the number of factors =  6  and the number of components =  NA</code></pre>
+<pre class="r"><code>png(&quot;images/scree_items_child.png&quot;, width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))          # margins: bottom, left, top, right (in lines of text)
+plot(1:20, PA_C$fa.values[1:20], type = &quot;b&quot;, pch = 19, col = &quot;#006cc5&quot;,
+     xlab = &quot;Factor&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
+lines(1:20, PA_C$fa.sim[1:20], lty = 2, col = &quot;grey40&quot;)
+legend(&quot;topright&quot;, c(&quot;Actual data&quot;, &quot;Random data (parallel analysis)&quot;),
+       col = c(&quot;#006cc5&quot;, &quot;grey40&quot;), lty = c(1, 2), pch = c(19, NA), bty = &quot;n&quot;)
+dev.off()</code></pre>
+<pre><code>## quartz_off_screen 
+##                 2</code></pre>
+<pre class="r"><code>EIG_C &lt;- tibble(Factor     = 1:10,
+                Eigenvalue = round(EV_C[1:10], 2),
+                Difference = round(EV_C[1:10] - EV_C[2:11], 2),
+                Proportion = round(EV_C[1:10] / 144, 3),
+                Cumulative = round(cumsum(EV_C)[1:10] / 144, 3))
+saveRDS(EIG_C, &quot;eig_child.rds&quot;)
+
+
+
+
+
+# loadings, with columns put in size order and renamed F1–F5
+LV &lt;- unclass(FA5_C$loadings)[, c(&quot;MR1&quot;, &quot;MR2&quot;, &quot;MR3&quot;, &quot;MR5&quot;, &quot;MR4&quot;)]
+colnames(LV) &lt;- paste0(&quot;F&quot;, 1:5)
+
+LOAD_C &lt;- as_tibble(LV) %&gt;%
+  mutate(Q       = as.integer(sub(&quot;^C(\\d+)_.*&quot;, &quot;\\1&quot;, rownames(LV))),
+         Primary = apply(abs(LV), 1, which.max),     # factor each item loads on most
+         Max     = apply(abs(LV), 1, max)) %&gt;%       # that item&#39;s largest loading
+  left_join(HIPIC_CROSSWALK %&gt;% select(Q, Item = CHILD_Q_WORDING), by = &quot;Q&quot;) %&gt;%
+  arrange(Primary, desc(Max))                        # group by factor, strongest first
+
+TOP_C &lt;- LOAD_C %&gt;%
+  group_by(Primary) %&gt;% slice_head(n = 10) %&gt;% ungroup() %&gt;%
+  mutate(across(F1:F5, ~ ifelse(abs(.x) &lt; .30, &quot;&quot;, sprintf(&quot;%.2f&quot;, .x)))) %&gt;%
+  select(`#` = Q, Item, F1:F5)
+
+saveRDS(TOP_C, &quot;top_load_child.rds&quot;)
+
+
+LOAD_C %&gt;% filter(Max &gt;= .30) %&gt;% count(Primary)   # items whose best loading is ≥ .30, by factor</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Primary     n
+##     &lt;int&gt; &lt;int&gt;
+## 1       1    55
+## 2       2    29
+## 3       3    25
+## 4       4    12
+## 5       5     9</code></pre>
+<pre class="r"><code>sum(LOAD_C$Max &lt; .30)                              # items below .30 on every factor</code></pre>
+<pre><code>## [1] 14</code></pre>
+<pre class="r"><code>#curious about Alphas
+
+
+
+
+# That’s a very common next step, and it’s worth being ready for it, because high alphas here would be easy to get and easy to over-read. Alpha above .70 is a reasonable minimum. It isn’t evidence that the factors are real traits, and in this dataset there are four reasons it would mislead:
+# 
+# The items were chosen because they correlate in this sample. Building scales from this sample’s loadings and then computing alpha on the same sample is circular: the alpha is inflated by the same chance patterns that shaped the loadings. A meaningful alpha has to come from an independent sample.
+# Alpha rises with the number of items. F1 has 30-plus items loading above .30. With that many items, alpha will almost certainly exceed .90 even if the items are only modestly related, so a high value says little.
+# High alpha doesn’t mean one trait. Alpha measures how consistently items move together, not why. F1 (overall positive self-description) and F2 (the agreement-direction pattern) hold together largely because of how children answer. Both would probably produce excellent alphas that reflect response style rather than personality.
+# At n = 74, alpha itself is imprecise. The confidence intervals around it are wide.
+
+# The honest summary for Galler: “All five factors are internally consistent in this sample (α = .72–.96). Because the scales were derived from the same 74 children, these alphas are optimistic, and the highest values belong to the two factors carrying the most response-style variance. They’re strong candidates to confirm in an independent sample.” That keeps her momentum towards a paper, but points it at the confirmation step rather than the write-up.
+
+
+
+ALPHAS_C &lt;- sapply(1:5, function(k) {
+  q     &lt;- LOAD_C %&gt;% filter(Primary == k, Max &gt;= .30) %&gt;% pull(Q)
+  items &lt;- CHILD_REVERSED %&gt;% select(starts_with(paste0(&quot;C&quot;, q, &quot;_&quot;)))
+  psych::alpha(items, check.keys = TRUE)$total$raw_alpha
+})</code></pre>
+<pre><code>## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.</code></pre>
+<pre><code>## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.</code></pre>
+<pre class="r"><code>round(ALPHAS_C, 2)</code></pre>
+<pre><code>## [1] 0.96 0.92 0.88 0.77 0.72</code></pre>
+<pre class="r"><code>sapply(1:5, function(k) LOAD_C %&gt;% filter(Primary == k, Max &gt;= .30) %&gt;% nrow())   # items per factor</code></pre>
+<pre><code>## [1] 55 29 25 12  9</code></pre>
+<pre class="r"><code>sapply(1:5, function(k) {
+  q     &lt;- LOAD_C %&gt;% filter(Primary == k, Max &gt;= .30) %&gt;% pull(Q)
+  items &lt;- CHILD_REVERSED %&gt;% select(starts_with(paste0(&quot;C&quot;, q, &quot;_&quot;)))
+  psych::alpha(items, check.keys = TRUE)$total$average_r
+})</code></pre>
+<pre><code>## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.</code></pre>
+<pre><code>## [1] 0.3143212 0.2807405 0.2228051 0.2317240 0.2227309</code></pre>
+<pre class="r"><code>#CHILD %$% cor(C34_BOSS_Iactliketheboss, C124_GIVEINPEERS_Ireadilygiveintopeers)</code></pre>
+<pre class="r"><code>set.seed(2026)
+PA_P &lt;- psych::fa.parallel(P_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
+<pre><code>## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0</code></pre>
+<pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined.
+## Chi square is based upon observed residuals.</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined for the null model either.
+## The Chi square is thus based upon observed correlations.</code></pre>
+<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
+<pre><code>## Parallel analysis suggests that the number of factors =  6  and the number of components =  NA</code></pre>
+<pre class="r"><code>png(&quot;images/scree_items_parent.png&quot;, width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))
+plot(1:20, PA_P$fa.values[1:20], type = &quot;b&quot;, pch = 19, col = &quot;#006cc5&quot;,
+     xlab = &quot;Factor&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
+lines(1:20, PA_P$fa.sim[1:20], lty = 2, col = &quot;grey40&quot;)
+legend(&quot;topright&quot;, c(&quot;Actual data&quot;, &quot;Random data (parallel analysis)&quot;),
+       col = c(&quot;#006cc5&quot;, &quot;grey40&quot;), lty = c(1, 2), pch = c(19, NA), bty = &quot;n&quot;)
+dev.off()</code></pre>
+<pre><code>## quartz_off_screen 
+##                 2</code></pre>
+<pre class="r"><code>EIG_P &lt;- tibble(Factor     = 1:10,
+                Eigenvalue = round(EV_P[1:10], 2),
+                Difference = round(EV_P[1:10] - EV_P[2:11], 2),
+                Proportion = round(EV_P[1:10] / 144, 3),
+                Cumulative = round(cumsum(EV_P)[1:10] / 144, 3))
+saveRDS(EIG_P, &quot;eig_parent.rds&quot;)
+
+
+# loadings: parent varimax size order is MR1, MR2, MR4, MR3, MR5
+LV &lt;- unclass(FA5_PVMAX$loadings)[, c(&quot;MR1&quot;, &quot;MR2&quot;, &quot;MR4&quot;, &quot;MR3&quot;, &quot;MR5&quot;)]
+colnames(LV) &lt;- paste0(&quot;F&quot;, 1:5)
+
+# wording comes from PARENT_ALIGNED (child-form position -&gt; parent wording), NOT HIPIC_CROSSWALK
+LOAD_P &lt;- as_tibble(LV) %&gt;%
+  mutate(Q       = as.integer(sub(&quot;^P(\\d+)_.*&quot;, &quot;\\1&quot;, rownames(LV))),
+         Primary = apply(abs(LV), 1, which.max),
+         Max     = apply(abs(LV), 1, max)) %&gt;%
+  left_join(PARENT_ALIGNED %&gt;% select(Q = Q_NEW, Item = PARENT_Q_WORDING), by = &quot;Q&quot;) %&gt;%
+  arrange(Primary, desc(Max))
+
+TOP_P &lt;- LOAD_P %&gt;%
+  group_by(Primary) %&gt;% slice_head(n = 10) %&gt;% ungroup() %&gt;%
+  mutate(across(F1:F5, ~ ifelse(abs(.x) &lt; .30, &quot;&quot;, sprintf(&quot;%.2f&quot;, .x)))) %&gt;%
+  select(`#` = Q, Item, F1:F5)
+
+saveRDS(TOP_P, &quot;top_load_parent.rds&quot;)
+
+
+LOAD_P %&gt;% filter(Max &gt;= .30) %&gt;% count(Primary)</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Primary     n
+##     &lt;int&gt; &lt;int&gt;
+## 1       1    62
+## 2       2    29
+## 3       3    30
+## 4       4    13
+## 5       5     2</code></pre>
+<pre class="r"><code>sum(LOAD_P$Max &lt; .30)</code></pre>
+<pre><code>## [1] 8</code></pre>
+<pre class="r"><code>ALPHAS_P &lt;- sapply(1:5, function(k) {
+  q     &lt;- LOAD_P %&gt;% filter(Primary == k, Max &gt;= .30) %&gt;% pull(Q)
+  items &lt;- PARENT_REVERSED %&gt;% select(starts_with(paste0(&quot;P&quot;, q, &quot;_&quot;)))
+  psych::alpha(items, check.keys = TRUE)$total$raw_alpha
+})</code></pre>
+<pre><code>## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.</code></pre>
+<pre><code>## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.</code></pre>
+<pre class="r"><code>round(ALPHAS_P, 2)</code></pre>
+<pre><code>## [1] 0.97 0.92 0.91 0.83 0.73</code></pre>
+<pre class="r"><code>sapply(1:5, function(k) LOAD_P %&gt;% filter(Primary == k, Max &gt;= .30) %&gt;% nrow())</code></pre>
+<pre><code>## [1] 62 29 30 13  2</code></pre>
+<pre class="r"><code>sapply(1:5, function(k) {
+  q     &lt;- LOAD_P %&gt;% filter(Primary == k, Max &gt;= .30) %&gt;% pull(Q)
+  items &lt;- PARENT_REVERSED %&gt;% select(starts_with(paste0(&quot;P&quot;, q, &quot;_&quot;)))
+  psych::alpha(items, check.keys = TRUE)$total$average_r
+})</code></pre>
+<pre><code>## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.
+## Warning in psych::alpha(items, check.keys = TRUE): Some items were negatively correlated with the first principal component and were automatically reversed.
+##  This is indicated by a negative sign for the variable name.</code></pre>
+<pre><code>## [1] 0.3770516 0.2753028 0.2621941 0.2718505 0.5779973</code></pre>
+<pre class="r"><code>#PARENT %$% cor(P34_BOSS_actsliketheboss, P124_GIVEINPEERS_readilygivesintopeers)</code></pre>
+<pre class="r"><code>FA2I_C &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)</code></pre>
+<pre><code>## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0</code></pre>
+<pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined.
+## Chi square is based upon observed residuals.</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined for the null model either.
+## The Chi square is thus based upon observed correlations.</code></pre>
+<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
+<pre class="r"><code>FA2I_C$Vaccounted</code></pre>
+<pre><code>##                              MR1         MR2
+## SS loadings           21.5476519 14.31387251
+## Proportion Var         0.1496365  0.09940189
+## Cumulative Var         0.1496365  0.24903836
+## Proportion Explained   0.6008571  0.39914289
+## Cumulative Proportion  0.6008571  1.00000000</code></pre>
+<pre class="r"><code>print(FA2I_C$loadings, cutoff = 0.30, sort = TRUE)</code></pre>
+<pre><code>## 
+## Loadings:
+##                                                           MR1    MR2   
+## C23_NEWWAY_Icanuseeverydaythingsinanewway                  0.623       
+## C24_EXPRESS_Iexpressfeelings                               0.640       
+## C26_ORDER_Ihaveasenseoforder                               0.692       
+## C30_OBEY_Iobeywithoutprotest                               0.615  0.343
+## C31_SUSTATTENT_Iworkwithsustainedattention                 0.645       
+## C32_EXPTHOUGHT_Icanexpressmyownthoughtswell                0.732       
+## C36_DEFEND_Idefendtheweak                                  0.696       
+## C47_SUNNY_Iseethesunnysideofthings                         0.692       
+## C54_CONCERNED_Iamconcernedaboutwhathappenstoothers         0.569       
+## C65_FEELGOOD_Imakepeoplefeelgood                           0.594  0.381
+## C66_STICKPLAN_Isticktoplans                                0.602       
+## C67_FINISHTASK_Ifinishtaskstotheveryend                    0.567       
+## C71_GETTOUGH_Ikeepatitwhenthegoinggetstough                0.544       
+## C72_HELPOTHERS_Iamreadytohelpanybody                       0.598  0.384
+## C75_FULLCONVICT_Idedicatemyselftothingswithfullconviction  0.630       
+## C82_EXAMINEMADE_Iexaminethewaythingsaremade                0.725       
+## C85_CONCENTRATE_Icanconcentrateononethingforalongtime      0.651       
+## C86_UNDERSTAND_Iamquicktounderstandthings                  0.694       
+## C90_SYMPATHIZESAD_Isympathisewithanyonewhoissad            0.505       
+## C95_ORIGINALIDEA_Ihaveoriginalideas                        0.698       
+## C96_STRAIGHTFWD_Iexpressmyselfinastraightforwardway        0.651       
+## C102_DOASKED_Idowhatisasked                                0.542  0.327
+## C104_GRASPMEAN_Igraspthemeaningofthingsquickly             0.590       
+## C107_SATISFIEDEFF_Iamquicklysatisfiedwithmyownefforts     -0.579       
+## C108_SHOWCONCERN_Ishowconcernforotherchildren              0.617       
+## C116_WORKDETAIL_Icompleteworkdowntothelastdetail           0.597       
+## C123_ADVENTURE_Ilookforadventure                           0.627       
+## C125_PERSEVERE_Ipersevereuntilthegoalisachieved            0.741       
+## C126_GIVETOOTHERS_Igivetoothers                            0.650       
+## C131_CONTRIBUTEIDEA_Icontributenewideas                    0.688       
+## C134_NEATWORK_Idoworkinacarefulandneatway                  0.616       
+## C136_INTERSTNEW_Iaminterestedinanythingnew                 0.557       
+## C140_EXPRESSWELL_Icanexpressmyselfwell                     0.721       
+## C142_FOREFRONT_Iputmyselftotheforefront                    0.556       
+## C7_OFFENDED_Iamquicktobeoffended                                 -0.560
+## C25_ARGUE_Iamquicktoargue                                        -0.512
+## C43_LASHOUT_Iamquicktolashout                                    -0.622
+## C49_FORGETALL_Iforgetanythingandeverything                        0.605
+## C52_MANIPULATE_Imanipulateothers                                 -0.686
+## C60_SAYLITTLE_Isaylittleonowninitiative                           0.610
+## C61_BURSTRAGE_Iburstoutinarageatsetbacks                         -0.610
+## C62_NOTHINK_Iactwithoutthinking                                   0.561
+## C80_NOCLEAN_Ihatecleaningup                                       0.566
+## C87_NOPHYS_Iavoidphysicaleffort                                   0.531
+## C88_THROWWEIGHT_Ithrowmyweightaround                             -0.552
+## C97_ANNOYED_Iameasilyannoyed                                     -0.518
+## C99_QUICKDOUBT_Iamquicktodoubtmyowncapacities                     0.568
+## C109_NOBEHAVE_Idonotknowhowtobehaveinsocialsituations            -0.508
+## C115_IRRITATED_Iamreadilyirritated                               -0.751
+## C121_STARTNOKEEP_Istartalotofthingsbutcannotkeepthemup            0.659
+## C133_QUICKANGRY_Iamquicktogetangry                               -0.528
+## C143_GIVEUP_Isoongiveupwhensomethinggetstoohard                   0.515
+## C1_TALK_Italktopeopleeasily                               -0.427       
+## C2_HURT_Iamquicktohavemyfeelingshurt                                   
+## C3_BEST_Iwanttobeamongthebest                              0.305       
+## C4_PANIC_Iamquicktopanic                                               
+## C5_IMAGINE_Ihavelittleimagination                                      
+## C6_EXPERIENCE_Itellmyownexperiencesuninvited                     -0.308
+## C8_LEAVETHINGS_Ileaveeverythinglyingaround                             
+## C9_INSECURE_Ihavefewinsecurities                                 -0.399
+## C10_KNOWDETAIL_Iwanttoknowthelittledetailsofthings         0.411       
+## C11_LAUGH_Igolaughingthroughlife                                       
+## C12_POLITE_Irespectrulesofpoliteness                       0.420  0.342
+## C13_OCCUPYSELF_Icanoccupymyselfforalongtime                0.484       
+## C14_CATCHON_Icatchonwithhalfanexplanation                  0.426       
+## C15_ONMOVE_Iamconstantlyonthemove                          0.313       
+## C16_FOLLOWER_Iamafollowerratherthanaleader                             
+## C17_EASIESTWAY_Itaketheeasiestwayout                              0.459
+## C18_SHARE_Isharewithpeers                                  0.475  0.315
+## C19_NEWFRIENDS_Ihavedifficultymakingnewfriends                         
+## C20_OTHERWISH_Iadapttoothers’wishes                                    
+## C21_DOBEST_Ialwaysdomybest                                 0.454       
+## C22_AFRAIDFAIL_Iamafraidoffailure                                      
+## C27_INFERIOR_Ifeelinferiortoothers                                0.353
+## C28_ASKWHY_Iaskmany‘why’questions                          0.370       
+## C29_SYMPATHY_Iarousethesympathyofclassmates                      -0.337
+## C33_BURST_Iburstwithenthusiasm                             0.384       
+## C34_BOSS_Iactliketheboss                                         -0.368
+## C35_EASYWAY_Iprefertheeasywayinlife                               0.390
+## C37_ATHOME_Iimmediatelyfeelathomeinnewplaces              -0.394       
+## C38_MEFIRST_Itakemyselfintoconsiderationfirst                    -0.301
+## C39_PERFECTION_Istriveforperfection                        0.394       
+## C40_QUICKWORRY_Iamquicktoworryaboutthings                        -0.378
+## C41_NOCREAT_Ilackcreativity                                       0.307
+## C42_FEELTHOUGHTS_Ikeepfeelingsandthoughtstomyself                 0.364
+## C44_MESS_Imakeamessofthings                                       0.350
+## C45_CONFIDENCE_Ihaveconfidenceinmyownabilities             0.468       
+## C46_INTERESTS_Ihaveabroadrangeofinterests                  0.488       
+## C48_AUTHORITY_Irespectauthority                            0.391  0.478
+## C50_LIMITVOCAB_Ihavealimitedvocabulary                            0.377
+## C51_ENERGY_Ihaveexcessiveenergy                                        
+## C53_LEAVEWORK_Iprefertoleavetheworktoothers                       0.495
+## C55_CONTACT_Itrytoestablishcontactwithnewclassmates       -0.461       
+## C56_GETWAY_Idoeverythingtogetmyownway                            -0.469
+## C57_DEMANDS_Imakeheavydemandsonmyself                            -0.390
+## C58_CRY_Itendtocryoversetbacks                                         
+## C59_CREATING_Iderivepleasurefromcreatingthings                         
+## C63_DOUBTME_Idoubtmyself                                               
+## C64_LEARNNEW_Iliketolearnnewthings                         0.364       
+## C68_MEMORY_Ihaveagoodmemory                                0.482       
+## C69_SPACEPLAY_Ineedalotofspacetoplayin                     0.330       
+## C70_IMPOSEWILL_Iimposemywill                                     -0.481
+## C73_WITHDRAW_Iwithdrawintomyself                                 -0.450
+## C74_CONCERNEDME_Iamprimarilyconcernedwithmyself                  -0.322
+## C76_POSSFAIL_Iamreadilydiscouragedbypossiblefailure              -0.380
+## C77_DRAW_Iliketodraw                                                   
+## C78_TALKDAY_Italkthewholedaylong                                       
+## C79_SELFCONTROL_Ihaveself-controlindifficultsituations    -0.481       
+## C81_NERVE_Ihaveplentyofnerve                                     -0.311
+## C83_ENJOYLIFE_Ienjoylife                                   0.431       
+## C84_NOAUTHOR_Iresistauthority                                     0.486
+## C89_POSTPONE_Ipostponetroublesomethings                           0.418
+## C91_GETUSED_Ineedtimetogetusedtopeers                            -0.433
+## C92_HARDSHARE_Ifindithardtosharewithothers                       -0.455
+## C93_TOPMARK_Iworkhardtogettopmarks                         0.366       
+## C94_AFRAIDMIST_Iamafraidofmakingmistakes                         -0.306
+## C98_TAKECARE_Itakecareofmypossessions                      0.468       
+## C100_INTERESTED_Iaminterestedineverything                  0.383       
+## C101_MAKELAUGH_Icanmakecompanionslaugh                     0.445       
+## C103_DAYDREAM_Ioftendaydream                                           
+## C105_SITSTILL_Ifindithardtositstill                              -0.303
+## C106_TAKELEAD_Itaketheleadingameswithpeers                 0.403       
+## C110_OPENARGUE_Iamopentoreasonableargument                             
+## C111_SHINE_Iwanttoshineateverything                        0.465       
+## C112_DEPRESSED_Iameasilydepressed                                -0.452
+## C113_RICHIMAGINE_Ihavearichimagination                     0.458       
+## C114_TALKFEELINGS_Italkaboutmyfeelings                     0.440       
+## C117_ATEASE_Ifeelateasewithmyself                          0.404       
+## C118_NOTICEALL_Inoticeeverything                           0.394       
+## C119_BEGINEND_Ibeginandendthedaywithoutacare                     -0.414
+## C120_REPEATREQ_Ionlyhelpafterrepeatedrequests                     0.473
+## C122_NEEDTIME_Ineedtimetocomprehendthings                              
+## C124_GIVEINPEERS_Ireadilygiveintopeers                            0.415
+## C127_WAITANDSEE_Itakeawait-and-seeattitudetostrangers            -0.310
+## C128_JEALOUSY_Ishowalotofjealousy                                -0.487
+## C129_SCHOOLAGAINST_Igotoschoolagainstmywill                       0.476
+## C130_READILYSCARED_Iamreadilyscared                                    
+## C132_LIKEATTENT_Ilikealotofattention                                   
+## C135_EASYDECISION_Ieasilymakedecisions                     0.459       
+## C137_LIKED_Iamgenerallyliked                               0.438       
+## C138_AGAINSTGRAIN_Igoagainstthegrain                                   
+## C139_DISTRACTED_Iamquicklydistracted                       0.318  0.407
+## C141_HAIRDOWN_Iliketoletmyhairdown                         0.394       
+## C144_OTHERSACCOUNT_Itakeothersintoaccount                  0.500       
+## 
+##                   MR1    MR2
+## SS loadings    21.548 14.314
+## Proportion Var  0.150  0.099
+## Cumulative Var  0.150  0.249</code></pre>
+<pre class="r"><code>L2C &lt;- unclass(FA2I_C$loadings)
+
+tibble(MR2      = L2C[, &quot;MR2&quot;],
+       REVERSED = as.integer(sub(&quot;^C(\\d+)_.*&quot;, &quot;\\1&quot;, rownames(L2C))) %in% REVERSE_ITEMS) %&gt;%
+  filter(abs(MR2) &gt;= .30) %&gt;%
+  count(REVERSED, DIRECTION = ifelse(MR2 &gt; 0, &quot;positive&quot;, &quot;negative&quot;))</code></pre>
+<pre><code>## # A tibble: 3 × 3
+##   REVERSED DIRECTION     n
+##   &lt;lgl&gt;    &lt;chr&gt;     &lt;int&gt;
+## 1 FALSE    negative     31
+## 2 FALSE    positive      7
+## 3 TRUE     positive     22</code></pre>
+<pre class="r"><code># For your notes:
+# 
+# Children, item level, two-factor varimax (24.9% of variance): Factor 1 (15.0%) comprised desirable, positively worded items across all domains. Factor 2 (9.9%) largely followed scoring direction (53 of 60 items loading ≥ .30). The seven exceptions were all compliance and cooperation items (respects authority, obeys, does what is asked, helps others, shares), suggesting a conduct/cooperation dimension alongside the agreement-direction pattern. In parents, the corresponding factor split perfectly by scoring direction (60 of 60).
+# 
+# This makes a good single slide: the two cross-tabs side by side, with one line underneath. “In both informants, the two broad item-level dimensions largely reflect rating style; in children, a cooperation/conduct dimension is also visible.” It’s honest, it’s nuanced, and the children’s seven exceptions show you looked closely rather than forcing a conclusion.</code></pre>
+<pre class="r"><code>FA2I_P &lt;- psych::fa(P_ITEMS, nfactors = 2, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)</code></pre>
+<pre><code>## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0</code></pre>
+<pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined.
+## Chi square is based upon observed residuals.</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined for the null model either.
+## The Chi square is thus based upon observed correlations.</code></pre>
+<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
+<pre class="r"><code>FA2I_P$Vaccounted                                    # variance explained by the two factors</code></pre>
+<pre><code>##                              MR1        MR2
+## SS loadings           28.0975564 16.2695603
+## Proportion Var         0.1951219  0.1129831
+## Cumulative Var         0.1951219  0.3081050
+## Proportion Explained   0.6332969  0.3667031
+## Cumulative Proportion  0.6332969  1.0000000</code></pre>
+<pre class="r"><code>print(FA2I_P$loadings, cutoff = 0.30, sort = TRUE)   # quick look before building any slides</code></pre>
+<pre><code>## 
+## Loadings:
+##                                                            MR1    MR2   
+## P55_CONTACT_triestoestablishcontactwithnewclassmates       -0.511       
+## P24_EXPRESS_expressesfeelings                               0.518       
+## P96_STRAIGHTFWD_expresseshim/herselfinastraightforwardway   0.523       
+## P47_SUNNY_seesthesunnysideofthings                          0.692       
+## P65_FEELGOOD_makespeoplefeelgood                            0.747       
+## P83_ENJOYLIFE_enjoyslife                                    0.651       
+## P101_MAKELAUGH_canmakecompanionslaugh                       0.712       
+## P137_LIKED_isgenerallyliked                                 0.555       
+## P33_BURST_burstswithenthusiasm                              0.523  0.334
+## P123_ADVENTURE_looksforadventure                            0.502       
+## P12_POLITE_respectsrulesofpoliteness                        0.542       
+## P30_OBEY_obeyswithoutprotest                                0.503       
+## P48_AUTHORITY_respectsauthority                             0.573       
+## P66_STICKPLAN_stickstoplans                                 0.529       
+## P102_DOASKED_doeswhatisasked                                0.659       
+## P18_SHARE_shareswithpeers                                   0.525       
+## P54_CONCERNED_isconcernedaboutwhathappenstoothers           0.650       
+## P72_HELPOTHERS_isreadytohelpanybody                         0.676       
+## P90_SYMPATHIZESAD_sympathizeswithanyonewhoissad             0.571       
+## P108_SHOWCONCERN_showsconcernforotherchildren               0.653       
+## P126_GIVETOOTHERS_givestoothers                             0.654       
+## P144_OTHERSACCOUNT_takesothersintoaccount                   0.682       
+## P3_BEST_wantstobeamongthebest                               0.743       
+## P21_DOBEST_alwaysdoeshis/herbest                            0.608       
+## P75_FULLCONVICT_dedicatesoneselftothingswithfullconviction  0.689       
+## P93_TOPMARK_workshardtogettopmarks                          0.649       
+## P111_SHINE_wantstoshineateverything                         0.747       
+## P98_TAKECARE_takescareofhis/herpossessions                  0.509       
+## P116_WORKDETAIL_completesworkdowntothelastdetail            0.708       
+## P134_NEATWORK_doesworkinacarefulandneatway                  0.640       
+## P13_OCCUPYSELF_canoccupyhim/herselfforalongtime             0.514       
+## P31_SUSTATTENT_workswithsustainedattention                  0.653       
+## P67_FINISHTASK_finishestaskstotheveryend                    0.529       
+## P85_CONCENTRATE_canconcentrateononethingforalongtime        0.554       
+## P71_GETTOUGH_keepsatitwhenthegoinggetstough                 0.510       
+## P125_PERSEVERE_perseveresuntilthegoalisachieved             0.687       
+## P45_CONFIDENCE_hasconfidenceinownabilities                  0.758       
+## P135_EASYDECISION_easilymakesdecisions                      0.683       
+## P23_NEWWAY_canuseeverydaythingsinanewway                    0.711       
+## P95_ORIGINALIDEA_hasoriginalideas                           0.663       
+## P113_RICHIMAGINE_hasarichimagination                        0.637       
+## P131_CONTRIBUTEIDEA_contributesnewideas                     0.723       
+## P10_KNOWDETAIL_wantstoknowthelittledetailsofthings          0.501       
+## P46_INTERESTS_hasabroadrangeofinterests                     0.744       
+## P64_LEARNNEW_likestolearnnewthings                          0.804       
+## P82_EXAMINEMADE_examinesthewaythingsaremade                 0.801       
+## P100_INTERESTED_isinterestedineverything                    0.746       
+## P118_NOTICEALL_noticeseverything                            0.755       
+## P136_INTERSTNEW_isinterestedinanythingnew                   0.789       
+## P14_CATCHON_catchesonwithhalfanexplanation                  0.697       
+## P32_EXPTHOUGHT_canexpressownthoughtswell                    0.634       
+## P68_MEMORY_hasagoodmemory                                   0.584       
+## P86_UNDERSTAND_isquicktounderstandthings                    0.769       
+## P104_GRASPMEAN_graspsthemeaningofthingsquickly              0.762       
+## P140_EXPRESSWELL_canexpresshim/herselfwell                  0.850       
+## P73_WITHDRAW_withdrawsintohim/herself                              0.502
+## P109_NOBEHAVE_doesnotknowhowtobehaveinsocialsituations             0.558
+## P60_SAYLITTLE_sayslittleonowninitiative                           -0.555
+## P132_LIKEATTENT_likesalotofattention                               0.538
+## P87_NOPHYS_avoidsphysicaleffort                                   -0.518
+## P105_SITSTILL_findsithardtositstill                                0.589
+## P7_OFFENDED_isquicktobeoffended                                    0.701
+## P25_ARGUE_quicktoargue                                             0.573
+## P43_LASHOUT_quicktolashout                                         0.539
+## P97_ANNOYED_iseasilyannoyed                                        0.629
+## P115_IRRITATED_isreadilyirritated                                  0.569
+## P133_QUICKANGRY_isquicktogetangry                                  0.571
+## P84_NOAUTHOR_resistsauthority                                     -0.558
+## P34_BOSS_actsliketheboss                                           0.568
+## P52_MANIPULATE_manipulatesothers                                   0.549
+## P121_STARTNOKEEP_startsalotofthingsbutcannotkeepthemup            -0.509
+## P139_DISTRACTED_isquicklydistracted                               -0.624
+## P35_EASYWAY_preferstheeasywayinlife                               -0.566
+## P53_LEAVEWORK_preferstoleavetheworktoothers                       -0.532
+## P89_POSTPONE_postponestroublesomethings                           -0.521
+## P143_GIVEUP_soongivesupwhensomethinggetstoohard                   -0.620
+## P4_PANIC_quicktopanic                                              0.654
+## P22_AFRAIDFAIL_isafraidoffailure                                   0.580
+## P58_CRY_tendstocryoversetbacks                                     0.678
+## P63_DOUBTME_doubtshim/herself                                     -0.545
+## P1_TALK_talkstopeopleeasily                                -0.477       
+## P19_NEWFRIENDS_hasdifficultymakingnewfriends                       0.462
+## P37_ATHOME_immediatelyfeelsathomeinnewplaces                            
+## P91_GETUSED_needstimetogetusedtopeers                              0.423
+## P127_WAITANDSEE_takesawait-and-seeattitudetostrangers              0.319
+## P6_EXPERIENCE_tellsownexperiencesuninvited                         0.335
+## P42_FEELTHOUGHTS_keepsfeelingsandthoughtstohim/herself                  
+## P78_TALKDAY_talksalldaylong                                        0.482
+## P114_TALKFEELINGS_talksaboutownfeelings                     0.482       
+## P11_LAUGH_goeslaughingthroughlife                                  0.356
+## P29_SYMPATHY_arousesthesympathyofclassmates                        0.403
+## P119_BEGINEND_beginsandendsthedaywithoutacare                      0.367
+## P15_ONMOVE_isconstantlyonthemove                            0.472  0.429
+## P51_ENERGY_hasexcessiveenergy                                      0.330
+## P69_SPACEPLAY_needsalotofspacetoplayin                             0.336
+## P141_HAIRDOWN_likestolethis/herhairdown                     0.354       
+## P2_HURT_quicktohavefeelingshurt                                    0.470
+## P20_OTHERWISH_adaptstootherswishes                                      
+## P38_MEFIRST_takeshim/herselfintoconsiderationfirst                      
+## P56_GETWAY_doeseverythingtogethis/herownway                        0.489
+## P74_CONCERNEDME_isprimarilyconcernedwithhim/herself                     
+## P92_HARDSHARE_findsithardtosharewithothers                         0.445
+## P110_OPENARGUE_isopentoreasonableargument                               
+## P128_JEALOUSY_showsalotofjealousy                                  0.450
+## P61_BURSTRAGE_burstsoutinarageatsetbacks                           0.451
+## P79_SELFCONTROL_hasself-controlindifficultsituations       -0.402       
+## P120_REPEATREQ_onlyhelpsafterrepeatedrequests                     -0.455
+## P138_AGAINSTGRAIN_goesagainstthegrain                                   
+## P16_FOLLOWER_isafollowerratherthanaleader                               
+## P70_IMPOSEWILL_imposeshis/herwill                                  0.477
+## P88_THROWWEIGHT_throwshis/herweightaround                          0.479
+## P106_TAKELEAD_takestheleadingameswithpeers                  0.453       
+## P124_GIVEINPEERS_readilygivesintopeers                            -0.447
+## P142_FOREFRONT_putshim/herselftotheforefront                0.366  0.385
+## P36_DEFEND_defendstheweak                                   0.398       
+## P39_PERFECTION_strivesforperfection                         0.444       
+## P57_DEMANDS_makesheavydemandsonhim/herself                  0.343       
+## P129_SCHOOLAGAINST_goestoschoolagainsthis/herwill                 -0.388
+## P8_LEAVETHINGS_leaveseverythinglyingaround                              
+## P26_ORDER_hasasenseoforder                                  0.489       
+## P44_MESS_makesamessofthings                                             
+## P62_NOTHINK_actsratherthoughtlessly                               -0.454
+## P80_NOCLEAN_hatescleaningup                                       -0.329
+## P49_FORGETALL_forgetsanythingandeverything                              
+## P103_DAYDREAM_oftendaydreams                                            
+## P17_EASIESTWAY_takestheeasiestwayout                              -0.472
+## P107_SATISFIEDEFF_isquicklysatisfiedwithownefforts         -0.401       
+## P40_QUICKWORRY_isquicktoworryaboutthings                           0.460
+## P76_POSSFAIL_isreadilydiscouragedbypossiblefailure                 0.482
+## P94_AFRAIDMIST_isafraidofmakingmistakes                            0.489
+## P112_DEPRESSED_iseasilydepressed                           -0.377  0.314
+## P130_READILYSCARED_isreadilyscared                                      
+## P9_INSECURE_hasfewinsecurities                                          
+## P27_INFERIOR_feelsinferiortoothers                                -0.384
+## P81_NERVE_hasplentyofnerve                                  0.487       
+## P99_QUICKDOUBT_quicktodoubthis/herowncapacities                   -0.466
+## P117_ATEASE_feelsateasewithhim/herself                                  
+## P5_IMAGINE_haslittleimagination                                   -0.408
+## P41_NOCREAT_lackscreativity                                       -0.357
+## P59_CREATING_derivespleasurefromcreatingthings                          
+## P77_DRAW_likestodraw                                                    
+## P28_ASKWHY_asksmany&#39;why&#39;questions                           0.405       
+## P50_LIMITVOCAB_hasalimitedvocabulary                                    
+## P122_NEEDTIME_needstimetocomprehendthings                         -0.340
+## 
+##                   MR1    MR2
+## SS loadings    28.098 16.270
+## Proportion Var  0.195  0.113
+## Cumulative Var  0.195  0.308</code></pre>
+<pre class="r"><code>L2 &lt;- unclass(FA2I_P$loadings)
+
+tibble(MR2      = L2[, &quot;MR2&quot;],
+       REVERSED = as.integer(sub(&quot;^P(\\d+)_.*&quot;, &quot;\\1&quot;, rownames(L2))) %in% REVERSE_ITEMS) %&gt;%
+  filter(abs(MR2) &gt;= .30) %&gt;%
+  count(REVERSED, DIRECTION = ifelse(MR2 &gt; 0, &quot;positive&quot;, &quot;negative&quot;))</code></pre>
+<pre><code>## # A tibble: 2 × 3
+##   REVERSED DIRECTION     n
+##   &lt;lgl&gt;    &lt;chr&gt;     &lt;int&gt;
+## 1 FALSE    positive     39
+## 2 TRUE     negative     21</code></pre>
+<pre class="r"><code># For your notes:
+# 
+# Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.
+# 
+# The children’s version would take five minutes. I’d expect the same pattern, and if it holds, both informants together make this one of the strongest slides in the deck.</code></pre>
+</div>
+<div id="attempt-to-write-a-function-that-runs-over-the-parents-and-child-reverse-scored-datasets-but-allows-you-to-key-in-paramenters-for-rotation-desired-number-of-factors" class="section level1">
+<h1>Attempt to write a function that runs over the PARENTS and CHILD
+reverse scored datasets but allows you to key in paramenters for
+rotation desired, number of factors</h1>
+<p>```{ r function-definition-full-run}</p>
+<p>run_fa &lt;- function(DSN, NFACT, ROT = “none”, METHOD = “minres”,
+SORT = “factor”) {</p>
+<p># &gt;&gt;&gt; EXCEL DESTINATION: change this line to write somewhere
+else &lt;&lt;&lt;</p>
+<p>FILE &lt;- “/Users/Kevin/OneDrive/Documents/Excel/HiPIC FA
+Tests.xlsx”</p>
+<p># 1. The 144 items are always the last 144 columns ITEMS &lt;- DSN
+%&gt;% select(last_col(offset = 143):last_col()) PREFIX &lt;-
+substr(names(ITEMS)[1], 1, 1) # “C” or “P”</p>
+<p># 2. Run the analysis: PCA (SAS PROC FACTOR default) or a true factor
+analysis FA &lt;- if (METHOD == “pca”) { psych::principal(ITEMS,
+nfactors = NFACT, rotate = ROT) } else { psych::fa(ITEMS, nfactors =
+NFACT, fm = METHOD, rotate = ROT) }</p>
+<p># 3. Loadings: factors in size order, renamed F1, F2, … L &lt;-
+unclass(FA$loadings) L &lt;- L[, order(-colSums(L^2)), drop = FALSE]
+colnames(L) &lt;- paste0(“F”, 1:NFACT)</p>
+<p># 4. Item wording: children from the crosswalk, parents from the
+realignment table WORD &lt;- if (PREFIX == “C”) { HIPIC_CROSSWALK %&gt;%
+select(Q, Wording = CHILD_Q_WORDING) } else { PARENT_ALIGNED %&gt;%
+select(Q = Q_NEW, Wording = PARENT_Q_WORDING) }</p>
+<p># 5. Build the table: fixed columns first, loadings last OUT &lt;-
+tibble(Question = as.integer(sub(“^<a href="\d+">CP</a>_.<em>“,”\1”,
+rownames(L))), SAS_Name = sub(“<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>\d+<em>([^_]+)</em>.</em>”, “\1”,
+rownames(L))) %&gt;% left_join(WORD, by = c(“Question” = “Q”)) %&gt;%
+mutate(Reversed = ifelse(Question %in% REVERSE_ITEMS, “Y”, ““), Primary
+= paste0(”F”, apply(abs(L), 1, which.max)), h2 = round(FA$communality,
+3), .Max = apply(abs(L), 1, max)) %&gt;% bind_cols(as_tibble(round(L,
+3)))</p>
+<p># 6. Sort: by home factor (strongest first), or by item number OUT
+&lt;- if (SORT == “factor”) arrange(OUT, Primary, desc(.Max)) else
+arrange(OUT, Question) OUT &lt;- select(OUT, -.Max)</p>
+<p># 6b. Append the variance-explained row at the end VAR_ROW &lt;-
+tibble(Wording = “VAR EXPLAINED”) %&gt;%
+bind_cols(as_tibble(t(round(colSums(L^2) / ncol(ITEMS), 3)))) OUT &lt;-
+bind_rows(OUT, VAR_ROW)</p>
+<p># 7. Print the headline in the Console cat(“====”,
+deparse(substitute(DSN)), “|”, NFACT, “factors |”, ROT, “|”, METHOD,
+“====”) print(VAR_ROW %&gt;% select(-Wording))</p>
+<p># 8. Write the table to its own sheet in the workbook (skipped with a
+message if it can’t) tryCatch({ SHEET &lt;- paste(PREFIX, NFACT, ROT,
+METHOD, sep = “_“) # e.g. ”P_5_varimax_minres”</p>
+<pre><code>wb &lt;- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
+if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
+
+openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
+openxlsx::writeData(wb, SHEET, OUT)
+openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
+
+cat(&quot;Written to sheet&quot;, SHEET, &quot;in&quot;, basename(FILE), &quot;\n&quot;)</code></pre>
+<p>}, error = function(e) { cat(“Excel export skipped:”,
+conditionMessage(e), “”) })</p>
+<p># 9. Hand back the table (and the full FA result) for inspection
+invisible(list(loadings = OUT, fa = FA)) }</p>
+<p>R1 &lt;- run_fa(CHILD_REVERSED, 5, ‘varimax’, “minres”)
+View(R1$loadings)</p>
+<pre><code>
+
+# Factor analysis on a questionnaire this unwieldy (144-items) across this few subjects my not be reliable — the correlation matrix is singular, so it cannot be inverted, and standard adequacy tests cannot be computed.  Is a Facet-level analysis worth taking a look at?  Test on parents only.
+
+
+
+``` r
+set.seed(2026)
+PA_PF &lt;- psych::fa.parallel(P_FACETS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
+<pre><code>## Parallel analysis suggests that the number of factors =  2  and the number of components =  NA</code></pre>
+<pre class="r"><code>png(&quot;images/scree_facets_parent.png&quot;, width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))
+plot(1:18, PA_PF$fa.values, type = &quot;b&quot;, pch = 19, col = &quot;#006cc5&quot;,
+     xlab = &quot;Factor&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
+lines(1:18, PA_PF$fa.sim, lty = 2, col = &quot;grey40&quot;)
+legend(&quot;topright&quot;, c(&quot;Actual data&quot;, &quot;Random data (parallel analysis)&quot;),
+       col = c(&quot;#006cc5&quot;, &quot;grey40&quot;), lty = c(1, 2), pch = c(19, NA), bty = &quot;n&quot;)
+dev.off()</code></pre>
+<pre><code>## quartz_off_screen 
+##                 2</code></pre>
+<pre class="r"><code>EV_PF &lt;- eigen(cor(P_FACETS))$values          # facet-level eigenvalues (18)
+
+EIG_PF &lt;- tibble(Factor     = 1:10,
+                 Eigenvalue = round(EV_PF[1:10], 2),
+                 Difference = round(EV_PF[1:10] - EV_PF[2:11], 2),
+                 Proportion = round(EV_PF[1:10] / 18, 3),
+                 Cumulative = round(cumsum(EV_PF)[1:10] / 18, 3))
+saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
+
+
+
+# Parents, facet level (18 facets): parallel analysis retained 2 factors (eigenvalues ≈ 6.0 and 2.5, both well above random-data values). The third factor fell on the random-data line, and the remainder below it.</code></pre>
+<pre class="r"><code>FA &lt;- psych::fa(P_FACETS, nfactors = 2, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)
+
+# loadings: factors in size order, renamed F1, F2, ...
+L &lt;- unclass(FA$loadings)
+L &lt;- L[, order(-colSums(L^2)), drop = FALSE]
+colnames(L) &lt;- paste0(&quot;F&quot;, 1:ncol(L))
+
+# readable labels for the 18 facet codes and 5 domains
+FACET_NAMES  &lt;- c(ES_ANX = &quot;Anxiety&quot;, ES_CON = &quot;Self-Confidence&quot;,
+                  EX_ENE = &quot;Energy&quot;, EX_EXP = &quot;Expressiveness&quot;, EX_OPT = &quot;Optimism&quot;, EX_SHY = &quot;Shyness&quot;,
+                  IM_CRE = &quot;Creativity&quot;, IM_INT = &quot;Intellect&quot;, IM_CUR = &quot;Curiosity&quot;,
+                  BE_ALT = &quot;Altruism&quot;, BE_DOM = &quot;Dominance&quot;, BE_EGO = &quot;Egocentrism&quot;,
+                  BE_COM = &quot;Compliance&quot;, BE_IRR = &quot;Irritability&quot;,
+                  CO_CNC = &quot;Concentration&quot;, CO_PER = &quot;Perseverance&quot;, CO_ORD = &quot;Order&quot;,
+                  CO_ACH = &quot;Achievement Motivation&quot;)
+DOMAIN_NAMES &lt;- c(ES = &quot;Emotional Stability&quot;, EX = &quot;Extraversion&quot;, IM = &quot;Imagination&quot;,
+                  BE = &quot;Benevolence&quot;, CO = &quot;Conscientiousness&quot;)
+
+# the table: fixed columns first (A-E), loadings after
+FAC_P2 &lt;- tibble(Code = rownames(L)) %&gt;%
+  mutate(Domain  = unname(DOMAIN_NAMES[substr(Code, 1, 2)]),
+         Facet   = unname(FACET_NAMES[Code]),
+         Primary = paste0(&quot;F&quot;, apply(abs(L), 1, which.max)),
+         h2      = round(FA$communality, 3),
+         .Max    = apply(abs(L), 1, max)) %&gt;%
+  bind_cols(as_tibble(round(L, 3))) %&gt;%
+  arrange(Primary, desc(.Max)) %&gt;%
+  select(-.Max)
+
+# variance-explained row at the bottom (divided by 18 facets)
+VAR_ROW &lt;- tibble(Facet = &quot;VAR EXPLAINED&quot;) %&gt;%
+  bind_cols(as_tibble(t(round(colSums(L^2) / ncol(P_FACETS), 3))))
+FAC_P2 &lt;- bind_rows(FAC_P2, VAR_ROW)
+
+
+ if (interactive()) View(FAC_P2)
+
+print(FAC_P2)</code></pre>
+<pre><code>## # A tibble: 19 × 7
+##    Code   Domain              Facet                 Primary     h2     F1     F2
+##    &lt;chr&gt;  &lt;chr&gt;               &lt;chr&gt;                 &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 IM_CUR Imagination         Curiosity             F1       0.762  0.86   0.15 
+##  2 EX_OPT Extraversion        Optimism              F1       0.609  0.767 -0.144
+##  3 IM_INT Imagination         Intellect             F1       0.639  0.719  0.35 
+##  4 IM_CRE Imagination         Creativity            F1       0.575  0.708  0.27 
+##  5 CO_ACH Conscientiousness   Achievement Motivati… F1       0.605  0.695  0.349
+##  6 BE_ALT Benevolence         Altruism              F1       0.502  0.685  0.184
+##  7 EX_ENE Extraversion        Energy                F1       0.501  0.619 -0.343
+##  8 ES_CON Emotional Stability Self-Confidence       F1       0.482  0.61   0.33 
+##  9 EX_EXP Extraversion        Expressiveness        F1       0.353  0.577 -0.143
+## 10 BE_IRR Benevolence         Irritability          F2       0.57  -0.106 -0.747
+## 11 CO_PER Conscientiousness   Perseverance          F2       0.397  0.084  0.624
+## 12 CO_CNC Conscientiousness   Concentration         F2       0.589  0.482  0.598
+## 13 BE_COM Benevolence         Compliance            F2       0.535  0.433  0.59 
+## 14 BE_EGO Benevolence         Egocentrism           F2       0.338  0.071 -0.577
+## 15 CO_ORD Conscientiousness   Order                 F2       0.513  0.424  0.577
+## 16 ES_ANX Emotional Stability Anxiety               F2       0.337  0.112 -0.57 
+## 17 EX_SHY Extraversion        Shyness               F2       0.271 -0.158 -0.496
+## 18 BE_DOM Benevolence         Dominance             F2       0.324  0.399 -0.406
+## 19 &lt;NA&gt;   &lt;NA&gt;                VAR EXPLAINED         &lt;NA&gt;    NA      0.289  0.205</code></pre>
+<pre class="r"><code># export to the separate exports workbook (never the master)
+writexl::write_xlsx(list(P_FACETS_2_VARIMAX = FAC_P2),
+                    &quot;/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx&quot;)
+
+
+saveRDS(FAC_P2, &quot;fac_p2.rds&quot;)</code></pre>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>CP<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
 
 

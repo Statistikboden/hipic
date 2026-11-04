@@ -906,6 +906,33 @@ hipic_quest_distrib(CHILD_REVERSED)
 
 
 
+
+# Prepare for FA to avoid bombs in .rmd knitting later 
+```{r fa-setup, include=F}
+
+# 144 items per sample (reverse-scored, imputed)
+C_ITEMS <- CHILD_REVERSED  %>% select(last_col(offset = 143):last_col())
+P_ITEMS <- PARENT_REVERSED %>% select(last_col(offset = 143):last_col())
+
+# item-level eigenvalues (correlation matrix)
+EV_C <- eigen(cor(C_ITEMS))$values
+EV_P <- eigen(cor(P_ITEMS))$values
+
+# 18 facets per sample (domain totals excluded)
+C_FACETS <- CHILD_SCORED  %>% select(matches("^(ES|EX|IM|BE|CO)_"))
+P_FACETS <- PARENT_SCORED %>% select(matches("^(ES|EX|IM|BE|CO)_"))
+
+# item-level factor solutions used by later chunks
+FA5_C      <- psych::fa(C_ITEMS, nfactors = 5, fm = "minres", rotate = "varimax")
+FA5_PVMAX  <- psych::fa(P_ITEMS, nfactors = 5, fm = "minres", rotate = "varimax")
+FA5_CNOROT <- psych::fa(C_ITEMS, nfactors = 5, fm = "minres", rotate = "none")
+FA5_PNOROT <- psych::fa(P_ITEMS, nfactors = 5, fm = "minres", rotate = "none")
+FA2I_C     <- psych::fa(C_ITEMS, nfactors = 2, fm = "minres", rotate = "varimax")
+FA2I_P     <- psych::fa(P_ITEMS, nfactors = 2, fm = "minres", rotate = "varimax")
+```
+
+
+
 ```{r scree-plots-children}
 
 
@@ -1287,7 +1314,9 @@ VAR_ROW <- tibble(Facet = "VAR EXPLAINED") %>%
   bind_cols(as_tibble(t(round(colSums(L^2) / ncol(P_FACETS), 3))))
 FAC_P2 <- bind_rows(FAC_P2, VAR_ROW)
 
-View(FAC_P2)
+
+ if (interactive()) View(FAC_P2)
+
 print(FAC_P2)
 
 
