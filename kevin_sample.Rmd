@@ -476,13 +476,15 @@ Parallel analysis retains 6 factors (actual eigenvalues above random).<br>Table:
 
 ---
 
+---
+
 ## Five-Factor Solution (Varimax): Child Self-Report, cont.
 
 .pull-left[
 ```{r top-child-1, echo=FALSE}
 knitr::kable(readRDS("top_load_child.rds")[1:20, ], format = "html",
              align = c("c", "l", rep("c", 5)),
-             table.attr = 'style="font-size: 60%;"')
+             table.attr = 'style="font-size: 55%;"')
 ```
 ]
 
@@ -490,13 +492,28 @@ knitr::kable(readRDS("top_load_child.rds")[1:20, ], format = "html",
 ```{r top-child-2, echo=FALSE}
 knitr::kable(readRDS("top_load_child.rds")[21:30, ], format = "html",
              align = c("c", "l", rep("c", 5)),
-             table.attr = 'style="font-size: 60%;"')
+             table.attr = 'style="font-size: 55%;"')
 ```
 <br>
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying Excel file.
+Top 10 items per factor shown (F1–F3); loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=PABn2c&nav=MTVfezMyRTNGMzhFLUNBQzUtRDU0OC1CRTA4LUE5MzEyNEE1RDU1RH0" target="_blank">Excel file</a>.
 </p>
 ]
+
+---
+
+## Five-Factor Solution (Varimax): Child Self-Report, cont.
+
+```{r top-child-3, echo=FALSE}
+knitr::kable(readRDS("top_load_child.rds")[31:49, ], format = "html",
+             align = c("c", "l", rep("c", 5)),
+             table.attr = 'style="font-size: 55%;"')
+```
+
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
+F4: top 10 items shown. F5: all 9 items loading ≥ .30 shown. Loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=PABn2c&nav=MTVfezMyRTNGMzhFLUNBQzUtRDU0OC1CRTA4LUE5MzEyNEE1RDU1RH0" target="_blank">Excel file</a>.
+</p>
+
 
 
 ---
@@ -530,9 +547,10 @@ knitr::kable(readRDS("top_load_parent.rds")[21:30, ], format = "html",
              align = c("c", "l", rep("c", 5)),
              table.attr = 'style="font-size: 55%;"')
 ```
+
 <br>
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-Top 10 items per factor shown (F1–F3); loadings below .30 not shown.<br>Full loadings in the accompanying Excel file.
+Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=WTc0qk&nav=MTVfe0Y1REJFMzJELUZGMjctRjU0RC05N0I5LTBGMUE0NkQ3Mzk3Nn0" target="_blank" >Excel file</a>.
 </p>
 ]
 
@@ -547,5 +565,64 @@ knitr::kable(readRDS("top_load_parent.rds")[31:42, ], format = "html",
 ```
 
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-F4: top 10 items shown. F5: only 2 items load primarily on this factor (≥ .30).<br>Loadings below .30 not shown. Full loadings in the accompanying Excel file.
+Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=WTc0qk&nav=MTVfe0Y1REJFMzJELUZGMjctRjU0RC05N0I5LTBGMUE0NkQ3Mzk3Nn0" target="_blank" >Excel file</a>.
 </p>
+
+
+---
+
+## Taking Stock:  Item-Level Results
+
+- .blue[**What Emerged:**] Five factors explain 35% (children) and 41% (parents) of item variance, and several recognisable dimensions appear: anxiety, antagonism, intellect/imagination and extraversion.
+
+- .blue[**A Pattern Worth Noting:**] The two largest factors each span all five domains. The first collects desirable items from every domain; the second largely follows scoring direction (in parents, all 61 items loading ≥ .30 point the same way in the original responses).
+
+- .blue[**What It May Mean:**] Part of the item-level structure may reflect how respondents answer, such as a general impression of the child or a tendency to agree, alongside the personality content itself. Separating the two will need further analysis.
+
+- .blue[**The Role of Sample Size:**] With fewer respondents than items, item-level loadings are imprecise, so these solutions are best treated as exploratory.
+
+- .blue[**Why Facets Next:**] Facet scores combine positively and negatively worded items, which may partly offset these response tendencies. The facet data also meet standard adequacy criteria (KMO = .85 children, .80 parents), and facet-level analysis has been used in published work with similar instruments.
+
+- .blue[**Next Step:**] Factor analysis at the facet level, including a comparison of the HiPIC and NEO domain structures.
+
+<img class="rlogo-watermark2" src="images/rlogo-transparent.jpeg" height="350px" />
+
+
+---
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 5
+### Consider performing factor analysis on the .pink[Facet-level responses] to investigate whether the resulting components are interpretable. 
+---
+
+
+## Scree Plot & Eigenvalues: Parent Report (Facets)
+
+.pull-left[
+<img src="images/scree_facets_parent.png" style="width: 100%;" />
+]
+
+.pull-right[
+```{r eig-parent-facets, echo=FALSE}
+knitr::kable(readRDS("eig_facets_parent.rds"), format = "html",
+             align = "c", table.attr = 'style="font-size: 75%;"')
+```
+
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
+Parallel analysis retains 2 factors (actual eigenvalues above random).<br>Table: eigenvalues of the facet correlation matrix; plot: factor-analysis eigenvalues.
+</p>
+]
+
+---
+## How Many Factors for the Facets?
+
+| Guide | Suggests | Basis |
+|:--|:--:|:--|
+| Scree Elbow | 2 | Where the eigenvalue curve flattens |
+| Parallel Analysis | 2 | Factors whose eigenvalues exceed those of random data (both samples) |
+| Theory (HiPIC & NEO) | 5 | Both models specify five domains |
+<br>
+- .blue[**Our Choice:**] Both. Two factors, the structure the data clearly support, and five factors, the structure both models predict, for comparison with the HiPIC and NEO domains and with published

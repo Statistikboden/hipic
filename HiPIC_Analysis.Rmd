@@ -288,12 +288,7 @@ function(DATA) {
   invisible(TAB)  
    
    
-   
-   
-   
-   
-   
-   
+
    
    
    
@@ -818,7 +813,9 @@ openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
 ```
 
 
-#F  Let's examine the questions on both surveys that had the highest concentration of answers along any one response.
+
+
+#F  Examine the questions on both surveys that had the highest concentration of answers along any one response.
 
 
 ``` {r top-questions}
@@ -1120,5 +1117,184 @@ tibble(MR2      = L2[, "MR2"],
 
 ```
 
+
+#  Attempt to write a function that runs over the PARENTS and CHILD reverse scored datasets but allows you to key in paramenters for rotation desired, number of factors
+
+
+
+```{ r function-definition-full-run}
+
+
+
+run_fa <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor") {
+  
+  # >>> EXCEL DESTINATION: change this line to write somewhere else <<<
+  
+  FILE <- "/Users/Kevin/OneDrive/Documents/Excel/HiPIC FA Tests.xlsx"
+  
+  
+  
+  
+  # 1. The 144 items are always the last 144 columns
+  ITEMS  <- DSN %>% select(last_col(offset = 143):last_col())
+  PREFIX <- substr(names(ITEMS)[1], 1, 1)                 # "C" or "P"
+  
+  # 2. Run the analysis: PCA (SAS PROC FACTOR default) or a true factor analysis
+  FA <- if (METHOD == "pca") {
+    psych::principal(ITEMS, nfactors = NFACT, rotate = ROT)
+  } else {
+    psych::fa(ITEMS, nfactors = NFACT, fm = METHOD, rotate = ROT)
+  }
+  
+  # 3. Loadings: factors in size order, renamed F1, F2, ...
+  L <- unclass(FA$loadings)
+  L <- L[, order(-colSums(L^2)), drop = FALSE]
+  colnames(L) <- paste0("F", 1:NFACT)
+  
+  # 4. Item wording: children from the crosswalk, parents from the realignment table
+  WORD <- if (PREFIX == "C") {
+    HIPIC_CROSSWALK %>% select(Q, Wording = CHILD_Q_WORDING)
+  } else {
+    PARENT_ALIGNED %>% select(Q = Q_NEW, Wording = PARENT_Q_WORDING)
+  }
+  
+  # 5. Build the table: fixed columns first, loadings last
+  OUT <- tibble(Question = as.integer(sub("^[CP](\\d+)_.*", "\\1", rownames(L))),
+                SAS_Name = sub("^[CP]\\d+_([^_]+)_.*", "\\1", rownames(L))) %>%
+    left_join(WORD, by = c("Question" = "Q")) %>%
+    mutate(Reversed = ifelse(Question %in% REVERSE_ITEMS, "Y", ""),
+           Primary  = paste0("F", apply(abs(L), 1, which.max)),
+           h2       = round(FA$communality, 3),
+           .Max     = apply(abs(L), 1, max)) %>%
+    bind_cols(as_tibble(round(L, 3)))
+  
+  # 6. Sort: by home factor (strongest first), or by item number
+  OUT <- if (SORT == "factor") arrange(OUT, Primary, desc(.Max)) else arrange(OUT, Question)
+  OUT <- select(OUT, -.Max)
+  
+  # 6b. Append the variance-explained row at the end
+  VAR_ROW <- tibble(Wording = "VAR EXPLAINED") %>%
+    bind_cols(as_tibble(t(round(colSums(L^2) / ncol(ITEMS), 3))))
+  OUT <- bind_rows(OUT, VAR_ROW)
+  
+  # 7. Print the headline in the Console
+  cat("\n====", deparse(substitute(DSN)), "|", NFACT, "factors |", ROT, "|", METHOD, "====\n")
+  print(VAR_ROW %>% select(-Wording))
+  
+  
+  # 8. Write the table to its own sheet in the workbook (skipped with a message if it can't)
+  tryCatch({
+    SHEET <- paste(PREFIX, NFACT, ROT, METHOD, sep = "_")      # e.g. "P_5_varimax_minres"
+    
+    wb <- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
+    if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
+    
+    openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
+    openxlsx::writeData(wb, SHEET, OUT)
+    openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
+    
+    cat("Written to sheet", SHEET, "in", basename(FILE), "\n")
+  }, error = function(e) {
+    cat("Excel export skipped:", conditionMessage(e), "\n")
+  })
+  
+  # 9. Hand back the table (and the full FA result) for inspection
+  invisible(list(loadings = OUT, fa = FA))
+}
+
+
+
+
+R1 <- run_fa(CHILD_REVERSED, 5, 'varimax', "minres")
+View(R1$loadings)
+
+
+```
+
+
+# Factor analysis on a questionnaire this unwieldy (144-items) across this few subjects my not be reliable — the correlation matrix is singular, so it cannot be inverted, and standard adequacy tests cannot be computed.  Is a Facet-level analysis worth taking a look at?  Test on parents only.
+
+
+```{r scree-plots-parents-facets}
+
+set.seed(2026)
+PA_PF <- psych::fa.parallel(P_FACETS, fm = "minres", fa = "fa", plot = FALSE)
+
+png("images/scree_facets_parent.png", width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))
+plot(1:18, PA_PF$fa.values, type = "b", pch = 19, col = "#006cc5",
+     xlab = "Factor", ylab = "Eigenvalue", main = "")
+lines(1:18, PA_PF$fa.sim, lty = 2, col = "grey40")
+legend("topright", c("Actual data", "Random data (parallel analysis)"),
+       col = c("#006cc5", "grey40"), lty = c(1, 2), pch = c(19, NA), bty = "n")
+dev.off()
+
+
+EV_PF <- eigen(cor(P_FACETS))$values          # facet-level eigenvalues (18)
+
+EIG_PF <- tibble(Factor     = 1:10,
+                 Eigenvalue = round(EV_PF[1:10], 2),
+                 Difference = round(EV_PF[1:10] - EV_PF[2:11], 2),
+                 Proportion = round(EV_PF[1:10] / 18, 3),
+                 Cumulative = round(cumsum(EV_PF)[1:10] / 18, 3))
+saveRDS(EIG_PF, "eig_facets_parent.rds")
+
+
+
+# Parents, facet level (18 facets): parallel analysis retained 2 factors (eigenvalues ≈ 6.0 and 2.5, both well above random-data values). The third factor fell on the random-data line, and the remainder below it.
+
+
+
+
+```
+
+
+```{r parent_two-factor-facets}
+
+
+
+FA <- psych::fa(P_FACETS, nfactors = 2, fm = "minres", rotate = "varimax")
+
+# loadings: factors in size order, renamed F1, F2, ...
+L <- unclass(FA$loadings)
+L <- L[, order(-colSums(L^2)), drop = FALSE]
+colnames(L) <- paste0("F", 1:ncol(L))
+
+# readable labels for the 18 facet codes and 5 domains
+FACET_NAMES  <- c(ES_ANX = "Anxiety", ES_CON = "Self-Confidence",
+                  EX_ENE = "Energy", EX_EXP = "Expressiveness", EX_OPT = "Optimism", EX_SHY = "Shyness",
+                  IM_CRE = "Creativity", IM_INT = "Intellect", IM_CUR = "Curiosity",
+                  BE_ALT = "Altruism", BE_DOM = "Dominance", BE_EGO = "Egocentrism",
+                  BE_COM = "Compliance", BE_IRR = "Irritability",
+                  CO_CNC = "Concentration", CO_PER = "Perseverance", CO_ORD = "Order",
+                  CO_ACH = "Achievement Motivation")
+DOMAIN_NAMES <- c(ES = "Emotional Stability", EX = "Extraversion", IM = "Imagination",
+                  BE = "Benevolence", CO = "Conscientiousness")
+
+# the table: fixed columns first (A-E), loadings after
+FAC_P2 <- tibble(Code = rownames(L)) %>%
+  mutate(Domain  = unname(DOMAIN_NAMES[substr(Code, 1, 2)]),
+         Facet   = unname(FACET_NAMES[Code]),
+         Primary = paste0("F", apply(abs(L), 1, which.max)),
+         h2      = round(FA$communality, 3),
+         .Max    = apply(abs(L), 1, max)) %>%
+  bind_cols(as_tibble(round(L, 3))) %>%
+  arrange(Primary, desc(.Max)) %>%
+  select(-.Max)
+
+# variance-explained row at the bottom (divided by 18 facets)
+VAR_ROW <- tibble(Facet = "VAR EXPLAINED") %>%
+  bind_cols(as_tibble(t(round(colSums(L^2) / ncol(P_FACETS), 3))))
+FAC_P2 <- bind_rows(FAC_P2, VAR_ROW)
+
+View(FAC_P2)
+print(FAC_P2)
+
+
+# export to the separate exports workbook (never the master)
+writexl::write_xlsx(list(P_FACETS_2_VARIMAX = FAC_P2),
+                    "/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx")
+
+```
 
 
