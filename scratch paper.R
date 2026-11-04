@@ -971,7 +971,7 @@ function(DATA) {
     print(FA2_C$loadings, cutoff = 0, sort = TRUE)
     print(FA2_P$loadings, cutoff = 0, sort = TRUE)
     
-    For your notes:
+    #For your notes:
       
       # Facet level, two-factor varimax: both samples showed the same two factors (children 50.2%, parents 49.5% of variance). 
       # Factor 1 (engagement) was defined by imagination, extraversion, altruism, achievement and self-confidence facets; 
@@ -982,10 +982,99 @@ function(DATA) {
     
     
     
-    psych::factor.congruence(FA2_C, FA2_P)
+     psych::factor.congruence(FA2_C, FA2_P)
     
     # For your notes:
     # 
     # Tucker’s congruence between the children’s and parents’ two-factor facet solutions was .99 for engagement 
     # and .94 for self-regulation, indicating that the same two-factor structure was recovered from both informants.
+    
+    
+    
+    
+    
+    
+    
+    run_fa <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor") {
+      
+      # >>> EXCEL DESTINATION: change this line to write somewhere else <<<
+      
+      FILE <- "/Users/Kevin/OneDrive/Documents/Excel/HiPIC FA Tests.xlsx"
+      
+      
+      
+      
+      # 1. The 144 items are always the last 144 columns
+      ITEMS  <- DSN %>% select(last_col(offset = 143):last_col())
+      PREFIX <- substr(names(ITEMS)[1], 1, 1)                 # "C" or "P"
+      
+      # 2. Run the analysis: PCA (SAS PROC FACTOR default) or a true factor analysis
+      FA <- if (METHOD == "pca") {
+        psych::principal(ITEMS, nfactors = NFACT, rotate = ROT)
+      } else {
+        psych::fa(ITEMS, nfactors = NFACT, fm = METHOD, rotate = ROT)
+      }
+      
+      # 3. Loadings: factors in size order, renamed F1, F2, ...
+      L <- unclass(FA$loadings)
+      L <- L[, order(-colSums(L^2)), drop = FALSE]
+      colnames(L) <- paste0("F", 1:NFACT)
+      
+      # 4. Item wording: children from the crosswalk, parents from the realignment table
+      WORD <- if (PREFIX == "C") {
+        HIPIC_CROSSWALK %>% select(Q, Wording = CHILD_Q_WORDING)
+      } else {
+        PARENT_ALIGNED %>% select(Q = Q_NEW, Wording = PARENT_Q_WORDING)
+      }
+      
+      # 5. Build the table: fixed columns first, loadings last
+      OUT <- tibble(Question = as.integer(sub("^[CP](\\d+)_.*", "\\1", rownames(L))),
+                    SAS_Name = sub("^[CP]\\d+_([^_]+)_.*", "\\1", rownames(L))) %>%
+        left_join(WORD, by = c("Question" = "Q")) %>%
+        mutate(Reversed = ifelse(Question %in% REVERSE_ITEMS, "Y", ""),
+               Primary  = paste0("F", apply(abs(L), 1, which.max)),
+               h2       = round(FA$communality, 3),
+               .Max     = apply(abs(L), 1, max)) %>%
+        bind_cols(as_tibble(round(L, 3)))
+      
+      # 6. Sort: by home factor (strongest first), or by item number
+      OUT <- if (SORT == "factor") arrange(OUT, Primary, desc(.Max)) else arrange(OUT, Question)
+      OUT <- select(OUT, -.Max)
+      
+      # 6b. Append the variance-explained row at the end
+      VAR_ROW <- tibble(Wording = "VAR EXPLAINED") %>%
+        bind_cols(as_tibble(t(round(colSums(L^2) / ncol(ITEMS), 3))))
+      OUT <- bind_rows(OUT, VAR_ROW)
+      
+      # 7. Print the headline in the Console
+      cat("\n====", deparse(substitute(DSN)), "|", NFACT, "factors |", ROT, "|", METHOD, "====\n")
+      print(VAR_ROW %>% select(-Wording))
+      
+      
+      # 8. Write the table to its own sheet in the workbook (skipped with a message if it can't)
+      tryCatch({
+        SHEET <- paste(PREFIX, NFACT, ROT, METHOD, sep = "_")      # e.g. "P_5_varimax_minres"
+        
+        wb <- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
+        if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
+        
+        openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
+        openxlsx::writeData(wb, SHEET, OUT)
+        openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
+        
+        cat("Written to sheet", SHEET, "in", basename(FILE), "\n")
+      }, error = function(e) {
+        cat("Excel export skipped:", conditionMessage(e), "\n")
+      })
+      
+      # 9. Hand back the table (and the full FA result) for inspection
+      invisible(list(loadings = OUT, fa = FA))
+    }
+    
+    
+    
+    
+    R1 <- run_fa(CHILD_REVERSED, 5, 'varimax', "minres")
+    View(R1$loadings)
+    
     

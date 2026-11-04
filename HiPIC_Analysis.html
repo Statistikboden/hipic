@@ -2913,14 +2913,14 @@ LOAD_C %&gt;% filter(Max &gt;= .30) %&gt;% count(Primary)   # items whose best l
 
 
 
-# That’s a very common next step, and it’s worth being ready for it, because high alphas here would be easy to get and easy to over-read. Alpha above .70 is a reasonable minimum. It isn’t evidence that the factors are real traits, and in this dataset there are four reasons it would mislead:
+# High alphas here would be easy to get and easy to over-read. Alpha above .70 is a reasonable minimum. It isn’t evidence that the factors are real traits, and in this dataset there are four reasons it would mislead:
 # 
 # The items were chosen because they correlate in this sample. Building scales from this sample’s loadings and then computing alpha on the same sample is circular: the alpha is inflated by the same chance patterns that shaped the loadings. A meaningful alpha has to come from an independent sample.
 # Alpha rises with the number of items. F1 has 30-plus items loading above .30. With that many items, alpha will almost certainly exceed .90 even if the items are only modestly related, so a high value says little.
 # High alpha doesn’t mean one trait. Alpha measures how consistently items move together, not why. F1 (overall positive self-description) and F2 (the agreement-direction pattern) hold together largely because of how children answer. Both would probably produce excellent alphas that reflect response style rather than personality.
 # At n = 74, alpha itself is imprecise. The confidence intervals around it are wide.
 
-# The honest summary for Galler: “All five factors are internally consistent in this sample (α = .72–.96). Because the scales were derived from the same 74 children, these alphas are optimistic, and the highest values belong to the two factors carrying the most response-style variance. They’re strong candidates to confirm in an independent sample.” That keeps her momentum towards a paper, but points it at the confirmation step rather than the write-up.
+# All five factors are internally consistent in this sample (α = .72–.96). Because the scales were derived from the same 74 children, these alphas are optimistic, and the highest values belong to the two factors carrying the most response-style variance. They’re strong candidates to confirm in an independent sample.” That keeps her momentum towards a paper, but points it at the confirmation step rather than the write-up.
 
 
 
@@ -3590,7 +3590,26 @@ writexl::write_xlsx(list(P_FACETS_2_VARIMAX = FAC_P2),
                     &quot;/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx&quot;)
 
 
-saveRDS(FAC_P2, &quot;fac_p2.rds&quot;)</code></pre>
+saveRDS(FAC_P2, &quot;fac_p2.rds&quot;)
+
+      # Facet level, two-factor varimax: both samples showed the same two factors (children 50.2%, parents 49.5% of variance). 
+      # Factor 1 (engagement) was defined by imagination, extraversion, altruism, achievement and self-confidence facets; 
+      # Factor 2 (self-regulation) by perseverance, compliance, concentration and order, with irritability, egoism, dominance and shyness loading negatively. 
+      # This resembles the stability/plasticity distinction described above the five-factor level. 
+      # Anxiety loaded on Factor 2 in parents (−.57) but weakly in children (−.30).
+    
+    
+    
+    
+    
+    
+    
+    
+    # psych::factor.congruence(FA2_C, FA2_P)
+    
+    # Tucker’s congruence between the children’s and parents’ two-factor facet solutions was .99 for engagement 
+    # and .94 for self-regulation, indicating that the same two-factor structure was recovered from both informants.
+    # Our lab hasn&#39;t historically relied on Tucker&#39;s - back pocket.</code></pre>
 </div>
 <div class="footnotes footnotes-end-of-document">
 <hr />
