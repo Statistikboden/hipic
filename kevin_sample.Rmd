@@ -476,8 +476,6 @@ Parallel analysis retains 6 factors (actual eigenvalues above random).<br>Table:
 
 ---
 
----
-
 ## Five-Factor Solution (Varimax): Child Self-Report, cont.
 
 .pull-left[
@@ -626,3 +624,33 @@ Parallel analysis retains 2 factors (actual eigenvalues above random).<br>Table:
 | Theory (HiPIC & NEO) | 5 | Both models specify five domains |
 <br>
 - .blue[**Our Choice:**] Both. Two factors, the structure the data clearly support, and five factors, the structure both models predict, for comparison with the HiPIC and NEO domains and with published
+
+---
+
+## Two-Factor Solution (Varimax): Parent Report - Facets
+
+```{r fac-parent-2, echo=FALSE}
+options(knitr.kable.NA = "")
+
+
+library(dplyr)
+options(knitr.kable.NA = "")
+
+TH  <- .40                                   # visibility threshold: change here
+TAB <- readRDS("fac_p2.rds")
+VAR <- TAB$Facet == "VAR EXPLAINED"          # marks the last row
+
+TAB <- TAB %>%
+  mutate(across(c(F1, F2), ~ ifelse(VAR, sprintf("%.3f", .x),
+                              ifelse(abs(.x) >= TH,
+                                     sprintf("<b>%.2f</b>", .x),
+                                     sprintf('<span style="color:#bbbbbb;">%.2f</span>', .x)))))
+
+knitr::kable(TAB, format = "html", escape = FALSE,
+             align = c("l", "l", "l", "c", "c", "c", "c"),
+             table.attr = 'style="font-size: 50%; margin-left: auto; margin-right: auto;"')
+```
+
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
+Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.<br>Full results in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=0SsbgY&nav=MTVfe0JEMTFEMTdFLTVFQzctMDE0RC04RDQ4LTY5OTNBOEMwNjBGNn0" target="_blank">Excel file</a>.
+</p>

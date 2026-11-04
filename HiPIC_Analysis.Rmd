@@ -1295,6 +1295,11 @@ print(FAC_P2)
 writexl::write_xlsx(list(P_FACETS_2_VARIMAX = FAC_P2),
                     "/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx")
 
+
+saveRDS(FAC_P2, "fac_p2.rds")
+
+
+
 ```
 
 
