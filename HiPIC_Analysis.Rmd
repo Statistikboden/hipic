@@ -815,7 +815,7 @@ openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
 
 
 
-##F. Examine the questions on both surveys that had the highest concentration of answers along any one response.
+## F. Examine the questions on both surveys that had the highest concentration of answers along any one response.
 
 
 ``` {r top-questions}
@@ -907,7 +907,7 @@ hipic_quest_distrib(CHILD_REVERSED)
 
 
 
-# Prepare for FA to avoid bombs in .rmd knitting later 
+## Prepare for FA to avoid bombs in .rmd knitting later (a necessary evil, good learning - return to later to consider iterative function)
 ```{r fa-setup, include=F}
 
 # 144 items per sample (reverse-scored, imputed)
@@ -1145,11 +1145,11 @@ tibble(MR2      = L2[, "MR2"],
 ```
 
 
-#  Attempt to write a function that runs over the PARENTS and CHILD reverse scored datasets but allows you to key in paramenters for rotation desired, number of factors
+# Attempt to write a function that runs over the PARENTS and CHILD reverse scored datasets but allows you to key in parameters for the rotation desired, number of factors
 
 
 
-```{ r function-definition-full-run}
+```{r function-definition-full-run}
 
 
 
@@ -1231,9 +1231,9 @@ run_fa <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor")
 
 
 
-
 R1 <- run_fa(CHILD_REVERSED, 5, 'varimax', "minres")
-View(R1$loadings)
+
+if (interactive()) View(R1$loadings)
 
 
 ```

@@ -2718,8 +2718,10 @@ if (!&quot;BASEP&quot; %in% names(wb)) {
 }
 openxlsx::writeData(wb, &quot;BASEP&quot;, BASEP)
 openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)</code></pre>
-<p>##F. Examine the questions on both surveys that had the highest
-concentration of answers along any one response.</p>
+</div>
+<div id="f.-examine-the-questions-on-both-surveys-that-had-the-highest-concentration-of-answers-along-any-one-response." class="section level2">
+<h2>F. Examine the questions on both surveys that had the highest
+concentration of answers along any one response.</h2>
 <pre class="r"><code>#DEFINE FUNCTION
 
 
@@ -2841,8 +2843,10 @@ hipic_quest_distrib(PARENT_REVERSED)</code></pre>
 ## 13 Q043   Q043     &quot;&quot;    C43_LASHOUT_Iamquicktolashout                   1 0.608
 ## 14 Q084   Q084     &quot;Y&quot;   C84_NOAUTHOR_Iresistauthority                   5 0.608</code></pre>
 </div>
-<div id="prepare-for-fa-to-avoid-bombs-in-.rmd-knitting-later" class="section level1">
-<h1>Prepare for FA to avoid bombs in .rmd knitting later</h1>
+<div id="prepare-for-fa-to-avoid-bombs-in-.rmd-knitting-later-a-necessary-evil-good-learning---return-to-later-to-consider-iterative-function" class="section level2">
+<h2>Prepare for FA to avoid bombs in .rmd knitting later (a necessary
+evil, good learning - return to later to consider iterative
+function)</h2>
 <pre class="r"><code>set.seed(2026)
 PA_C &lt;- psych::fa.parallel(C_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
 <pre><code>## In smc, smcs &lt; 0 were set to .0
@@ -3433,74 +3437,116 @@ tibble(MR2      = L2[, &quot;MR2&quot;],
 # 
 # The children’s version would take five minutes. I’d expect the same pattern, and if it holds, both informants together make this one of the strongest slides in the deck.</code></pre>
 </div>
-<div id="attempt-to-write-a-function-that-runs-over-the-parents-and-child-reverse-scored-datasets-but-allows-you-to-key-in-paramenters-for-rotation-desired-number-of-factors" class="section level1">
+<div id="attempt-to-write-a-function-that-runs-over-the-parents-and-child-reverse-scored-datasets-but-allows-you-to-key-in-parameters-for-the-rotation-desired-number-of-factors" class="section level1">
 <h1>Attempt to write a function that runs over the PARENTS and CHILD
-reverse scored datasets but allows you to key in paramenters for
+reverse scored datasets but allows you to key in parameters for the
 rotation desired, number of factors</h1>
-<p>```{ r function-definition-full-run}</p>
-<p>run_fa &lt;- function(DSN, NFACT, ROT = “none”, METHOD = “minres”,
-SORT = “factor”) {</p>
-<p># &gt;&gt;&gt; EXCEL DESTINATION: change this line to write somewhere
-else &lt;&lt;&lt;</p>
-<p>FILE &lt;- “/Users/Kevin/OneDrive/Documents/Excel/HiPIC FA
-Tests.xlsx”</p>
-<p># 1. The 144 items are always the last 144 columns ITEMS &lt;- DSN
-%&gt;% select(last_col(offset = 143):last_col()) PREFIX &lt;-
-substr(names(ITEMS)[1], 1, 1) # “C” or “P”</p>
-<p># 2. Run the analysis: PCA (SAS PROC FACTOR default) or a true factor
-analysis FA &lt;- if (METHOD == “pca”) { psych::principal(ITEMS,
-nfactors = NFACT, rotate = ROT) } else { psych::fa(ITEMS, nfactors =
-NFACT, fm = METHOD, rotate = ROT) }</p>
-<p># 3. Loadings: factors in size order, renamed F1, F2, … L &lt;-
-unclass(FA$loadings) L &lt;- L[, order(-colSums(L^2)), drop = FALSE]
-colnames(L) &lt;- paste0(“F”, 1:NFACT)</p>
-<p># 4. Item wording: children from the crosswalk, parents from the
-realignment table WORD &lt;- if (PREFIX == “C”) { HIPIC_CROSSWALK %&gt;%
-select(Q, Wording = CHILD_Q_WORDING) } else { PARENT_ALIGNED %&gt;%
-select(Q = Q_NEW, Wording = PARENT_Q_WORDING) }</p>
-<p># 5. Build the table: fixed columns first, loadings last OUT &lt;-
-tibble(Question = as.integer(sub(“^<a href="\d+">CP</a>_.<em>“,”\1”,
-rownames(L))), SAS_Name = sub(“<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>\d+<em>([^_]+)</em>.</em>”, “\1”,
-rownames(L))) %&gt;% left_join(WORD, by = c(“Question” = “Q”)) %&gt;%
-mutate(Reversed = ifelse(Question %in% REVERSE_ITEMS, “Y”, ““), Primary
-= paste0(”F”, apply(abs(L), 1, which.max)), h2 = round(FA$communality,
-3), .Max = apply(abs(L), 1, max)) %&gt;% bind_cols(as_tibble(round(L,
-3)))</p>
-<p># 6. Sort: by home factor (strongest first), or by item number OUT
-&lt;- if (SORT == “factor”) arrange(OUT, Primary, desc(.Max)) else
-arrange(OUT, Question) OUT &lt;- select(OUT, -.Max)</p>
-<p># 6b. Append the variance-explained row at the end VAR_ROW &lt;-
-tibble(Wording = “VAR EXPLAINED”) %&gt;%
-bind_cols(as_tibble(t(round(colSums(L^2) / ncol(ITEMS), 3)))) OUT &lt;-
-bind_rows(OUT, VAR_ROW)</p>
-<p># 7. Print the headline in the Console cat(“====”,
-deparse(substitute(DSN)), “|”, NFACT, “factors |”, ROT, “|”, METHOD,
-“====”) print(VAR_ROW %&gt;% select(-Wording))</p>
-<p># 8. Write the table to its own sheet in the workbook (skipped with a
-message if it can’t) tryCatch({ SHEET &lt;- paste(PREFIX, NFACT, ROT,
-METHOD, sep = “_“) # e.g. ”P_5_varimax_minres”</p>
-<pre><code>wb &lt;- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
-if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
+<pre class="r"><code>run_fa &lt;- function(DSN, NFACT, ROT = &quot;none&quot;, METHOD = &quot;minres&quot;, SORT = &quot;factor&quot;) {
+  
+  # &gt;&gt;&gt; EXCEL DESTINATION: change this line to write somewhere else &lt;&lt;&lt;
+  
+  FILE &lt;- &quot;/Users/Kevin/OneDrive/Documents/Excel/HiPIC FA Tests.xlsx&quot;
+  
+  
+  
+  
+  # 1. The 144 items are always the last 144 columns
+  ITEMS  &lt;- DSN %&gt;% select(last_col(offset = 143):last_col())
+  PREFIX &lt;- substr(names(ITEMS)[1], 1, 1)                 # &quot;C&quot; or &quot;P&quot;
+  
+  # 2. Run the analysis: PCA (SAS PROC FACTOR default) or a true factor analysis
+  FA &lt;- if (METHOD == &quot;pca&quot;) {
+    psych::principal(ITEMS, nfactors = NFACT, rotate = ROT)
+  } else {
+    psych::fa(ITEMS, nfactors = NFACT, fm = METHOD, rotate = ROT)
+  }
+  
+  # 3. Loadings: factors in size order, renamed F1, F2, ...
+  L &lt;- unclass(FA$loadings)
+  L &lt;- L[, order(-colSums(L^2)), drop = FALSE]
+  colnames(L) &lt;- paste0(&quot;F&quot;, 1:NFACT)
+  
+  # 4. Item wording: children from the crosswalk, parents from the realignment table
+  WORD &lt;- if (PREFIX == &quot;C&quot;) {
+    HIPIC_CROSSWALK %&gt;% select(Q, Wording = CHILD_Q_WORDING)
+  } else {
+    PARENT_ALIGNED %&gt;% select(Q = Q_NEW, Wording = PARENT_Q_WORDING)
+  }
+  
+  # 5. Build the table: fixed columns first, loadings last
+  OUT &lt;- tibble(Question = as.integer(sub(&quot;^[CP](\\d+)_.*&quot;, &quot;\\1&quot;, rownames(L))),
+                SAS_Name = sub(&quot;^[CP]\\d+_([^_]+)_.*&quot;, &quot;\\1&quot;, rownames(L))) %&gt;%
+    left_join(WORD, by = c(&quot;Question&quot; = &quot;Q&quot;)) %&gt;%
+    mutate(Reversed = ifelse(Question %in% REVERSE_ITEMS, &quot;Y&quot;, &quot;&quot;),
+           Primary  = paste0(&quot;F&quot;, apply(abs(L), 1, which.max)),
+           h2       = round(FA$communality, 3),
+           .Max     = apply(abs(L), 1, max)) %&gt;%
+    bind_cols(as_tibble(round(L, 3)))
+  
+  # 6. Sort: by home factor (strongest first), or by item number
+  OUT &lt;- if (SORT == &quot;factor&quot;) arrange(OUT, Primary, desc(.Max)) else arrange(OUT, Question)
+  OUT &lt;- select(OUT, -.Max)
+  
+  # 6b. Append the variance-explained row at the end
+  VAR_ROW &lt;- tibble(Wording = &quot;VAR EXPLAINED&quot;) %&gt;%
+    bind_cols(as_tibble(t(round(colSums(L^2) / ncol(ITEMS), 3))))
+  OUT &lt;- bind_rows(OUT, VAR_ROW)
+  
+  # 7. Print the headline in the Console
+  cat(&quot;\n====&quot;, deparse(substitute(DSN)), &quot;|&quot;, NFACT, &quot;factors |&quot;, ROT, &quot;|&quot;, METHOD, &quot;====\n&quot;)
+  print(VAR_ROW %&gt;% select(-Wording))
+  
+  
+  # 8. Write the table to its own sheet in the workbook (skipped with a message if it can&#39;t)
+  tryCatch({
+    SHEET &lt;- paste(PREFIX, NFACT, ROT, METHOD, sep = &quot;_&quot;)      # e.g. &quot;P_5_varimax_minres&quot;
+    
+    wb &lt;- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
+    if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
+    
+    openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
+    openxlsx::writeData(wb, SHEET, OUT)
+    openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
+    
+    cat(&quot;Written to sheet&quot;, SHEET, &quot;in&quot;, basename(FILE), &quot;\n&quot;)
+  }, error = function(e) {
+    cat(&quot;Excel export skipped:&quot;, conditionMessage(e), &quot;\n&quot;)
+  })
+  
+  # 9. Hand back the table (and the full FA result) for inspection
+  invisible(list(loadings = OUT, fa = FA))
+}
 
-openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
-openxlsx::writeData(wb, SHEET, OUT)
-openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
-
-cat(&quot;Written to sheet&quot;, SHEET, &quot;in&quot;, basename(FILE), &quot;\n&quot;)</code></pre>
-<p>}, error = function(e) { cat(“Excel export skipped:”,
-conditionMessage(e), “”) })</p>
-<p># 9. Hand back the table (and the full FA result) for inspection
-invisible(list(loadings = OUT, fa = FA)) }</p>
-<p>R1 &lt;- run_fa(CHILD_REVERSED, 5, ‘varimax’, “minres”)
-View(R1$loadings)</p>
-<pre><code>
-
-# Factor analysis on a questionnaire this unwieldy (144-items) across this few subjects my not be reliable — the correlation matrix is singular, so it cannot be inverted, and standard adequacy tests cannot be computed.  Is a Facet-level analysis worth taking a look at?  Test on parents only.
 
 
-
-``` r
-set.seed(2026)
+R1 &lt;- run_fa(CHILD_REVERSED, 5, &#39;varimax&#39;, &quot;minres&quot;)</code></pre>
+<pre><code>## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0
+## In smc, smcs &lt; 0 were set to .0</code></pre>
+<pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined.
+## Chi square is based upon observed residuals.</code></pre>
+<pre><code>## The determinant of the smoothed correlation was zero.
+## This means the objective function is not defined for the null model either.
+## The Chi square is thus based upon observed correlations.</code></pre>
+<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
+<pre><code>## 
+## ==== CHILD_REVERSED | 5 factors | varimax | minres ====
+## # A tibble: 1 × 5
+##      F1    F2    F3    F4    F5
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 0.136 0.079 0.058 0.043 0.037
+## Written to sheet C_5_varimax_minres in HiPIC FA Tests.xlsx</code></pre>
+<pre class="r"><code>if (interactive()) View(R1$loadings)</code></pre>
+</div>
+<div id="factor-analysis-on-a-questionnaire-this-unwieldy-144-items-across-this-few-subjects-my-not-be-reliable-the-correlation-matrix-is-singular-so-it-cannot-be-inverted-and-standard-adequacy-tests-cannot-be-computed.-is-a-facet-level-analysis-worth-taking-a-look-at-test-on-parents-only." class="section level1">
+<h1>Factor analysis on a questionnaire this unwieldy (144-items) across
+this few subjects my not be reliable — the correlation matrix is
+singular, so it cannot be inverted, and standard adequacy tests cannot
+be computed. Is a Facet-level analysis worth taking a look at? Test on
+parents only.</h1>
+<pre class="r"><code>set.seed(2026)
 PA_PF &lt;- psych::fa.parallel(P_FACETS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
 <pre><code>## Parallel analysis suggests that the number of factors =  2  and the number of components =  NA</code></pre>
 <pre class="r"><code>png(&quot;images/scree_facets_parent.png&quot;, width = 1400, height = 1100, res = 200)
@@ -3610,12 +3656,6 @@ saveRDS(FAC_P2, &quot;fac_p2.rds&quot;)
     # Tucker’s congruence between the children’s and parents’ two-factor facet solutions was .99 for engagement 
     # and .94 for self-regulation, indicating that the same two-factor structure was recovered from both informants.
     # Our lab hasn&#39;t historically relied on Tucker&#39;s - back pocket.</code></pre>
-</div>
-<div class="footnotes footnotes-end-of-document">
-<hr />
-<ol>
-<li id="fn1"><p>CP<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-</ol>
 </div>
 
 
