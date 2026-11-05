@@ -4,7 +4,7 @@
     <title>HiPIC Exploratory Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Kevin Williams" />
-    <meta name="date" content="2026-11-04" />
+    <meta name="date" content="2026-11-05" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view/tile-view.js"></script>
@@ -100,10 +100,10 @@ background-size: cover
 
 .rlogo-watermark {
   position: absolute;
-  bottom: 40px;
+  bottom: 75px;
   left: 50%;
   transform: translateX(-50%);   /* centres it horizontally */
-  opacity: 0.2;                  /* 0 = invisible, 1 = solid */
+  opacity: 0.075;                  /* 0 = invisible, 1 = solid */
 }
 
 .rlogo-watermark2 {
@@ -160,6 +160,12 @@ background-size: cover
                 margin-bottom: 0.6em; }       /* space above the column headings */
 
 
+ul li ul, ol li ul {
+  margin-top: 5px; /* Adjust this value to get the perfect gap */
+}
+
+
+
 &lt;/style&gt;
 
 
@@ -170,7 +176,7 @@ background-size: cover
 ### &lt;br&gt;
 ### USING THE R PROGRAMMING LANGUAGE
 #### Prepared by Kevin Williams  | Preliminary Findings   |   October 30, 2026
-#### Updated 2026-11-04
+#### Updated 2026-11-05
 #### &lt;br&gt;
 
 ---
@@ -203,6 +209,14 @@ background-size: 60px 60px
 
 1. Data scientists — particularly in the social sciences — have made a marked &lt;font color="#006cc5"&gt;**shift to R and Python**&lt;/font&gt; and away from SAS and SPSS
 
+--
+1. Among the  &lt;font color="#006cc5"&gt;**R packages**&lt;/font&gt; to be used in this analysis include:
+
+    - &lt;font color="#006cc5"&gt;haven&lt;/font&gt; and &lt;font color="#006cc5"&gt;writexl&lt;/font&gt; for importing and exporting raw data and SAS datasets from prior work
+    - &lt;font color="#006cc5"&gt;tidyverse,&lt;/font&gt; which includes packages like dplyr, magrittr, and ggplot, all helpful with data wrangling and beautification
+    - &lt;font color="#006cc5"&gt;statx&lt;/font&gt; and &lt;font color="#006cc5"&gt;misty&lt;/font&gt; for general descriptive statistical calculations
+    - &lt;font color="#006cc5"&gt;psych&lt;/font&gt; and &lt;font color="#006cc5"&gt;lavaan&lt;/font&gt; for more complex principal components and factor analyses
+
 &lt;br&gt;
 
 
@@ -222,6 +236,111 @@ background-size: cover
 ### Import the SAS datasets containing the .pink[Child Self-Report] and .pink[Parental Report] raw scores, and prepare an overview of the two populations.
 
 &lt;!-- TODO: the link above is a placeholder; replace with the real URL (e.g. GitHub) --&gt;
+
+
+---
+## Data Clean-Up
+
+.panelset[
+.panel[.panel-name[Import Data]
+
+
+``` r
+require(readr)  # use if importing a comma- or tab-delimited dataset #
+require(haven)  # if importing a SAS dataset #
+
+
+
+CHILD_RAW   &lt;- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat")
+PARENT_RAW  &lt;- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat")
+
+
+# make.names function essentially replaces all spaces and non-standard characters
+# (parens, brackets, etc.) with a series of periods - very helpful if importing a non-standard format
+
+
+DSN &lt;- c(CHILD_RAW, PARENT_RAW)        
+                                       
+*for (x in DSN) {
+*  
+*   make.names( names(x), unique= TRUE) }
+```
+]
+
+.panel[.panel-name[Investigate Missingness]
+
+Here's area few code snippets from the  &lt;font color="#006cc5"&gt;**dplyr**&lt;/font color&gt; and &lt;font color="#006cc5"&gt;**magrittr**&lt;/font color&gt; packages that we used to wrangle our data:
+
+``` r
+require(tidyverse)
+require(magrittr)  
+
+# Dimensions of the original datasets
+dim(CHILD_RAW)
+dim(PARENT_RAW)
+
+# Total missing values across all variables
+sum(is.na(CHILD_RAW))
+sum(is.na(PARENT_RAW))
+
+# Number of observations containing at least one missing value
+*sum(!complete.cases(CHILD_RAW))
+*sum(!complete.cases(PARENT_RAW))
+
+
+# Missingness - Child
+CHILD_MISSING &lt;- CHILD_RAW %&gt;%
+  mutate(N_MISSING = rowSums(is.na(pick(11:154)))) %&gt;%
+  filter(N_MISSING &gt; 0) %&gt;%
+  select(ID4, DOE, N_MISSING)
+
+# Missingness - Parent
+PARENT_MISSING &lt;- PARENT_RAW %&gt;%
+  mutate(N_MISSING = rowSums(is.na(pick(13:156)))) %&gt;%
+  filter(N_MISSING &gt; 0) %&gt;%
+  select(ID4, DOE, N_MISSING)
+```
+]
+
+
+.panel[.panel-name[Simple Imputation]
+
+Exclude any observation with more than 2% missing values, and impute values using &lt;font color="#006cc5"&gt;**mean substitute**&lt;/font color&gt; based on averages from the &lt;font color="#006cc5"&gt;**CVPK * MVF**&lt;/font color&gt; by group:
+
+``` r
+# excluding based on values in a vector
+
+CHILD_EXCLUDE   &lt;- CHILD_MISSING %&gt;%  filter( N_MISSING &gt;= 3 | is.na(DOE)) %&gt;% pull(ID4)
+PARENT_EXCLUDE  &lt;- PARENT_MISSING %&gt;% filter( N_MISSING &gt;= 3 | is.na(DOE)) %&gt;% pull(ID4)
+
+CHILD &lt;-  CHILD_RAW %&gt;%  filter( !ID4 %in% CHILD_EXCLUDE)
+PARENT &lt;- PARENT_RAW %&gt;% filter( !ID4 %in% PARENT_EXCLUDE)
+
+
+# Use the GROUPBY and ACROSS functions to find the CVPK/MVF mean and then apply those to questions that are missing:
+# Code used for the CHILD dataset was repeated for the PARENT dataset
+
+CHILD &lt;- CHILD %&gt;%
+  group_by(CVPK, MVF) %&gt;%
+  mutate(across(last_col(offset = 143):last_col(),
+                function(x) {
+                  ifelse(is.na(x),
+                         round(mean(x, na.rm = TRUE)),
+                         x)
+                })) %&gt;%  ungroup()
+
+
+#Confirm no missing values .....
+
+*sum(!complete.cases(CHILD))
+*sum(!complete.cases(PARENT))
+```
+]
+]
+
+
+
+
 
 ---
 
@@ -755,6 +874,57 @@ Parallel analysis retains 6 factors (actual eigenvalues above random).&lt;br&gt;
 | Theory (HiPIC &amp; NEO) | 5 | Both models specify five domains |
 
 - .blue[**Our Choice:**] Five factors, the number both models predict and the structure under test, with six examined as a sensitivity check.
+
+
+---
+## Prepare for Factor Analysis using psych() package
+
+.panelset[
+.panel[.panel-name[Create Variable Matrices]
+
+
+``` r
+require(psych)  
+
+# 144 items per sample (reverse-scored, imputed)
+*C_ITEMS &lt;- CHILD_REVERSED  %&gt;% select(last_col(offset = 143):last_col())
+*P_ITEMS &lt;- PARENT_REVERSED %&gt;% select(last_col(offset = 143):last_col())
+
+# item-level eigenvalues (correlation matrix)
+EV_C &lt;- eigen(cor(C_ITEMS))$values
+EV_P &lt;- eigen(cor(P_ITEMS))$values
+
+
+# 18 facets per sample (domain totals excluded)
+C_FACETS &lt;- CHILD_SCORED  %&gt;% select(matches("^(ES|EX|IM|BE|CO)_"))
+P_FACETS &lt;- PARENT_SCORED %&gt;% select(matches("^(ES|EX|IM|BE|CO)_"))
+```
+]
+
+.panel[.panel-name[Practice FA Syntax]
+
+``` r
+# Sample function calls for item-level factor solutions
+
+
+# Rotation vs. Non-Rotation using Min Res estimations
+*FA5_PNOROT  &lt;- psych::fa(P_ITEMS, nfactors = 5, fm = "minres", rotate = "none")
+*FA5_PVMAX   &lt;- psych::fa(P_ITEMS, nfactors = 5, fm = "minres", rotate = "varimax")
+
+
+# Orthoganal Rotations mirroring SAS default settings for factor analyses
+*FA5_PVMAX_SAS   &lt;- psych::fa(P_ITEMS, nfactors = 5, fm = "pa", rotate = "varimax")
+*FA2_PVMAX_SAS   &lt;- psych::fa(P_ITEMS, nfactors = 2, fm = "pa", rotate = "varimax")
+
+
+# Orthoganol Rotation (Varimax) vs. Oblique Rotation (Promax) using Maximum Likelhood estimations
+*FA2_CVMAX   &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "none")
+*FA2_COBLQ   &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "promax")
+```
+]
+]
+
+
 
 ---
 
@@ -1875,7 +2045,7 @@ Parallel analysis retains 2 factors (actual eigenvalues above random).&lt;br&gt;
 | Parallel Analysis | 2 | Factors whose eigenvalues exceed those of random data (both samples) |
 | Theory (HiPIC &amp; NEO) | 5 | Both models specify five domains |
 &lt;br&gt;
-- .blue[**Our Choice:**] Both. Two factors, the structure the data clearly support, and five factors, the structure both models predict, for comparison with the HiPIC and NEO domains and with published
+- .blue[**Our Choice:**]  Run both. Two factors, the structure the data clearly support, and five factors, the structure both models predict, for comparison with the HiPIC and NEO domains and with published.  It may also be worthwhile to investiage the structures of the 3- and 4-factor models.
 
 ---
 

@@ -29,7 +29,7 @@ library(misty)
 
 
 
-CHILD_RAW <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat")
+CHILD_RAW  <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat")
 PARENT_RAW <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat")
 
 ```

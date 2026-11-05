@@ -165,10 +165,10 @@ knitr::opts_chunk$set(
 
 .rlogo-watermark {
   position: absolute;
-  bottom: 40px;
+  bottom: 75px;
   left: 50%;
   transform: translateX(-50%);   /* centres it horizontally */
-  opacity: 0.2;                  /* 0 = invisible, 1 = solid */
+  opacity: 0.075;                  /* 0 = invisible, 1 = solid */
 }
 
 .rlogo-watermark2 {
@@ -225,6 +225,12 @@ knitr::opts_chunk$set(
                 margin-bottom: 0.6em; }       /* space above the column headings */
 
 
+ul li ul, ol li ul {
+  margin-top: 5px; /* Adjust this value to get the perfect gap */
+}
+
+
+
 ```
 
 ```{r xaringanExtra, echo=FALSE}
@@ -272,6 +278,14 @@ background-size: 60px 60px
 
 1. Data scientists — particularly in the social sciences — have made a marked <font color="#006cc5">**shift to R and Python**</font> and away from SAS and SPSS
 
+--
+1. Among the  <font color="#006cc5">**R packages**</font> to be used in this analysis include:
+
+    - <font color="#006cc5">haven</font> and <font color="#006cc5">writexl</font> for importing and exporting raw data and SAS datasets from prior work
+    - <font color="#006cc5">tidyverse,</font> which includes packages like dplyr, magrittr, and ggplot, all helpful with data wrangling and beautification
+    - <font color="#006cc5">statx</font> and <font color="#006cc5">misty</font> for general descriptive statistical calculations
+    - <font color="#006cc5">psych</font> and <font color="#006cc5">lavaan</font> for more complex principal components and factor analyses
+
 <br>
 
 
@@ -291,6 +305,118 @@ background-size: cover
 ### Import the SAS datasets containing the .pink[Child Self-Report] and .pink[Parental Report] raw scores, and prepare an overview of the two populations.
 
 <!-- TODO: the link above is a placeholder; replace with the real URL (e.g. GitHub) -->
+
+
+---
+## Data Clean-Up
+
+.panelset[
+.panel[.panel-name[Import Data]
+
+```{r Data-Cleanup-Import, eval=F}
+
+
+require(readr)  # use if importing a comma- or tab-delimited dataset #
+require(haven)  # if importing a SAS dataset #
+
+
+
+CHILD_RAW   <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat")
+PARENT_RAW  <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat")
+
+
+# make.names function essentially replaces all spaces and non-standard characters
+# (parens, brackets, etc.) with a series of periods - very helpful if importing a non-standard format
+
+
+DSN <- c(CHILD_RAW, PARENT_RAW)        
+                                       
+for (x in DSN) {                        #<<
+                                        #<<
+    make.names( names(x), unique= TRUE) } #<<
+
+
+```
+]
+
+.panel[.panel-name[Investigate Missingness]
+
+Here's area few code snippets from the  <font color="#006cc5">**dplyr**</font color> and <font color="#006cc5">**magrittr**</font color> packages that we used to wrangle our data:
+```{r Data-Cleanup-Missing, eval=F}
+
+
+require(tidyverse)
+require(magrittr)  
+
+# Dimensions of the original datasets
+dim(CHILD_RAW)
+dim(PARENT_RAW)
+
+# Total missing values across all variables
+sum(is.na(CHILD_RAW))
+sum(is.na(PARENT_RAW))
+
+# Number of observations containing at least one missing value
+sum(!complete.cases(CHILD_RAW))  #<<
+sum(!complete.cases(PARENT_RAW)) #<<
+
+
+# Missingness - Child
+CHILD_MISSING <- CHILD_RAW %>%
+  mutate(N_MISSING = rowSums(is.na(pick(11:154)))) %>%
+  filter(N_MISSING > 0) %>%
+  select(ID4, DOE, N_MISSING)
+
+# Missingness - Parent
+PARENT_MISSING <- PARENT_RAW %>%
+  mutate(N_MISSING = rowSums(is.na(pick(13:156)))) %>%
+  filter(N_MISSING > 0) %>%
+  select(ID4, DOE, N_MISSING)
+
+```
+]
+
+
+.panel[.panel-name[Simple Imputation]
+
+Exclude any observation with more than 2% missing values, and impute values using <font color="#006cc5">**mean substitute**</font color> based on averages from the <font color="#006cc5">**CVPK * MVF**</font color> by group:
+```{r Data-Cleanup-Impute, eval=F}
+
+
+# excluding based on values in a vector
+
+CHILD_EXCLUDE   <- CHILD_MISSING %>%  filter( N_MISSING >= 3 | is.na(DOE)) %>% pull(ID4)
+PARENT_EXCLUDE  <- PARENT_MISSING %>% filter( N_MISSING >= 3 | is.na(DOE)) %>% pull(ID4)
+
+CHILD <-  CHILD_RAW %>%  filter( !ID4 %in% CHILD_EXCLUDE)
+PARENT <- PARENT_RAW %>% filter( !ID4 %in% PARENT_EXCLUDE)
+
+
+# Use the GROUPBY and ACROSS functions to find the CVPK/MVF mean and then apply those to questions that are missing:
+# Code used for the CHILD dataset was repeated for the PARENT dataset
+
+CHILD <- CHILD %>%
+  group_by(CVPK, MVF) %>%
+  mutate(across(last_col(offset = 143):last_col(),
+                function(x) {
+                  ifelse(is.na(x),
+                         round(mean(x, na.rm = TRUE)),
+                         x)
+                })) %>%  ungroup()
+
+
+#Confirm no missing values .....
+
+sum(!complete.cases(CHILD))   #<<
+sum(!complete.cases(PARENT))  #<<
+
+```
+]
+]
+
+
+
+
 
 ---
 
@@ -477,6 +603,63 @@ Parallel analysis retains 6 factors (actual eigenvalues above random).<br>Table:
 
 - .blue[**Our Choice:**] Five factors, the number both models predict and the structure under test, with six examined as a sensitivity check.
 
+
+---
+## Prepare for Factor Analysis using psych() package
+
+.panelset[
+.panel[.panel-name[Create Variable Matrices]
+
+```{r FA-PREP-Psych-1, eval=F}
+
+
+require(psych)  
+
+# 144 items per sample (reverse-scored, imputed)
+C_ITEMS <- CHILD_REVERSED  %>% select(last_col(offset = 143):last_col())  #<<
+P_ITEMS <- PARENT_REVERSED %>% select(last_col(offset = 143):last_col())  #<<
+
+# item-level eigenvalues (correlation matrix)
+EV_C <- eigen(cor(C_ITEMS))$values
+EV_P <- eigen(cor(P_ITEMS))$values
+
+
+# 18 facets per sample (domain totals excluded)
+C_FACETS <- CHILD_SCORED  %>% select(matches("^(ES|EX|IM|BE|CO)_"))
+P_FACETS <- PARENT_SCORED %>% select(matches("^(ES|EX|IM|BE|CO)_"))
+
+
+```
+]
+
+.panel[.panel-name[Practice FA Syntax]
+```{r FA-PREP-Pscyh-2, eval=F}
+
+
+# Sample function calls for item-level factor solutions
+
+
+# Rotation vs. Non-Rotation using Min Res estimations
+FA5_PNOROT  <- psych::fa(P_ITEMS, nfactors = 5, fm = "minres", rotate = "none")    #<<
+FA5_PVMAX   <- psych::fa(P_ITEMS, nfactors = 5, fm = "minres", rotate = "varimax") #<<
+
+
+# Orthoganal Rotations mirroring SAS default settings for factor analyses
+FA5_PVMAX_SAS   <- psych::fa(P_ITEMS, nfactors = 5, fm = "pa", rotate = "varimax")    #<<
+FA2_PVMAX_SAS   <- psych::fa(P_ITEMS, nfactors = 2, fm = "pa", rotate = "varimax")    #<<
+
+
+# Orthoganol Rotation (Varimax) vs. Oblique Rotation (Promax) using Maximum Likelhood estimations
+FA2_CVMAX   <- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "none")   #<<
+FA2_COBLQ   <- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "promax")  #<<
+
+
+```
+]
+]
+
+
+
 ---
 
 ## Five-Factor Solution (Varimax): Child Self-Report
@@ -638,7 +821,7 @@ Parallel analysis retains 2 factors (actual eigenvalues above random).<br>Table:
 | Parallel Analysis | 2 | Factors whose eigenvalues exceed those of random data (both samples) |
 | Theory (HiPIC & NEO) | 5 | Both models specify five domains |
 <br>
-- .blue[**Our Choice:**] Both. Two factors, the structure the data clearly support, and five factors, the structure both models predict, for comparison with the HiPIC and NEO domains and with published
+- .blue[**Our Choice:**]  Run both. Two factors, the structure the data clearly support, and five factors, the structure both models predict, for comparison with the HiPIC and NEO domains and with published.  It may also be worthwhile to investiage the structures of the 3- and 4-factor models.
 
 ---
 

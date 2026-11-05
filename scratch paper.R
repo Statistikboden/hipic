@@ -1189,6 +1189,23 @@ function(DATA) {
     
     
     
+    dsn <- c(CHILD_RAW, PARENT_RAW)
+    
+    
+    for (data in dsn) {
+      
+      make.names( names(dsn), unique= TRUE )
+    }
+    
+    
+    names(IBD)<-  make.names( names(IBD), unique = TRUE ) #<<
+    
+    
+    
+    
+    
+    
+    
     
     
     
