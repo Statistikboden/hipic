@@ -1106,11 +1106,11 @@ tibble(MR2      = L2C[, "MR2"],
 
 
 
-# For your notes:
+# Notes:
 # 
 # Children, item level, two-factor varimax (24.9% of variance): Factor 1 (15.0%) comprised desirable, positively worded items across all domains. Factor 2 (9.9%) largely followed scoring direction (53 of 60 items loading ≥ .30). The seven exceptions were all compliance and cooperation items (respects authority, obeys, does what is asked, helps others, shares), suggesting a conduct/cooperation dimension alongside the agreement-direction pattern. In parents, the corresponding factor split perfectly by scoring direction (60 of 60).
 # 
-# This makes a good single slide: the two cross-tabs side by side, with one line underneath. “In both informants, the two broad item-level dimensions largely reflect rating style; in children, a cooperation/conduct dimension is also visible.” It’s honest, it’s nuanced, and the children’s seven exceptions show you looked closely rather than forcing a conclusion.
+# Possible slide?  The two cross-tabs side by side, with one line underneath. In both informants, the two broad item-level dimensions largely reflect rating style; in children, a cooperation/conduct dimension is also visible. An honest, nuanced assessment, and the children’s seven exceptions show I looked under the hood rather than forced a conclusion.
 
 
 ```
@@ -1135,11 +1135,10 @@ tibble(MR2      = L2[, "MR2"],
   count(REVERSED, DIRECTION = ifelse(MR2 > 0, "positive", "negative"))
 
 
-# For your notes:
+# Notes:
 # 
-# Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.
-# 
-# The children’s version would take five minutes. I’d expect the same pattern, and if it holds, both informants together make this one of the strongest slides in the deck.
+# Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.  Curious - but may be an over-simplificaiton to attribute this to "response style" and not "personality trait."
+
 
 
 ```
