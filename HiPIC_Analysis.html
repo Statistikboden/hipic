@@ -2864,7 +2864,7 @@ PA_C &lt;- psych::fa.parallel(C_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&qu
 <pre class="r"><code>png(&quot;images/scree_items_child.png&quot;, width = 1400, height = 1100, res = 200)
 par(mar = c(4.5, 4.5, 1, 1))          # margins: bottom, left, top, right (in lines of text)
 plot(1:20, PA_C$fa.values[1:20], type = &quot;b&quot;, pch = 19, col = &quot;#006cc5&quot;,
-     xlab = &quot;Factor&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
+     xlab = &quot;Factor (first 20 of 144 shown)&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
 lines(1:20, PA_C$fa.sim[1:20], lty = 2, col = &quot;grey40&quot;)
 legend(&quot;topright&quot;, c(&quot;Actual data&quot;, &quot;Random data (parallel analysis)&quot;),
        col = c(&quot;#006cc5&quot;, &quot;grey40&quot;), lty = c(1, 2), pch = c(19, NA), bty = &quot;n&quot;)
@@ -2981,7 +2981,7 @@ PA_P &lt;- psych::fa.parallel(P_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&qu
 <pre class="r"><code>png(&quot;images/scree_items_parent.png&quot;, width = 1400, height = 1100, res = 200)
 par(mar = c(4.5, 4.5, 1, 1))
 plot(1:20, PA_P$fa.values[1:20], type = &quot;b&quot;, pch = 19, col = &quot;#006cc5&quot;,
-     xlab = &quot;Factor&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
+     xlab = &quot;Factor (first 20 of 144 shown)&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
 lines(1:20, PA_P$fa.sim[1:20], lty = 2, col = &quot;grey40&quot;)
 legend(&quot;topright&quot;, c(&quot;Actual data&quot;, &quot;Random data (parallel analysis)&quot;),
        col = c(&quot;#006cc5&quot;, &quot;grey40&quot;), lty = c(1, 2), pch = c(19, NA), bty = &quot;n&quot;)

@@ -210,6 +210,20 @@ knitr::opts_chunk$set(
 }
 
 
+.facet-cmp td, .facet-cmp th {
+  padding: 3px 10px;        /* space above/below, and left/right, inside each cell */
+  line-height: 1.15;        /* tighter line spacing within a row */
+}
+
+.facet-cmp table {
+  margin-left: 0;           /* start each table at the left of its column */
+}
+
+
+.facet-cmp h2 { margin-bottom: 0.75em; }    /* space below the blue title */
+.facet-cmp h5 { margin-top: 0.6em; 
+                margin-bottom: 0.6em; }       /* space above the column headings */
+
 
 ```
 
@@ -361,6 +375,7 @@ background-size: cover
 
 ---
 ## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=EbiWJc&nav=MTJfQjM3OlE2N197MDAwMDAwMDAtMDAwMS0wMDAwLTA1MDAtMDAwMDAwMDAwMDAwfQ" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Child Self-Report</a>
+
 
 <img src="images/mean-diffs-children.png"
      style="display: block; margin: 0 auto; width: 85%;
@@ -653,4 +668,53 @@ knitr::kable(TAB, format = "html", escape = FALSE,
 
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
 Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.<br>Full results in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=0SsbgY&nav=MTVfe0JEMTFEMTdFLTVFQzctMDE0RC04RDQ4LTY5OTNBOEMwNjBGNn0" target="_blank">Excel file</a>.
+</p>
+
+---
+class: facet-cmp
+<!-- background-image: none -->
+
+## Additional Varimax Factor Solutions: Parent Report (Facets)
+
+```{r fac-parent-345, echo=FALSE}
+library(dplyr)
+options(knitr.kable.NA = "")
+
+TH <- .40                                    # visibility threshold: change here
+
+# bold loadings at or above TH, grey below; VAR EXPLAINED row shown plainly
+
+fmt_fac <- function(TAB) {
+  VAR <- TAB$Facet == "VAR EXPLAINED"
+  TAB %>%
+    mutate(across(matches("^F\\d+$"), ~ ifelse(VAR, sprintf("%.3f", .x),
+                                        ifelse(abs(.x) >= TH,
+                                               sprintf("<b>%.2f</b>", round(.x, 2) + 0),
+                                               sprintf('<span style="color:#bbbbbb;">%.2f</span>', round(.x, 2) + 0))))) %>%
+    select(Facet, matches("^F\\d+$"))
+}
+
+T3 <- readRDS("fac_p3_varimax.rds")
+T4 <- readRDS("fac_p4_varimax.rds")
+T5 <- readRDS("fac_p5_varimax.rds")
+T4 <- T4[match(T3$Code, T4$Code), ]          # same row order as the 3-factor table
+T5 <- T5[match(T3$Code, T5$Code), ]
+
+COMB <- bind_cols(fmt_fac(T3),
+                  fmt_fac(T4) %>% select(-Facet),
+                  fmt_fac(T5) %>% select(-Facet),
+                  .name_repair = "minimal")
+
+knitr::kable(COMB, format = "html", escape = FALSE,
+             col.names = c("Facet", paste0("F", 1:3), paste0("F", 1:4), paste0("F", 1:5)),
+             align = c("l", rep("c", 12)),
+             table.attr = 'style="font-size: 60%; margin-left: auto; margin-right: auto;"') %>%
+  kableExtra::add_header_above(c(" " = 1, "Three Factors (55.3%)" = 3,
+                               "Four Factors (59.8%)" = 4, "Five Factors (63.4%)" = 5)) %>%
+  kableExtra::column_spec(c(1, 4, 8), border_right = "1px solid #cbcccb") %>%
+  kableExtra::column_spec(c(5, 9), extra_css = "padding-left: 20px;")
+```
+
+<p style="text-align: center; font-size: 0.6em; margin-top: 0.9em;">
+Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.<br>Rows in the same order across solutions; factor numbers are not comparable between solutions.<br>Full results in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=FOgBBC&nav=MTVfezU5MjBDMEI2LTg5N0EtRTA0My1BNkI5LTJFODUzRTIzMkIxRX0" target="_blank">Excel file</a>.
 </p>

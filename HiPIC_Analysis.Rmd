@@ -942,7 +942,7 @@ PA_C <- psych::fa.parallel(C_ITEMS, fm = "minres", fa = "fa", plot = FALSE)
 png("images/scree_items_child.png", width = 1400, height = 1100, res = 200)
 par(mar = c(4.5, 4.5, 1, 1))          # margins: bottom, left, top, right (in lines of text)
 plot(1:20, PA_C$fa.values[1:20], type = "b", pch = 19, col = "#006cc5",
-     xlab = "Factor", ylab = "Eigenvalue", main = "")
+     xlab = "Factor (first 20 of 144 shown)", ylab = "Eigenvalue", main = "")
 lines(1:20, PA_C$fa.sim[1:20], lty = 2, col = "grey40")
 legend("topright", c("Actual data", "Random data (parallel analysis)"),
        col = c("#006cc5", "grey40"), lty = c(1, 2), pch = c(19, NA), bty = "n")
@@ -1029,7 +1029,7 @@ PA_P <- psych::fa.parallel(P_ITEMS, fm = "minres", fa = "fa", plot = FALSE)
 png("images/scree_items_parent.png", width = 1400, height = 1100, res = 200)
 par(mar = c(4.5, 4.5, 1, 1))
 plot(1:20, PA_P$fa.values[1:20], type = "b", pch = 19, col = "#006cc5",
-     xlab = "Factor", ylab = "Eigenvalue", main = "")
+     xlab = "Factor (first 20 of 144 shown)", ylab = "Eigenvalue", main = "")
 lines(1:20, PA_P$fa.sim[1:20], lty = 2, col = "grey40")
 legend("topright", c("Actual data", "Random data (parallel analysis)"),
        col = c("#006cc5", "grey40"), lty = c(1, 2), pch = c(19, NA), bty = "n")
@@ -1276,56 +1276,88 @@ saveRDS(EIG_PF, "eig_facets_parent.rds")
 ```
 
 
-```{r parent_two-factor-facets}
+```{r parentcompare-factor-facets}
 
 
 
-FA <- psych::fa(P_FACETS, nfactors = 2, fm = "minres", rotate = "varimax")
+run_fa_facets <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor") {
 
-# loadings: factors in size order, renamed F1, F2, ...
-L <- unclass(FA$loadings)
-L <- L[, order(-colSums(L^2)), drop = FALSE]
-colnames(L) <- paste0("F", 1:ncol(L))
+  # >>> EXCEL DESTINATION: change this line to write somewhere else <<<
+  FILE <- "/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx"
 
-# readable labels for the 18 facet codes and 5 domains
-FACET_NAMES  <- c(ES_ANX = "Anxiety", ES_CON = "Self-Confidence",
-                  EX_ENE = "Energy", EX_EXP = "Expressiveness", EX_OPT = "Optimism", EX_SHY = "Shyness",
-                  IM_CRE = "Creativity", IM_INT = "Intellect", IM_CUR = "Curiosity",
-                  BE_ALT = "Altruism", BE_DOM = "Dominance", BE_EGO = "Egocentrism",
-                  BE_COM = "Compliance", BE_IRR = "Irritability",
-                  CO_CNC = "Concentration", CO_PER = "Perseverance", CO_ORD = "Order",
-                  CO_ACH = "Achievement Motivation")
-DOMAIN_NAMES <- c(ES = "Emotional Stability", EX = "Extraversion", IM = "Imagination",
-                  BE = "Benevolence", CO = "Conscientiousness")
+  # 1. Keep only the 18 facets (works with P_FACETS or PARENT_SCORED, C_FACETS or CHILD_SCORED)
+  NAME   <- deparse(substitute(DSN))                   # e.g. "P_FACETS"
+  PREFIX <- substr(NAME, 1, 1)                         # "P" or "C"
+  FACETS <- DSN %>% select(matches("^(ES|EX|IM|BE|CO)_"))
 
-# the table: fixed columns first (A-E), loadings after
-FAC_P2 <- tibble(Code = rownames(L)) %>%
-  mutate(Domain  = unname(DOMAIN_NAMES[substr(Code, 1, 2)]),
-         Facet   = unname(FACET_NAMES[Code]),
-         Primary = paste0("F", apply(abs(L), 1, which.max)),
-         h2      = round(FA$communality, 3),
-         .Max    = apply(abs(L), 1, max)) %>%
-  bind_cols(as_tibble(round(L, 3))) %>%
-  arrange(Primary, desc(.Max)) %>%
-  select(-.Max)
+  # 2. Run the analysis: PCA (SAS PROC FACTOR default) or a true factor analysis
+  FA <- if (METHOD == "pca") {
+    psych::principal(FACETS, nfactors = NFACT, rotate = ROT)
+  } else {
+    psych::fa(FACETS, nfactors = NFACT, fm = METHOD, rotate = ROT)
+  }
 
-# variance-explained row at the bottom (divided by 18 facets)
-VAR_ROW <- tibble(Facet = "VAR EXPLAINED") %>%
-  bind_cols(as_tibble(t(round(colSums(L^2) / ncol(P_FACETS), 3))))
-FAC_P2 <- bind_rows(FAC_P2, VAR_ROW)
+  # 3. Loadings: factors in size order, renamed F1, F2, ...
+  L <- unclass(FA$loadings)
+  L <- L[, order(-colSums(L^2)), drop = FALSE]
+  colnames(L) <- paste0("F", 1:NFACT)
 
+  # 4. Readable labels for the 18 facet codes and 5 domains
+  FACET_NAMES  <- c(ES_ANX = "Anxiety", ES_CON = "Self-Confidence",
+                    EX_ENE = "Energy", EX_EXP = "Expressiveness", EX_OPT = "Optimism", EX_SHY = "Shyness",
+                    IM_CRE = "Creativity", IM_INT = "Intellect", IM_CUR = "Curiosity",
+                    BE_ALT = "Altruism", BE_DOM = "Dominance", BE_EGO = "Egocentrism",
+                    BE_COM = "Compliance", BE_IRR = "Irritability",
+                    CO_CNC = "Concentration", CO_PER = "Perseverance", CO_ORD = "Order",
+                    CO_ACH = "Achievement Motivation")
+  DOMAIN_NAMES <- c(ES = "Emotional Stability", EX = "Extraversion", IM = "Imagination",
+                    BE = "Benevolence", CO = "Conscientiousness")
 
- if (interactive()) View(FAC_P2)
+  # 5. Build the table: fixed columns first (A-E), loadings after
+  OUT <- tibble(Code = rownames(L)) %>%
+    mutate(Domain  = unname(DOMAIN_NAMES[substr(Code, 1, 2)]),
+           Facet   = unname(FACET_NAMES[Code]),
+           Primary = paste0("F", apply(abs(L), 1, which.max)),
+           h2      = round(FA$communality, 3),
+           .Max    = apply(abs(L), 1, max)) %>%
+    bind_cols(as_tibble(round(L, 3)))
 
-print(FAC_P2)
+  # 6. Sort: by home factor (strongest first), or in the original facet order
+  OUT <- if (SORT == "factor") arrange(OUT, Primary, desc(.Max)) else OUT
+  OUT <- select(OUT, -.Max)
 
+  # 6b. Variance-explained row at the bottom (divided by the 18 facets)
+  VAR_ROW <- tibble(Facet = "VAR EXPLAINED") %>%
+    bind_cols(as_tibble(t(round(colSums(L^2) / ncol(FACETS), 3))))
+  OUT <- bind_rows(OUT, VAR_ROW)
 
-# export to the separate exports workbook (never the master)
-writexl::write_xlsx(list(P_FACETS_2_VARIMAX = FAC_P2),
-                    "/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx")
+  # 7. Print the headline, and open the table when working interactively
+  cat("\n====", NAME, "| facets |", NFACT, "factors |", ROT, "|", METHOD, "====\n")
+  print(VAR_ROW %>% select(-Facet))
+  if (interactive()) View(OUT)
 
+  # 8. Save for the slides: e.g. "fac_p5_varimax.rds"
+  saveRDS(OUT, paste0("fac_", tolower(PREFIX), NFACT, "_", ROT, ".rds"))
 
-saveRDS(FAC_P2, "fac_p2.rds")
+  # 9. Write to its own sheet in the exports workbook (skipped with a message if it can't)
+  tryCatch({
+    SHEET <- paste(PREFIX, "FACETS", NFACT, ROT, METHOD, sep = "_")   # e.g. "P_FACETS_5_varimax_minres"
+
+    wb <- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
+    if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
+
+    openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
+    openxlsx::writeData(wb, SHEET, OUT)
+    openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
+
+    cat("Written to sheet", SHEET, "in", basename(FILE), "\n")
+  }, error = function(e) {
+    cat("Excel export skipped:", conditionMessage(e), "\n")
+  })
+
+  # 10. Hand back the table (and the full FA result)
+  invisible(list(loadings = OUT, fa = FA))
+}
 
 
 
@@ -1351,8 +1383,52 @@ saveRDS(FAC_P2, "fac_p2.rds")
     
     
     
-    
-    
+     R2 <- run_fa_facets(P_FACETS, 2, ROT = "varimax")     # expect .289 and .205
+     R3 <- run_fa_facets(P_FACETS, 3, ROT = "varimax")
+     R4 <- run_fa_facets(P_FACETS, 4, ROT = "varimax")     # saves fac_p4_varimax.rds
+     R5 <- run_fa_facets(P_FACETS, 5, ROT = "varimax")
+     
+     
+     
+   
+     ###############################################################################################
+     # Need assistance for this code:  Stitching, cbind-ing three frames together
+     # Review knitting within an r-block - assumed that was only a xaranigan step
+
+
+library(dplyr)
+options(knitr.kable.NA = "")
+TH <- .40
+
+fmt_fac <- function(TAB) {
+  VAR <- TAB$Facet == "VAR EXPLAINED"
+  TAB %>%
+    mutate(across(matches("^F\\d+$"), ~ ifelse(VAR, sprintf("%.3f", .x),
+                                        ifelse(abs(.x) >= TH,
+                                               sprintf("<b>%.2f</b>", .x),
+                                               sprintf('<span style="color:#bbbbbb;">%.2f</span>', .x))))) %>%
+    select(Facet, matches("^F\\d+$"))
+}
+
+T3 <- readRDS("fac_p3_varimax.rds")
+T4 <- readRDS("fac_p4_varimax.rds")[match(T3$Code, readRDS("fac_p4_varimax.rds")$Code), ]
+T5 <- readRDS("fac_p5_varimax.rds")[match(T3$Code, readRDS("fac_p5_varimax.rds")$Code), ]
+
+COMB <- bind_cols(fmt_fac(T3),
+                  fmt_fac(T4) %>% select(-Facet),
+                  fmt_fac(T5) %>% select(-Facet),
+                  .name_repair = "minimal")
+
+knitr::kable(COMB, format = "html", escape = FALSE,
+             col.names = c("Facet", paste0("F", 1:3), paste0("F", 1:4), paste0("F", 1:5)),
+             align = c("l", rep("c", 12)),
+             table.attr = 'style="font-size: 50%;"') %>%
+  kableExtra::add_header_above(c(" " = 1, "Three Factors" = 3, "Four Factors" = 4, "Five Factors" = 5))
+     
+     
+     
+     
+     
 
 
 ```
