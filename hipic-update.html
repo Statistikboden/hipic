@@ -115,7 +115,7 @@ background-size: cover
 }
 
 .pink { color: #ef8de4; }
-
+.ltblue {color: #8cc0f0}
 
 .footnote-center {
   position: absolute;
@@ -163,6 +163,19 @@ background-size: cover
 ul li ul, ol li ul {
   margin-top: 5px; /* Adjust this value to get the perfect gap */
 }
+
+.cmp-table td, .cmp-table th { padding: 6px 6px; vertical-align: center; text-align: center; }
+.cmp-table { font-size: 90%; margin-left: auto; margin-right: auto; width: 90%; }
+.cmp-table td:first-child { text-align: left; width=22% }
+
+.item-cmp table { font-size: 75%; table-layout: fixed; } 
+
+.item-cmp td, .item-cmp th { padding: 3px 10px; }
+
+/* .item-cmp table { font-size: 75%; width: 75%; table-layout: fixed; } */
+
+.kmo-slide .remark-code { font-size: 60%; }
+
 
 
 
@@ -2048,7 +2061,52 @@ Parallel analysis retains 2 factors (actual eigenvalues above random).&lt;br&gt;
 - .blue[**Our Choice:**]  Run both. Two factors, the structure the data clearly support, and five factors, the structure both models predict, for comparison with the HiPIC and NEO domains and with published.  It may also be worthwhile to investiage the structures of the 3- and 4-factor models.
 
 ---
+class: kmo-slide
 
+## Run the Keiser-Meyer-Okin (KMO) suitability analysis
+
+- The Keiser-Meyer-Okin measure (KMO) compares the correlations between facets with their **partial** correlations, what remains after removing the influence of all the other facets.
+
+- When facets share common ground, the partial correlations are small and KMO approaches 1.
+
+- It's calculated **overall** and **for each facet**. Bartlett's test adds a check that the facets are correlated at all.
+
+
+
+
+
+``` r
+R    &lt;- cor(P_FACETS)                               # 18 x 18 facet correlations
+KMOP &lt;- KMO(R)   
+BART &lt;- cortest.bartlett(R, n = nrow(P_FACETS))     # Bartlett's test
+
+# Overall
+data.frame(KMO   = round(KMOP$MSA, 2),
+           ChiSq = round(BART$chisq, 1),
+           df    = BART$df,
+           p     = format.pval(BART$p.value, eps = .001))
+```
+
+```
+##   KMO ChiSq  df       p
+## 1 0.8 809.1 153 &lt; 0.001
+```
+
+``` r
+# Per facet, weakest first
+sort(round(KMOP$MSAi, 2))
+```
+
+```
+## BE_EGO CO_PER ES_ANX EX_EXP EX_SHY BE_DOM EX_ENE BE_ALT CO_ACH ES_CON CO_CNC 
+##   0.57   0.66   0.67   0.68   0.69   0.70   0.76   0.80   0.80   0.82   0.82 
+## IM_INT IM_CRE IM_CUR BE_COM CO_ORD EX_OPT BE_IRR 
+##   0.83   0.85   0.86   0.86   0.86   0.87   0.87
+```
+
+.footnote-center[KMO: above .80 = good, below .50 = unsuitable.]
+
+---
 ## Two-Factor Solution (Varimax): Parent Report - Facets
 
 &lt;table style="font-size: 50%; margin-left: auto; margin-right: auto;"&gt;
@@ -2564,6 +2622,158 @@ class: facet-cmp
 &lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.9em;"&gt;
 Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.&lt;br&gt;Rows in the same order across solutions; factor numbers are not comparable between solutions.&lt;br&gt;Full results in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=FOgBBC&amp;nav=MTVfezU5MjBDMEI2LTg5N0EtRTA0My1BNkI5LTJFODUzRTIzMkIxRX0" target="_blank"&gt;Excel file&lt;/a&gt;.
 &lt;/p&gt;
+
+
+---
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 6
+### Compare the structure of the HiPIC with other personality inventories, such as the .pink[BFI-2], highlighting overlap and differences in domain structure and in the framing of certain questions.
+
+---
+## BFI-2 and HiPIC: How They Compare
+
+&lt;table class="cmp-table"&gt;
+  &lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;BFI-2 (Long Form)&lt;/th&gt;&lt;th&gt;HiPIC&lt;/th&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Items&lt;/b&gt;&lt;/td&gt;&lt;td&gt;60&lt;/td&gt;&lt;td&gt;144&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Domains&lt;/b&gt;&lt;/td&gt;
+      &lt;td&gt;Extraversion&lt;br&gt;Agreeableness&lt;br&gt;Conscientiousness&lt;br&gt;Negative Emotionality&lt;br&gt;Open-Mindedness&lt;/td&gt;
+      &lt;td&gt;Extraversion&lt;br&gt;Benevolence&lt;br&gt;Conscientiousness&lt;br&gt;Emotional Stability (reversed)&lt;br&gt;Imagination&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Facets&lt;/b&gt;&lt;/td&gt;&lt;td&gt;15 (4 items each)&lt;/td&gt;&lt;td&gt;18 (8 items each)&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Closely corresponding facets&lt;/b&gt;&lt;/td&gt;
+      &lt;td center colspan="2"&gt;Sociability ↔ Shyness · Energy Level ↔ Energy · Compassion ↔ Altruism · Respectfulness ↔ Compliance ·
+      Organization ↔ Order · Productiveness ↔ Perseverance · Anxiety ↔ Anxiety · &lt;span style="white-space: nowrap;"&gt;Creative Imagination ↔ Creativity&lt;/span&gt; ·
+      Intellectual Curiosity ↔ Curiosity&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Unique facets&lt;/b&gt;&lt;/td&gt;
+      &lt;td&gt;Trust · Responsibility · Aesthetic Sensitivity&lt;/td&gt;
+      &lt;td&gt;Concentration · Achievement Motivation · Intellect&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Same content, different domain&lt;/b&gt;&lt;/td&gt;
+      &lt;td colspan="2"&gt;Irritability, Dominance, Optimism and Self-Confidence appear in both instruments: in the HiPIC under
+      Benevolence, Extraversion and Emotional Stability; in the BFI-2 under Negative Emotionality and Extraversion.&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;&lt;b&gt;Reverse-keyed items&lt;/b&gt;&lt;/td&gt;
+      &lt;td&gt;30 of 60, balanced in every scale&lt;/td&gt;
+      &lt;td&gt;36 of 144, 0–6 per facet&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+
+---
+class: item-cmp
+
+## BFI-2 and HiPIC: Example Items by Domain
+
+.panelset[
+.panel[.panel-name[Extraversion]
+
+| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
+|:--:|:--|:--:|:--|:--:|
+| 1 | Is outgoing, sociable | 1&lt;br&gt;55 | I talk to people easily (R)&lt;br&gt;I try to establish contact with new classmates (R) | Similar |
+| 6 | Has an assertive personality | 70&lt;br&gt;142 | I impose my will&lt;br&gt;I put myself to the forefront | Related |
+| 11 | Rarely feels excited or eager (R) | 33 | I burst with enthusiasm | Similar |
+| 16 | Tends to be quiet (R) | 60&lt;br&gt;78 | I say little on my own initiative (R)&lt;br&gt;I talk the whole day long | Similar |
+| 21 | Is dominant, acts as a leader | 106&lt;br&gt;34 | I take the lead in games with peers&lt;br&gt;I act like the boss | Similar |
+| 26 | Is less active than other people (R) | 15 | I am constantly on the move | Similar |
+| 31 | Is sometimes shy, introverted (R) | 73&lt;br&gt;91 | I withdraw into myself&lt;br&gt;I need time to get used to peers | Similar |
+| 36 | Finds it hard to influence people (R) | 70 | I impose my will | Related |
+| 41 | Is full of energy | 51 | I have excessive energy | Equivalent |
+| 46 | Is talkative | 78 | I talk the whole day long | Equivalent |
+| 51 | Prefers to have others take charge (R) | 16 | I am a follower rather than a leader (R) | Equivalent |
+| 56 | Shows a lot of enthusiasm | 33 | I burst with enthusiasm | Equivalent |
+
+]
+
+.panel[.panel-name[Agreeableness]
+
+| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form)| Match |
+|:--:|:--|:--:|:--|:--:|
+| 2 | Is compassionate, has a soft heart | 90&lt;br&gt;108 | I sympathise with anyone who is sad&lt;br&gt;I show concern for other children | Similar |
+| 7 | Is respectful, treats others with respect | 12 | I respect rules of politeness | Similar |
+| 12 | Tends to find fault with others (R) | — | — | None |
+| 17 | Feels little sympathy for others (R) | 90 | I sympathise with anyone who is sad | Similar |
+| 22 | Starts arguments with others (R) | 25 | I am quick to argue | Equivalent |
+| 27 | Has a forgiving nature | — | — | None |
+| 32 | Is helpful and unselfish with others | 72&lt;br&gt;126 | I am ready to help anybody&lt;br&gt;I give to others | Equivalent |
+| 37 | Is sometimes rude to others (R) | 12&lt;br&gt;43 | I respect rules of politeness&lt;br&gt;I am quick to lash out | Similar |
+| 42 | Is suspicious of others' intentions (R) | — | — | None |
+| 47 | Can be cold and uncaring (R) | 108&lt;br&gt;54 | I show concern for other children&lt;br&gt;I am concerned about what happens to others | Similar |
+| 52 | Is polite, courteous to others | 12 | I respect rules of politeness | Equivalent |
+| 57 | Assumes the best about people | — | — | None |
+
+]
+.panel[.panel-name[Conscientiousness]
+
+| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
+|:--:|:--|:--:|:--|:--:|
+| 3 | Tends to be disorganized (R) | 26&lt;br&gt;8 | I have a sense of order&lt;br&gt;I leave everything lying around (R) | Similar |
+| 8 | Tends to be lazy (R) | 17&lt;br&gt;35 | I take the easiest way out (R)&lt;br&gt;I prefer the easy way in life (R) | Similar |
+| 13 | Is dependable, steady | — | — | None |
+| 18 | Is systematic, likes to keep things in order | 26 | I have a sense of order | Equivalent |
+| 23 | Has difficulty getting started on tasks (R) | 89 | I postpone troublesome things (R) | Similar |
+| 28 | Can be somewhat careless (R) | 62 | I act without thinking (R) | Related |
+| 33 | Keeps things neat and tidy | 134&lt;br&gt;44 | I do work in a careful and neat way&lt;br&gt;I make a mess of things (R) | Similar |
+| 38 | Is efficient, gets things done | 67 | I finish tasks to the very end | Similar |
+| 43 | Is reliable, can always be counted on | — | — | None |
+| 48 | Leaves a mess, doesn't clean up (R) | 44&lt;br&gt;80 | I make a mess of things (R)&lt;br&gt;I hate cleaning up (R) | Equivalent |
+| 53 | Is persistent, works until the task is finished | 125&lt;br&gt;67 | I persevere until the goal is achieved&lt;br&gt;I finish tasks to the very end | Equivalent |
+| 58 | Sometimes behaves irresponsibly (R) | 62 | I act without thinking (R) | Related |
+
+]
+.panel[.panel-name[Negative Emotionality]
+
+| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
+|:--:|:--|:--:|:--|:--:|
+| 4 | Is relaxed, handles stress well (R) | 4 | I am quick to panic | Similar |
+| 9 | Stays optimistic after experiencing a setback (R) | 47&lt;br&gt;76 | I see the sunny side of life&lt;br&gt;I am discouraged by possible failure | Similar |
+| 14 | Is moody, has up and down mood swings | 115 | I am readily irritated | Related |
+| 19 | Can be tense | 40 | I am quick to worry | Related |
+| 24 | Feels secure, comfortable with self (R) | 117&lt;br&gt;27 | I feel at ease with myself&lt;br&gt;I feel inferior (R) | Equivalent |
+| 29 | Is emotionally stable, not easily upset (R) | 97&lt;br&gt;7 | I am easily annoyed&lt;br&gt;I am quick to be offended | Related |
+| 34 | Worries a lot | 40 | I am quick to worry | Equivalent |
+| 39 | Often feels sad | 112 | I am easily depressed | Similar |
+| 44 | Keeps their emotions under control (R) | 79 | I keep self-control in difficult situations (R) | Equivalent |
+| 49 | Rarely feels anxious or afraid (R) | 130&lt;br&gt;4 | I am readily scared&lt;br&gt;I am quick to panic | Similar |
+| 54 | Tends to feel depressed, blue | 112 | I am easily depressed | Equivalent |
+| 59 | Is temperamental, gets emotional easily | 133&lt;br&gt;61 | I am quick to get angry&lt;br&gt;I burst into rage at setbacks | Similar |
+
+]
+
+.panel[.panel-name[Open-Mindedness]
+
+| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
+|:--:|:--|:--:|:--|:--:|
+| 5 | Has few artistic interests (R) | 77 | I like to draw | Related |
+| 10 | Is curious about many different things | 100&lt;br&gt;46 | I am interested in everything&lt;br&gt;I have many interests | Equivalent |
+| 15 | Is inventive, finds clever ways to do things | 23 | I use everyday things in a new way | Similar |
+| 20 | Is fascinated by art, music, or literature | 77&lt;br&gt;59 | I like to draw&lt;br&gt;I enjoy creating things | Related |
+| 25 | Avoids intellectual, philosophical discussions (R) | — | — | None |
+| 30 | Has little creativity (R) | 41 | I lack creativity (R) | Equivalent |
+| 35 | Values art and beauty | 77 | I like to draw | Related |
+| 40 | Is complex, a deep thinker | 32 | I express my thoughts well | Related |
+| 45 | Has difficulty imagining things (R) | 5&lt;br&gt;113 | I have little imagination (R)&lt;br&gt;I have a rich imagination | Equivalent |
+| 50 | Thinks poetry and plays are boring (R) | — | — | None |
+| 55 | Has little interest in abstract ideas (R) | 28 | I ask many "why" questions | Related |
+| 60 | Is original, comes up with new ideas | 95 | I have original ideas | Equivalent |
+
+]
+]
+
+
+---
+
+## Before Using the Mapping: Cautions
+
+- **A judgement, not a validation.** The Equivalent / Similar / Related ratings reflect my reading of the item content. Others with more experience or a different perspective may rate pairs differently; and similar wording may not mean the items measure the same thing.
+
+- **Two different instruments.** The BFI-2 and the HiPIC differ in instructions, response anchors, and target age.  The HiPIC's child-form wording is written for younger readers. A "matched" pair is comparable in content, not interchangeable in scores.
+
+- **Gaps run both ways.** The HiPIC has no .ltblue[Trust items] and almost no .ltblue[Responsibility items.] The BFI-2 has no .ltblue[Concentration, Achievement Motivation or Intellect] items.
+
+- **Same content, different domain.** Irritability, Dominance, Optimism and Self-Confidence sit in different domains in the two instruments.
+
+- **A subset is a new instrument.** It's important to remember that a dropping HiPIC items invalidates its facet and domain scores and its norms. A short form needs its own reliability and validity evidence, and the reverse-keying balance should be checked.
+
+- **Selection shapes the result.** Items chosen for BFI-2-like content will tend to produce a BFI-2-like factor structure. Target structures should be written down before any factor analysis.
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

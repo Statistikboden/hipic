@@ -1206,6 +1206,40 @@ function(DATA) {
     
     
     
+    test <- NULL                                  # "nothing at all": cbind() simply ignores it
+    
+    for (x in 0:2) {
+      
+      LABEL <- c("Males", "Females", "All")[x + 1]        # 0 -> Males, 1 -> Females, 2 -> All
+      
+      temp <- BASEC %>%
+        filter(as.numeric(MODEL) == x) %>%
+        group_by(MODEL, VARNAME) %>%
+        summarise(
+          MAL = sprintf("%.2f ± %.2f", MAL[`_STAT_` == "MEAN"], MAL[`_STAT_` == "STD"]),
+          CON = sprintf("%.2f ± %.2f", CON[`_STAT_` == "MEAN"], CON[`_STAT_` == "STD"]),
+          t   = round(ALL[`_STAT_` == "TTEST WELCH"], 2),
+          p   = round(ALL[`_STAT_` == "PVALUE"], 3),
+          .groups = "drop") %>%
+        select(-MODEL) %>%                                   # the block's label replaces MODEL
+        rename_with(~ paste(LABEL, .x), c(MAL, CON, t, p))   # e.g. "Males MAL", "Females p"
+      
+      
+      test <- if (x == 0) temp else cbind(test, temp)
+      
+    }
+    
+    names(test)
+    dim(test)        # expect 23 rows, 13 columns
+    
+    
+    print(temp)
+    
+    
+    
+    
+    
+    
     
     
     

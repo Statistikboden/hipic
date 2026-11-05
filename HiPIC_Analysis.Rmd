@@ -1431,5 +1431,41 @@ knitr::kable(COMB, format = "html", escape = FALSE,
 
 
 ```
+```{r kmo-facets, echo=TRUE, comment=""}
+library(psych)
+
+# KMO and Bartlett's test for one set of facet scores
+kmo_row <- function(DSN) {
+  R    <- cor(DSN)                                  # 18 x 18 correlation matrix
+  BART <- cortest.bartlett(R, n = nrow(DSN))        # Bartlett's test needs the sample size
+  data.frame(KMO   = round(KMO(R)$MSA, 2),
+             ChiSq = round(BART$chisq, 1),
+             df    = BART$df,
+             p     = format.pval(BART$p.value, eps = .001))
+}
+
+rbind(Children = kmo_row(C_FACETS),
+      Parents  = kmo_row(P_FACETS))
+
+saveRDS(P_FACETS, "kmo_facets_parent.rds")
+saveRDS(C_FACETS, "kmo_facets_child.rds")
+
+```
+
+
+
+```{r kmo-each, echo=TRUE, comment=""}
+
+library(psych)
+
+MSA <- data.frame(Children = round(KMO(cor(C_FACETS))$MSAi, 2),
+                  Parents  = round(KMO(cor(P_FACETS))$MSAi, 2))
+
+MSA[order(MSA$Children), ]                 # weakest facets first
+```
+
+
+
+
 
 

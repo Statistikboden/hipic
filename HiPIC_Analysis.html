@@ -601,7 +601,7 @@ library(misty)</code></pre>
 <pre><code>## The following objects are masked from &#39;package:openxlsx&#39;:
 ## 
 ##     read.xlsx, write.xlsx</code></pre>
-<pre class="r"><code>CHILD_RAW &lt;- read_sas(&quot;/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat&quot;)
+<pre class="r"><code>CHILD_RAW  &lt;- read_sas(&quot;/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat&quot;)
 PARENT_RAW &lt;- read_sas(&quot;/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat&quot;)</code></pre>
 </div>
 <div id="a.-initial-data-quality-assessment" class="section level2">
@@ -4803,6 +4803,55 @@ VAR EXPLAINED
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>library(psych)</code></pre>
+<pre><code>Warning: package &#39;psych&#39; was built under R version 4.4.3</code></pre>
+<pre><code>
+Attaching package: &#39;psych&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:ggplot2&#39;:
+
+    %+%, alpha</code></pre>
+<pre class="r"><code># KMO and Bartlett&#39;s test for one set of facet scores
+kmo_row &lt;- function(DSN) {
+  R    &lt;- cor(DSN)                                  # 18 x 18 correlation matrix
+  BART &lt;- cortest.bartlett(R, n = nrow(DSN))        # Bartlett&#39;s test needs the sample size
+  data.frame(KMO   = round(KMO(R)$MSA, 2),
+             ChiSq = round(BART$chisq, 1),
+             df    = BART$df,
+             p     = format.pval(BART$p.value, eps = .001))
+}
+
+rbind(Children = kmo_row(C_FACETS),
+      Parents  = kmo_row(P_FACETS))</code></pre>
+<pre><code>          KMO ChiSq  df       p
+Children 0.85 770.9 153 &lt; 0.001
+Parents  0.80 809.1 153 &lt; 0.001</code></pre>
+<pre class="r"><code>saveRDS(P_FACETS, &quot;kmo_facets_parent.rds&quot;)
+saveRDS(C_FACETS, &quot;kmo_facets_child.rds&quot;)</code></pre>
+<pre class="r"><code>library(psych)
+
+MSA &lt;- data.frame(Children = round(KMO(cor(C_FACETS))$MSAi, 2),
+                  Parents  = round(KMO(cor(P_FACETS))$MSAi, 2))
+
+MSA[order(MSA$Children), ]                 # weakest facets first</code></pre>
+<pre><code>       Children Parents
+ES_ANX     0.49    0.67
+BE_EGO     0.71    0.57
+BE_DOM     0.78    0.70
+CO_CNC     0.80    0.82
+IM_INT     0.83    0.83
+BE_IRR     0.83    0.87
+EX_OPT     0.84    0.87
+CO_ORD     0.84    0.86
+IM_CRE     0.85    0.85
+BE_ALT     0.87    0.80
+EX_ENE     0.88    0.76
+IM_CUR     0.88    0.86
+CO_ACH     0.88    0.80
+ES_CON     0.89    0.82
+EX_EXP     0.90    0.68
+EX_SHY     0.91    0.69
+BE_COM     0.91    0.86
+CO_PER     0.91    0.66</code></pre>
 </div>
 
 
