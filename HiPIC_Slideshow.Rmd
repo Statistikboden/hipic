@@ -28,7 +28,9 @@ output:
 --- 
 class: title-slide, left,middle, left, inverse, hide-count
 
-background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/austin-pacheco-FtL07GM9Q7Y-unsplash.jpg)
+
+background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/title-bg.jpg)
+<!-- background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/austin-pacheco-FtL07GM9Q7Y-unsplash.jpg) -->
 background-size: cover
 
 ```{r xaringan-themer, include=FALSE, warning=FALSE}
