@@ -1372,7 +1372,6 @@ N   <- table(MAP$Match)
 
 ```{r map-table-dt, echo=FALSE, message=FALSE, warning=FALSE}
 
-
 MAP_DT <- MAP %>% mutate(`HiPIC #` = as.character(`HiPIC #`))
 
 widgetframe::frameWidget(
@@ -1386,14 +1385,13 @@ widgetframe::frameWidget(
                                 dom        = "tip",
                                 autoWidth  = TRUE,
                                 columnDefs = list(list(width = "5%",  targets = 0),
-                                                  list(width = "34%", targets = c(1, 2)),
-                                                  list(width = "16%", targets = 3),
+                                                  list(width = "32%", targets = c(1, 2)),
+                                                  list(width = "15%", targets = 3),
                                                   list(width = "8%",  targets = 4),
                                                   list(className = "dt-center", targets = c(0, 4))))),
   height = 470, width = "100%")
-
-
 ```
+
 
 
 ---
