@@ -1451,8 +1451,7 @@ kmo_row <- function(DSN) {
 rbind(Children = kmo_row(C_FACETS),
       Parents  = kmo_row(P_FACETS))
 
-saveRDS(P_FACETS, "kmo_facets_parent.rds")
-saveRDS(C_FACETS, "kmo_facets_child.rds")
+
 
 ```
 
@@ -1468,8 +1467,181 @@ MSA <- data.frame(Children = round(KMO(cor(C_FACETS))$MSAi, 2),
 MSA[order(MSA$Children), ]                 # weakest facets first
 ```
 
+```{r hipic-bifd2-compare, echo=T}
 
 
+
+MAPQ <- read.csv("hipic_bfi2_map.csv")
+HM   <- MAPQ$HIPIC_Q[MAPQ$MATCH %in% c("Equivalent", "Similar")]    # 68 items
+HML  <- MAPQ$HIPIC_Q[MAPQ$MATCH != "None"]                          # 120 items
+
+# Factorability checks for one subset of one dataset
+check_subset <- function(DSN, PREFIX, Q, LABEL) {
+  X    <- DSN %>% select(starts_with(paste0(PREFIX, Q, "_")))
+  R    <- cor(X)
+  FULL <- qr(R)$rank == ncol(R)                       # can the matrix be inverted?
+  data.frame(Subset     = LABEL,
+             Items      = ncol(X),
+             N          = nrow(X),
+             Reversed   = sum(Q %in% REVERSE_ITEMS),
+             Rank       = qr(R)$rank,
+             KMO        = if (FULL) sprintf("%.2f", psych::KMO(R)$MSA) else "Not computable",
+             Bartlett_p = if (FULL) format.pval(psych::cortest.bartlett(R, n = nrow(X))$p.value, eps = .001)
+                          else "Not computable")
+}
+
+E_ONLY <- MAPQ$HIPIC_Q[MAPQ$MATCH == "Equivalent"]                       # 24
+HM     <- MAPQ$HIPIC_Q[MAPQ$MATCH %in% c("Equivalent", "Similar")]       # 68
+HML    <- MAPQ$HIPIC_Q[MAPQ$MATCH != "None"]                             # 120
+
+KMO_SUBSETS <- rbind(
+  check_subset(PARENT_REVERSED, "P", E_ONLY, "Parents: Equivalent"),
+  check_subset(PARENT_REVERSED, "P", HM,     "Parents: Equivalent/Similar"),
+  check_subset(PARENT_REVERSED, "P", HML,    "Parents: Equivalent/Similar/Related"),
+  check_subset(CHILD_REVERSED,  "C", E_ONLY, "Children: Equivalent"),
+  check_subset(CHILD_REVERSED,  "C", HM,     "Children: Equivalent/Similar"),
+  check_subset(CHILD_REVERSED,  "C", HML,    "Children: Equivalent/Similar/Related"))
+
+KMO_SUBSETS
+saveRDS(KMO_SUBSETS, "kmo_subsets.rds")
+
+```
+
+``` {r factor-analysis-bif2-crossmap}
+
+B2 <- read.csv("bfi2_items.csv")
+
+
+
+#Scree Plot #
+
+
+set.seed(2026)
+PA_EQ <- psych::fa.parallel(X, fm = "minres", fa = "fa", plot = FALSE)
+
+png("images/scree_equivalent_parent.png", width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))
+plot(1:24, PA_EQ$fa.values, type = "b", pch = 19, col = "#006cc5",
+     xlab = "Factor", ylab = "Eigenvalue", main = "")
+lines(1:24, PA_EQ$fa.sim, lty = 2, col = "grey40")
+abline(v = 3.5, lty = 3, col = "grey60")                 # where parallel analysis stops
+legend("topright", c("Actual data", "Random data (parallel analysis)"),
+       col = c("#006cc5", "grey40"), lty = c(1, 2), pch = c(19, NA), bty = "n")
+dev.off()
+
+
+
+
+
+# The 24 Equivalent items, with the BFI-2 domain of their (first) matched item
+EQ <- MAPQ %>%
+  filter(MATCH == "Equivalent") %>%
+  mutate(BFI2_Q = as.integer(sub(";.*", "", BFI2_Q))) %>%
+  left_join(B2, by = "BFI2_Q")
+
+X <- PARENT_REVERSED %>% select(starts_with(paste0("P", EQ$HIPIC_Q, "_")))
+Q <- as.integer(sub("^P(\\d+)_.*", "\\1", names(X)))        # item numbers, in column order
+
+# 1a. How many factors do the data support?
+set.seed(2026)
+psych::fa.parallel(X, fm = "minres", fa = "fa", plot = FALSE)
+
+# 1b. Five-factor solution
+FA_EQ <- psych::fa(X, nfactors = 5, fm = "minres", rotate = "varimax")
+FA_EQ$Vaccounted["Proportion Var", ]                       # variance per factor
+
+# 1c. Bottom line: BFI-2 domain (rows) by each item's strongest factor (columns)
+L <- unclass(FA_EQ$loadings)
+PRIMARY <- paste0("F", apply(abs(L), 1, which.max))
+table(Domain = EQ$BFI2_DOMAIN[match(Q, EQ$HIPIC_Q)], Factor = PRIMARY)
+
+
+
+# 2a. Three-factor solution
+FA_EQ3 <- psych::fa(X, nfactors = 3, fm = "minres", rotate = "varimax")
+FA_EQ3$Vaccounted["Proportion Var", ]                       # variance per factor
+
+# 2b. Bottom line: BFI-2 domain (rows) by each item's strongest factor (columns)
+L3 <- unclass(FA_EQ3$loadings)
+PRIMARY3 <- paste0("F", apply(abs(L3), 1, which.max))
+table(Domain = EQ$BFI2_DOMAIN[match(Q, EQ$HIPIC_Q)], Factor = PRIMARY3)
+
+# 2c. The detail, for reading the factors
+print(FA_EQ3$loadings, cutoff = .30, sort = TRUE)
+
+
+
+# 3a. Four-factor solution
+FA_EQ4 <- psych::fa(X, nfactors = 4, fm = "minres", rotate = "varimax")
+FA_EQ4$Vaccounted["Proportion Var", ]                       # variance per factor
+
+# 3b. Bottom line: BFI-2 domain (rows) by each item's strongest factor (columns)
+L4 <- unclass(FA_EQ4$loadings)
+PRIMARY4 <- paste0("F", apply(abs(L4), 1, which.max))
+table(Domain = EQ$BFI2_DOMAIN[match(Q, EQ$HIPIC_Q)], Factor = PRIMARY4)
+
+# 3c. The detail, for reading the factors
+print(FA_EQ4$loadings, cutoff = .30, sort = TRUE)
+
+
+#4.  Eigen Values Patchwork 
+
+EV_EQ <- eigen(cor(X))$values                       # eigenvalues of the 24-item correlation matrix
+
+EIG_EQ <- tibble(Factor     = 1:10,
+                 Eigenvalue = round(EV_EQ[1:10], 2),
+                 Difference = round(EV_EQ[1:10] - EV_EQ[2:11], 2),
+                 Proportion = round(EV_EQ[1:10] / 24, 3),       # 24 items, not 144
+                 Cumulative = round(cumsum(EV_EQ)[1:10] / 24, 3))
+
+EIG_EQ
+saveRDS(EIG_EQ, "eig_equivalent_parent.rds")
+
+
+
+```
+
+
+``` {r array-fa-comparison-bfi1}
+
+
+# One loadings table per solution, sorted by each item's strongest factor,
+# with a variance-explained row at the bottom
+make_load_tab <- function(FA) {
+  L <- unclass(FA$loadings)
+  L <- L[, order(-colSums(L^2)), drop = FALSE]                  # factors in size order, as in the cross-tabs
+  colnames(L) <- paste0("F", 1:ncol(L))
+
+  q    <- as.integer(sub("^P(\\d+)_.*", "\\1", rownames(L)))
+  prim <- apply(abs(L), 1, which.max)
+  mx   <- apply(abs(L), 1, max)
+
+  # Loadings as text: blank below .30, strongest in bold
+  CELLS <- sapply(1:ncol(L), function(k)
+    ifelse(abs(L[, k]) < .30, "",
+           ifelse(prim == k, sprintf("<b>%.2f</b>", L[, k]), sprintf("%.2f", L[, k]))))
+  colnames(CELLS) <- colnames(L)
+
+  WORD <- PARENT_ALIGNED$PARENT_Q_WORDING[match(q, PARENT_ALIGNED$Q_NEW)]
+
+  TAB <- data.frame(HiQ                  = as.character(q),
+                    `Item (Parent form)` = paste0(WORD, ifelse(q %in% REVERSE_ITEMS, " (R)", "")),
+                    `BFI-2 Domain`       = EQ$BFI2_DOMAIN[match(q, EQ$HIPIC_Q)],
+                    CELLS,
+                    h2                   = sprintf("%.2f", FA$communality),
+                    check.names = FALSE)
+  TAB <- TAB[order(prim, -mx), ]
+
+  # Variance explained: each factor, and the total under h2
+  VAR  <- colSums(L^2) / nrow(L)
+  VROW <- c("", "Variance explained", "", sprintf("%.1f%%", 100 * VAR), sprintf("%.1f%%", 100 * sum(VAR)))
+  rbind(TAB, setNames(as.list(VROW), names(TAB)))
+}
+
+saveRDS(make_load_tab(FA_EQ3), "load_eq3_parent.rds")
+saveRDS(make_load_tab(FA_EQ4), "load_eq4_parent.rds")
+saveRDS(make_load_tab(FA_EQ),  "load_eq5_parent.rds")
+```
 
 
 

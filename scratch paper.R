@@ -9,6 +9,7 @@
 
 
 
+.small-note[**`r sum(MAP$Match != "None")` of the 144 HiPIC items have a BFI-2 counterpart:** `r N["Equivalent"]` Equivalent, `r N["Similar"]` Similar, `r N["Related"]` Related; `r N["None"]` have none. Search, sort or filter the table below.]
 
 
 

@@ -246,6 +246,36 @@ ul li ul, ol li ul {
 .gd-table td, .gd-table th { padding: 2px 8px; }
 
 
+/* Add to the deck's CSS chunk. */
+
+/* One-line notes under a slide title (panel slide, table slide, no-counterpart slide) */
+.small-note { font-size: 60%; margin: 0.2em 0 0.6em 0; }
+
+/* Interactive HiPIC-BFI-2 table: shrink everything DT draws, including the filter boxes */
+.map-table .dataTables_wrapper { font-size: 55%; }
+.map-table table.dataTable td,
+.map-table table.dataTable th { padding: 3px 6px; vertical-align: top; }
+.map-table .dataTables_wrapper input,
+.map-table .dataTables_wrapper select { font-size: 90%; }
+
+
+.note {
+  font-size: 0.7rem;      /* rem: the same size on every slide, whatever it's nested in */
+  text-align: center;
+  margin-top: 1em;
+}
+
+
+.note-standard {
+ 
+  text-align: center;
+  margin-top: 1em;
+}
+
+
+.load-cmp table { font-size: 50%; }
+.load-cmp td, .load-cmp th { padding: 1px 8px; }
+
 ```
 
 ```{r xaringanExtra, echo=FALSE}
@@ -1070,7 +1100,8 @@ sort(round(KMOP$MSAi, 2))
 
 ```
 
-.footnote-center[KMO: above .80 = good, below .50 = unsuitable.]
+
+.note[KMO: above .80 = good, below .50 = unsuitable.]
 
 ---
 ## Two-Factor Solution (Varimax): Parent Report - Facets
@@ -1188,7 +1219,9 @@ background-size: cover
 ---
 class: item-cmp
 
-## BFI-2 and HiPIC: Example Items by Domain
+## BFI-2 and HiPIC: Mappings Organized by BFI-2 Domain
+
+<!-- .small-note[Tabs group items by their **BFI-2** domain, for organization only. Matches were judged on item wording alone, regardless of where each item sits in the HiPIC. Each BFI-2 item shows its closest HiPIC match(es); the full HiPIC-side mapping follows.] -->
 
 .panelset[
 .panel[.panel-name[Extraversion]
@@ -1212,7 +1245,7 @@ class: item-cmp
 
 .panel[.panel-name[Agreeableness]
 
-| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form)| Match |
+| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 2 | Is compassionate, has a soft heart | 90<br>108 | I sympathise with anyone who is sad<br>I show concern for other children | Similar |
 | 7 | Is respectful, treats others with respect | 12 | I respect rules of politeness | Similar |
@@ -1222,46 +1255,48 @@ class: item-cmp
 | 27 | Has a forgiving nature | — | — | None |
 | 32 | Is helpful and unselfish with others | 72<br>126 | I am ready to help anybody<br>I give to others | Equivalent |
 | 37 | Is sometimes rude to others (R) | 12<br>43 | I respect rules of politeness<br>I am quick to lash out | Similar |
-| 42 | Is suspicious of others' intentions (R) | — | — | None |
+| 42 | Is suspicious of others' intentions (R) | 127 | I take a wait-and-see attitude to strangers | Related |
 | 47 | Can be cold and uncaring (R) | 108<br>54 | I show concern for other children<br>I am concerned about what happens to others | Similar |
 | 52 | Is polite, courteous to others | 12 | I respect rules of politeness | Equivalent |
-| 57 | Assumes the best about people | — | — | None |
+| 57 | Assumes the best about people | 127 | I take a wait-and-see attitude to strangers | Related |
 
 ]
+
 .panel[.panel-name[Conscientiousness]
 
 | BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 3 | Tends to be disorganized (R) | 26<br>8 | I have a sense of order<br>I leave everything lying around (R) | Similar |
 | 8 | Tends to be lazy (R) | 17<br>35 | I take the easiest way out (R)<br>I prefer the easy way in life (R) | Similar |
-| 13 | Is dependable, steady | — | — | None |
+| 13 | Is dependable, steady | 66 | I stick to plans | Related |
 | 18 | Is systematic, likes to keep things in order | 26 | I have a sense of order | Equivalent |
 | 23 | Has difficulty getting started on tasks (R) | 89 | I postpone troublesome things (R) | Similar |
 | 28 | Can be somewhat careless (R) | 62 | I act without thinking (R) | Related |
 | 33 | Keeps things neat and tidy | 134<br>44 | I do work in a careful and neat way<br>I make a mess of things (R) | Similar |
 | 38 | Is efficient, gets things done | 67 | I finish tasks to the very end | Similar |
-| 43 | Is reliable, can always be counted on | — | — | None |
+| 43 | Is reliable, can always be counted on | 102 | I do what is asked | Related |
 | 48 | Leaves a mess, doesn't clean up (R) | 44<br>80 | I make a mess of things (R)<br>I hate cleaning up (R) | Equivalent |
 | 53 | Is persistent, works until the task is finished | 125<br>67 | I persevere until the goal is achieved<br>I finish tasks to the very end | Equivalent |
 | 58 | Sometimes behaves irresponsibly (R) | 62 | I act without thinking (R) | Related |
 
 ]
+
 .panel[.panel-name[Negative Emotionality]
 
 | BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 4 | Is relaxed, handles stress well (R) | 4 | I am quick to panic | Similar |
-| 9 | Stays optimistic after experiencing a setback (R) | 47<br>76 | I see the sunny side of life<br>I am discouraged by possible failure | Similar |
+| 9 | Stays optimistic after experiencing a setback (R) | 47<br>76 | I see the sunny side of things<br>I am readily discouraged by possible failure | Similar |
 | 14 | Is moody, has up and down mood swings | 115 | I am readily irritated | Related |
-| 19 | Can be tense | 40 | I am quick to worry | Related |
-| 24 | Feels secure, comfortable with self (R) | 117<br>27 | I feel at ease with myself<br>I feel inferior (R) | Equivalent |
+| 19 | Can be tense | 40 | I am quick to worry about things | Related |
+| 24 | Feels secure, comfortable with self (R) | 117<br>27 | I feel at ease with myself<br>I feel inferior to others (R) | Equivalent |
 | 29 | Is emotionally stable, not easily upset (R) | 97<br>7 | I am easily annoyed<br>I am quick to be offended | Related |
-| 34 | Worries a lot | 40 | I am quick to worry | Equivalent |
+| 34 | Worries a lot | 40 | I am quick to worry about things | Equivalent |
 | 39 | Often feels sad | 112 | I am easily depressed | Similar |
-| 44 | Keeps their emotions under control (R) | 79 | I keep self-control in difficult situations (R) | Equivalent |
+| 44 | Keeps their emotions under control (R) | 79 | I have self-control in difficult situations (R) | Equivalent |
 | 49 | Rarely feels anxious or afraid (R) | 130<br>4 | I am readily scared<br>I am quick to panic | Similar |
 | 54 | Tends to feel depressed, blue | 112 | I am easily depressed | Equivalent |
-| 59 | Is temperamental, gets emotional easily | 133<br>61 | I am quick to get angry<br>I burst into rage at setbacks | Similar |
+| 59 | Is temperamental, gets emotional easily | 133<br>61 | I am quick to get angry<br>I burst out in a rage at setbacks | Similar |
 
 ]
 
@@ -1270,16 +1305,16 @@ class: item-cmp
 | BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 5 | Has few artistic interests (R) | 77 | I like to draw | Related |
-| 10 | Is curious about many different things | 100<br>46 | I am interested in everything<br>I have many interests | Equivalent |
-| 15 | Is inventive, finds clever ways to do things | 23 | I use everyday things in a new way | Similar |
-| 20 | Is fascinated by art, music, or literature | 77<br>59 | I like to draw<br>I enjoy creating things | Related |
-| 25 | Avoids intellectual, philosophical discussions (R) | — | — | None |
+| 10 | Is curious about many different things | 100<br>46 | I am interested in everything<br>I have a broad range of interests | Equivalent |
+| 15 | Is inventive, finds clever ways to do things | 23 | I can use everyday things in a new way | Similar |
+| 20 | Is fascinated by art, music, or literature | 77<br>59 | I like to draw<br>I derive pleasure from creating things | Related |
+| 25 | Avoids intellectual, philosophical discussions (R) | 28 | I ask many 'why' questions | Related |
 | 30 | Has little creativity (R) | 41 | I lack creativity (R) | Equivalent |
 | 35 | Values art and beauty | 77 | I like to draw | Related |
-| 40 | Is complex, a deep thinker | 32 | I express my thoughts well | Related |
+| 40 | Is complex, a deep thinker | 32 | I can express my own thoughts well | Related |
 | 45 | Has difficulty imagining things (R) | 5<br>113 | I have little imagination (R)<br>I have a rich imagination | Equivalent |
 | 50 | Thinks poetry and plays are boring (R) | — | — | None |
-| 55 | Has little interest in abstract ideas (R) | 28 | I ask many "why" questions | Related |
+| 55 | Has little interest in abstract ideas (R) | 28 | I ask many 'why' questions | Related |
 | 60 | Is original, comes up with new ideas | 95 | I have original ideas | Equivalent |
 
 ]
@@ -1287,22 +1322,225 @@ class: item-cmp
 
 
 ---
+class: map-table
+background-image: none
+
+## Every HiPIC Item and Its BFI-2 Counterpart
+
+```{r map-table, echo=FALSE, message=FALSE, warning=FALSE}
+
+MAP <- readRDS("map_hipic_bfi2.rds")
+N   <- table(MAP$Match)
+
+
+```
+
+
+
+
+
+```{r map-table-dt-v1, echo=FALSE, message=FALSE, warning=FALSE, eval=F, include=F}
+
+# 
+# DT::datatable(MAP,
+#               fillContainer = FALSE,     # add this line
+#               rownames = FALSE,
+#               escape   = FALSE,                      # lets the <br> line breaks work
+#               filter   = "top",                      # a filter box above each column
+#               class    = "compact stripe",
+#               options  = list(pageLength = 12,
+#                               dom        = "tip",    # table, info line, page buttons
+#                               autoWidth  = FALSE,
+#                               columnDefs = list(list(className = "dt-center", targets = c(0, 4)),
+#                                                 list(width = "6%",  targets = 0),
+#                                                 list(width = "30%", targets = c(1, 2)),
+#                                                 list(width = "16%", targets = 3),
+#                                                 list(width = "10%", targets = 4))))
+```
+
+
+
+```{r map-table-dt, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+MAP_DT <- MAP %>% mutate(`HiPIC #` = as.character(`HiPIC #`))
+
+widgetframe::frameWidget(
+  DT::datatable(MAP_DT,
+                rownames = FALSE,
+                colnames = c("HiQ" = "HiPIC #"),
+                escape   = FALSE,
+                filter   = "top",
+                class    = "compact stripe",
+                options  = list(pageLength = 10,
+                                dom        = "tip",
+                                autoWidth  = TRUE,
+                                columnDefs = list(list(width = "5%",  targets = 0),
+                                                  list(width = "34%", targets = c(1, 2)),
+                                                  list(width = "16%", targets = 3),
+                                                  list(width = "8%",  targets = 4),
+                                                  list(className = "dt-center", targets = c(0, 4))))),
+  height = 470, width = "100%")
+
+
+```
+
+
+---
+class: item-cmp
+
+## HiPIC Items With No BFI-2 Counterpart
+
+.pull-left[
+
+| HiPIC # | HiPIC Item (Child form) | HiPIC Facet |
+|:--:|:--|:--|
+| 14 | I catch on with half an explanation | Intellect |
+| 50 | I have a limited vocabulary (R) | Intellect |
+| 68 | I have a good memory | Intellect |
+| 86 | I am quick to understand things | Intellect |
+| 104 | I grasp the meaning of things quickly | Intellect |
+| 122 | I need time to comprehend things (R) | Intellect |
+| 140 | I can express myself well | Intellect |
+| 3 | I want to be among the best | Achievement |
+| 57 | I make heavy demands on myself | Achievement |
+| 93 | I work hard to get top marks | Achievement |
+| 111 | I want to shine at everything | Achievement |
+| 129 | I go to school against my will (R) | Achievement |
+]
+
+.pull-right[
+
+| HiPIC # | HiPIC Item (Child form) | HiPIC Facet |
+|:--:|:--|:--|
+| 13 | I can occupy myself for a long time | Concentration |
+| 85 | I can concentrate on one thing for a long time | Concentration |
+| 139 | I am quickly distracted (R) | Concentration |
+| 29 | I arouse the sympathy of classmates | Optimism |
+| 137 | I am generally liked | Optimism |
+| 118 | I notice everything | Curiosity |
+| 132 | I like a lot of attention | Expressiveness |
+| 141 | I like to let my hair down | Energy |
+| 52 | I manipulate others | Dominance |
+| 128 | I show a lot of jealousy | Egocentrism |
+| 138 | I go against the grain (R) | Compliance |
+| 135 | I easily make decisions | Self-Confidence |
+]
+
+<br>
+<br><center>
+.note-standard[15 of the 24 come from three facets (Intellect, Achievement and Concentration):<br>school-related abilities and motivations that a general inventory like the BFI-2 doesn't attempt to measure.]</center>
+
+
+---
 
 ## Before Using the Mapping: Cautions
 
-- **A judgement, not a validation.** The Equivalent / Similar / Related ratings reflect my reading of the item content. Others with more experience or a different perspective may rate pairs differently; and similar wording may not mean the items measure the same thing.
+- **A judgement, not a validation.** The Equivalent / Similar / Related ratings reflect my reading of the item content. Others with more experience or a different perspective may rate pairs differently, and similar wording may not mean the items measure the same thing.
 
-- **Two different instruments.** The BFI-2 and the HiPIC differ in instructions, response anchors, and target age.  The HiPIC's child-form wording is written for younger readers. A "matched" pair is comparable in content, not interchangeable in scores.
+- **Two different instruments.** The BFI-2 and the HiPIC differ in instructions, response anchors and target age. The HiPIC's child-form wording is written for younger readers. A "matched" pair is comparable in content, not interchangeable in scores.
 
-- **Gaps run both ways.** The HiPIC has no .ltblue[Trust items] and almost no .ltblue[Responsibility items.] The BFI-2 has no .ltblue[Concentration, Achievement Motivation or Intellect] items.
+- **Gaps run both ways.** The HiPIC covers .ltblue[Trust] and .ltblue[Responsibility] only loosely: forgiving and fault-finding have no counterpart, and being reliable or dependable is matched only indirectly. The BFI-2 has no .ltblue[Concentration, Achievement Motivation or Intellect] items.
 
-- **Same content, different domain.** Irritability, Dominance, Optimism and Self-Confidence sit in different domains in the two instruments.
+<!-- - **Same content, different domain.** Irritability, Dominance, Optimism and Self-Confidence sit in different domains in the two instruments. -->
 
-- **A subset is a new instrument.** It's important to remember that a dropping HiPIC items invalidates its facet and domain scores and its norms. A short form needs its own reliability and validity evidence, and the reverse-keying balance should be checked.
+- **"Related" is the generous tier.** Of the 120 HiPIC items with a counterpart, 52 match only loosely. Equivalent and Similar items (68) are the stronger candidates for any subset.
+
+- **A subset is a new instrument.** Dropping HiPIC items invalidates its facet and domain scores and its norms. A short form needs its own reliability and validity evidence, and the reverse-keying balance should be checked.
 
 - **Selection shapes the result.** Items chosen for BFI-2-like content will tend to produce a BFI-2-like factor structure. Target structures should be written down before any factor analysis.
 
-.footnote-center[<b>BFI-2 forms:</b><br>
+.note-standard[<b>BFI-2 Forms:</b><br>
 <a href="docs/bfi2-form-60.pdf" target="_blank">Long Form (60 items)</a> ·
 <a href="docs/bfi2s-form-30-Short-Form.pdf" target="_blank">Short Form (30 items)</a> ·
 <a href="docs/bfi2xs-form15-XShort-Form.pdf" target="_blank">Extra-Short Form (15 items)</a>]
+
+
+---
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 7
+### Test whether a .pink[subset of HiPIC questions] that appears to overlap with the BFI-2 produces a more interpretable Factor Analysis result.
+
+---
+
+## How Many Overlapping Items Can Be Factor-Analyzed? (Parent Report)
+
+```{r kmo-subsets, echo=FALSE, message=FALSE, warning=FALSE}
+KMO_SUBSETS <- readRDS("kmo_subsets.rds")
+
+KMO_SUBSETS %>%
+  dplyr::filter(grepl("^Parents", Subset)) %>%
+  dplyr::mutate(Subset = sub("^Parents: ", "", Subset)) %>%
+  dplyr::select(Subset, Items, N, Reversed, KMO, `Bartlett p` = Bartlett_p) %>%
+  kbl(align = c("l", rep("c", 5))) %>%
+  kable_styling(full_width = FALSE)
+```
+
+<br>
+
+- **Factorability depends on how many items 77 parents have to support.** Each added tier of matches lowers the Keiser-Meyer-Okin score (KMO).
+
+- **Only the 24 Equivalent items pass** (KMO .67, "mediocre" but usable). Adding "Similar" items drops the KMO score to .38, below the recommended .50 threshold, and adding "Related" items makes the correlation matrix singular — a similar finding when attempting to analyze all 144 questions from the HiPIC
+
+- **The Equivalent items are spread evenly across the BFI-2 domains** (4–6 items each), so a five-factor solution is a fair test. 
+
+.note[KMO: .80+ good · .70s middling · .60s mediocre · .50s poor · below .50 unsuitable.
+<br>The children's results follow the same pattern (.59, .27, not computable).]
+
+
+---
+## Scree Plot & Eigenvalues: Parent Report (Equivalent Items)
+
+.pull-left[
+<img src="images/scree_equivalent_parent.png" style="width: 100%;" />
+]
+
+.pull-right[
+```{r eig-parent-bfi2, echo=FALSE}
+knitr::kable(readRDS("eig_equivalent_parent.rds"), format = "html",
+             align = "c", table.attr = 'style="font-size: 75%; margin-top: 2em;"')
+```
+]
+<center>
+.note-standard[Parallel analysis retains 3 factors (actual eigenvalues above random).<br>Table: eigenvalues of the correlation matrix; plot: factor-analysis eigenvalues.] </center>
+
+---
+class: load-cmp
+
+## Factor Loadings: 24 Equivalent Items (Parent Report)
+
+.panelset[
+.panel[.panel-name[3 Factors]
+```{r load-eq3, echo=FALSE}
+TAB <- readRDS("load_eq3_parent.rds")
+TAB %>%
+  kbl(escape = FALSE, row.names = FALSE, align = c("c", "l", "l", rep("c", 4))) %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(nrow(TAB), bold = TRUE, extra_css = "border-top: 1px solid #666;")
+```
+]
+
+.panel[.panel-name[4 Factors]
+```{r load-eq4, echo=FALSE}
+TAB <- readRDS("load_eq4_parent.rds")
+TAB %>%
+  kbl(escape = FALSE, row.names = FALSE, align = c("c", "l", "l", rep("c", 5))) %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(nrow(TAB), bold = TRUE, extra_css = "border-top: 1px solid #666;")
+```
+]
+
+.panel[.panel-name[5 Factors]
+```{r load-eq5, echo=FALSE}
+TAB <- readRDS("load_eq5_parent.rds")
+TAB %>%
+  kbl(escape = FALSE, row.names = FALSE, align = c("c", "l", "l", rep("c", 6))) %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(nrow(TAB), bold = TRUE, extra_css = "border-top: 1px solid #666;")
+```
+]
+]

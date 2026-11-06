@@ -4,7 +4,7 @@
     <title>HiPIC Exploratory Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Kevin Williams" />
-    <meta name="date" content="2026-11-05" />
+    <meta name="date" content="2026-11-06" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view/tile-view.js"></script>
@@ -13,6 +13,9 @@
     <script src="libs/panelset/panelset.js"></script>
     <script src="libs/kePrint/kePrint.js"></script>
     <link href="libs/lightable/lightable.css" rel="stylesheet" />
+    <script src="libs/htmlwidgets/htmlwidgets.js"></script>
+    <script src="libs/pymjs/pym.v1.js"></script>
+    <script src="libs/widgetframe-binding/widgetframe.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
   <body>
@@ -180,6 +183,36 @@ ul li ul, ol li ul {
 .gd-table td, .gd-table th { padding: 2px 8px; }
 
 
+/* Add to the deck's CSS chunk. */
+
+/* One-line notes under a slide title (panel slide, table slide, no-counterpart slide) */
+.small-note { font-size: 60%; margin: 0.2em 0 0.6em 0; }
+
+/* Interactive HiPIC-BFI-2 table: shrink everything DT draws, including the filter boxes */
+.map-table .dataTables_wrapper { font-size: 55%; }
+.map-table table.dataTable td,
+.map-table table.dataTable th { padding: 3px 6px; vertical-align: top; }
+.map-table .dataTables_wrapper input,
+.map-table .dataTables_wrapper select { font-size: 90%; }
+
+
+.note {
+  font-size: 0.7rem;      /* rem: the same size on every slide, whatever it's nested in */
+  text-align: center;
+  margin-top: 1em;
+}
+
+
+.note-standard {
+ 
+  text-align: center;
+  margin-top: 1em;
+}
+
+
+.load-cmp table { font-size: 50%; }
+.load-cmp td, .load-cmp th { padding: 1px 8px; }
+
 &lt;/style&gt;
 
 
@@ -190,7 +223,7 @@ ul li ul, ol li ul {
 ### &lt;br&gt;
 ### USING THE R PROGRAMMING LANGUAGE
 #### Prepared by Kevin Williams  | Preliminary Findings   |   October 30, 2026
-#### Updated 2026-11-05
+#### Updated 2026-11-06
 #### &lt;br&gt;
 
 ---
@@ -2875,7 +2908,8 @@ sort(round(KMOP$MSAi, 2))
 ##   0.83   0.85   0.86   0.86   0.86   0.87   0.87
 ```
 
-.footnote-center[KMO: above .80 = good, below .50 = unsuitable.]
+
+.note[KMO: above .80 = good, below .50 = unsuitable.]
 
 ---
 ## Two-Factor Solution (Varimax): Parent Report - Facets
@@ -3432,7 +3466,9 @@ background-size: cover
 ---
 class: item-cmp
 
-## BFI-2 and HiPIC: Example Items by Domain
+## BFI-2 and HiPIC: Mappings Organized by BFI-2 Domain
+
+&lt;!-- .small-note[Tabs group items by their **BFI-2** domain, for organization only. Matches were judged on item wording alone, regardless of where each item sits in the HiPIC. Each BFI-2 item shows its closest HiPIC match(es); the full HiPIC-side mapping follows.] --&gt;
 
 .panelset[
 .panel[.panel-name[Extraversion]
@@ -3456,7 +3492,7 @@ class: item-cmp
 
 .panel[.panel-name[Agreeableness]
 
-| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form)| Match |
+| BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 2 | Is compassionate, has a soft heart | 90&lt;br&gt;108 | I sympathise with anyone who is sad&lt;br&gt;I show concern for other children | Similar |
 | 7 | Is respectful, treats others with respect | 12 | I respect rules of politeness | Similar |
@@ -3466,46 +3502,48 @@ class: item-cmp
 | 27 | Has a forgiving nature | — | — | None |
 | 32 | Is helpful and unselfish with others | 72&lt;br&gt;126 | I am ready to help anybody&lt;br&gt;I give to others | Equivalent |
 | 37 | Is sometimes rude to others (R) | 12&lt;br&gt;43 | I respect rules of politeness&lt;br&gt;I am quick to lash out | Similar |
-| 42 | Is suspicious of others' intentions (R) | — | — | None |
+| 42 | Is suspicious of others' intentions (R) | 127 | I take a wait-and-see attitude to strangers | Related |
 | 47 | Can be cold and uncaring (R) | 108&lt;br&gt;54 | I show concern for other children&lt;br&gt;I am concerned about what happens to others | Similar |
 | 52 | Is polite, courteous to others | 12 | I respect rules of politeness | Equivalent |
-| 57 | Assumes the best about people | — | — | None |
+| 57 | Assumes the best about people | 127 | I take a wait-and-see attitude to strangers | Related |
 
 ]
+
 .panel[.panel-name[Conscientiousness]
 
 | BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 3 | Tends to be disorganized (R) | 26&lt;br&gt;8 | I have a sense of order&lt;br&gt;I leave everything lying around (R) | Similar |
 | 8 | Tends to be lazy (R) | 17&lt;br&gt;35 | I take the easiest way out (R)&lt;br&gt;I prefer the easy way in life (R) | Similar |
-| 13 | Is dependable, steady | — | — | None |
+| 13 | Is dependable, steady | 66 | I stick to plans | Related |
 | 18 | Is systematic, likes to keep things in order | 26 | I have a sense of order | Equivalent |
 | 23 | Has difficulty getting started on tasks (R) | 89 | I postpone troublesome things (R) | Similar |
 | 28 | Can be somewhat careless (R) | 62 | I act without thinking (R) | Related |
 | 33 | Keeps things neat and tidy | 134&lt;br&gt;44 | I do work in a careful and neat way&lt;br&gt;I make a mess of things (R) | Similar |
 | 38 | Is efficient, gets things done | 67 | I finish tasks to the very end | Similar |
-| 43 | Is reliable, can always be counted on | — | — | None |
+| 43 | Is reliable, can always be counted on | 102 | I do what is asked | Related |
 | 48 | Leaves a mess, doesn't clean up (R) | 44&lt;br&gt;80 | I make a mess of things (R)&lt;br&gt;I hate cleaning up (R) | Equivalent |
 | 53 | Is persistent, works until the task is finished | 125&lt;br&gt;67 | I persevere until the goal is achieved&lt;br&gt;I finish tasks to the very end | Equivalent |
 | 58 | Sometimes behaves irresponsibly (R) | 62 | I act without thinking (R) | Related |
 
 ]
+
 .panel[.panel-name[Negative Emotionality]
 
 | BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 4 | Is relaxed, handles stress well (R) | 4 | I am quick to panic | Similar |
-| 9 | Stays optimistic after experiencing a setback (R) | 47&lt;br&gt;76 | I see the sunny side of life&lt;br&gt;I am discouraged by possible failure | Similar |
+| 9 | Stays optimistic after experiencing a setback (R) | 47&lt;br&gt;76 | I see the sunny side of things&lt;br&gt;I am readily discouraged by possible failure | Similar |
 | 14 | Is moody, has up and down mood swings | 115 | I am readily irritated | Related |
-| 19 | Can be tense | 40 | I am quick to worry | Related |
-| 24 | Feels secure, comfortable with self (R) | 117&lt;br&gt;27 | I feel at ease with myself&lt;br&gt;I feel inferior (R) | Equivalent |
+| 19 | Can be tense | 40 | I am quick to worry about things | Related |
+| 24 | Feels secure, comfortable with self (R) | 117&lt;br&gt;27 | I feel at ease with myself&lt;br&gt;I feel inferior to others (R) | Equivalent |
 | 29 | Is emotionally stable, not easily upset (R) | 97&lt;br&gt;7 | I am easily annoyed&lt;br&gt;I am quick to be offended | Related |
-| 34 | Worries a lot | 40 | I am quick to worry | Equivalent |
+| 34 | Worries a lot | 40 | I am quick to worry about things | Equivalent |
 | 39 | Often feels sad | 112 | I am easily depressed | Similar |
-| 44 | Keeps their emotions under control (R) | 79 | I keep self-control in difficult situations (R) | Equivalent |
+| 44 | Keeps their emotions under control (R) | 79 | I have self-control in difficult situations (R) | Equivalent |
 | 49 | Rarely feels anxious or afraid (R) | 130&lt;br&gt;4 | I am readily scared&lt;br&gt;I am quick to panic | Similar |
 | 54 | Tends to feel depressed, blue | 112 | I am easily depressed | Equivalent |
-| 59 | Is temperamental, gets emotional easily | 133&lt;br&gt;61 | I am quick to get angry&lt;br&gt;I burst into rage at setbacks | Similar |
+| 59 | Is temperamental, gets emotional easily | 133&lt;br&gt;61 | I am quick to get angry&lt;br&gt;I burst out in a rage at setbacks | Similar |
 
 ]
 
@@ -3514,16 +3552,16 @@ class: item-cmp
 | BFI-2 # | BFI-2 Item | HiPIC # | HiPIC Item (Child form) | Match |
 |:--:|:--|:--:|:--|:--:|
 | 5 | Has few artistic interests (R) | 77 | I like to draw | Related |
-| 10 | Is curious about many different things | 100&lt;br&gt;46 | I am interested in everything&lt;br&gt;I have many interests | Equivalent |
-| 15 | Is inventive, finds clever ways to do things | 23 | I use everyday things in a new way | Similar |
-| 20 | Is fascinated by art, music, or literature | 77&lt;br&gt;59 | I like to draw&lt;br&gt;I enjoy creating things | Related |
-| 25 | Avoids intellectual, philosophical discussions (R) | — | — | None |
+| 10 | Is curious about many different things | 100&lt;br&gt;46 | I am interested in everything&lt;br&gt;I have a broad range of interests | Equivalent |
+| 15 | Is inventive, finds clever ways to do things | 23 | I can use everyday things in a new way | Similar |
+| 20 | Is fascinated by art, music, or literature | 77&lt;br&gt;59 | I like to draw&lt;br&gt;I derive pleasure from creating things | Related |
+| 25 | Avoids intellectual, philosophical discussions (R) | 28 | I ask many 'why' questions | Related |
 | 30 | Has little creativity (R) | 41 | I lack creativity (R) | Equivalent |
 | 35 | Values art and beauty | 77 | I like to draw | Related |
-| 40 | Is complex, a deep thinker | 32 | I express my thoughts well | Related |
+| 40 | Is complex, a deep thinker | 32 | I can express my own thoughts well | Related |
 | 45 | Has difficulty imagining things (R) | 5&lt;br&gt;113 | I have little imagination (R)&lt;br&gt;I have a rich imagination | Equivalent |
 | 50 | Thinks poetry and plays are boring (R) | — | — | None |
-| 55 | Has little interest in abstract ideas (R) | 28 | I ask many "why" questions | Related |
+| 55 | Has little interest in abstract ideas (R) | 28 | I ask many 'why' questions | Related |
 | 60 | Is original, comes up with new ideas | 95 | I have original ideas | Equivalent |
 
 ]
@@ -3531,25 +3569,1067 @@ class: item-cmp
 
 
 ---
+class: map-table
+background-image: none
+
+## Every HiPIC Item and Its BFI-2 Counterpart
+
+
+
+
+
+
+
+
+
+
+
+<div id="htmlwidget-1f425bab98e97fe5bbd3" style="width:100%;height:470px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1f425bab98e97fe5bbd3">{"x":{"url":"hipic-update_files/figure-html//widgets/widget_map-table-dt.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+
+---
+class: item-cmp
+
+## HiPIC Items With No BFI-2 Counterpart
+
+.pull-left[
+
+| HiPIC # | HiPIC Item (Child form) | HiPIC Facet |
+|:--:|:--|:--|
+| 14 | I catch on with half an explanation | Intellect |
+| 50 | I have a limited vocabulary (R) | Intellect |
+| 68 | I have a good memory | Intellect |
+| 86 | I am quick to understand things | Intellect |
+| 104 | I grasp the meaning of things quickly | Intellect |
+| 122 | I need time to comprehend things (R) | Intellect |
+| 140 | I can express myself well | Intellect |
+| 3 | I want to be among the best | Achievement |
+| 57 | I make heavy demands on myself | Achievement |
+| 93 | I work hard to get top marks | Achievement |
+| 111 | I want to shine at everything | Achievement |
+| 129 | I go to school against my will (R) | Achievement |
+]
+
+.pull-right[
+
+| HiPIC # | HiPIC Item (Child form) | HiPIC Facet |
+|:--:|:--|:--|
+| 13 | I can occupy myself for a long time | Concentration |
+| 85 | I can concentrate on one thing for a long time | Concentration |
+| 139 | I am quickly distracted (R) | Concentration |
+| 29 | I arouse the sympathy of classmates | Optimism |
+| 137 | I am generally liked | Optimism |
+| 118 | I notice everything | Curiosity |
+| 132 | I like a lot of attention | Expressiveness |
+| 141 | I like to let my hair down | Energy |
+| 52 | I manipulate others | Dominance |
+| 128 | I show a lot of jealousy | Egocentrism |
+| 138 | I go against the grain (R) | Compliance |
+| 135 | I easily make decisions | Self-Confidence |
+]
+
+&lt;br&gt;
+&lt;br&gt;&lt;center&gt;
+.note-standard[15 of the 24 come from three facets (Intellect, Achievement and Concentration):&lt;br&gt;school-related abilities and motivations that a general inventory like the BFI-2 doesn't attempt to measure.]&lt;/center&gt;
+
+
+---
 
 ## Before Using the Mapping: Cautions
 
-- **A judgement, not a validation.** The Equivalent / Similar / Related ratings reflect my reading of the item content. Others with more experience or a different perspective may rate pairs differently; and similar wording may not mean the items measure the same thing.
+- **A judgement, not a validation.** The Equivalent / Similar / Related ratings reflect my reading of the item content. Others with more experience or a different perspective may rate pairs differently, and similar wording may not mean the items measure the same thing.
 
-- **Two different instruments.** The BFI-2 and the HiPIC differ in instructions, response anchors, and target age.  The HiPIC's child-form wording is written for younger readers. A "matched" pair is comparable in content, not interchangeable in scores.
+- **Two different instruments.** The BFI-2 and the HiPIC differ in instructions, response anchors and target age. The HiPIC's child-form wording is written for younger readers. A "matched" pair is comparable in content, not interchangeable in scores.
 
-- **Gaps run both ways.** The HiPIC has no .ltblue[Trust items] and almost no .ltblue[Responsibility items.] The BFI-2 has no .ltblue[Concentration, Achievement Motivation or Intellect] items.
+- **Gaps run both ways.** The HiPIC covers .ltblue[Trust] and .ltblue[Responsibility] only loosely: forgiving and fault-finding have no counterpart, and being reliable or dependable is matched only indirectly. The BFI-2 has no .ltblue[Concentration, Achievement Motivation or Intellect] items.
 
-- **Same content, different domain.** Irritability, Dominance, Optimism and Self-Confidence sit in different domains in the two instruments.
+&lt;!-- - **Same content, different domain.** Irritability, Dominance, Optimism and Self-Confidence sit in different domains in the two instruments. --&gt;
 
-- **A subset is a new instrument.** It's important to remember that a dropping HiPIC items invalidates its facet and domain scores and its norms. A short form needs its own reliability and validity evidence, and the reverse-keying balance should be checked.
+- **"Related" is the generous tier.** Of the 120 HiPIC items with a counterpart, 52 match only loosely. Equivalent and Similar items (68) are the stronger candidates for any subset.
+
+- **A subset is a new instrument.** Dropping HiPIC items invalidates its facet and domain scores and its norms. A short form needs its own reliability and validity evidence, and the reverse-keying balance should be checked.
 
 - **Selection shapes the result.** Items chosen for BFI-2-like content will tend to produce a BFI-2-like factor structure. Target structures should be written down before any factor analysis.
 
-.footnote-center[&lt;b&gt;BFI-2 forms:&lt;/b&gt;&lt;br&gt;
+.note-standard[&lt;b&gt;BFI-2 Forms:&lt;/b&gt;&lt;br&gt;
 &lt;a href="docs/bfi2-form-60.pdf" target="_blank"&gt;Long Form (60 items)&lt;/a&gt; ·
 &lt;a href="docs/bfi2s-form-30-Short-Form.pdf" target="_blank"&gt;Short Form (30 items)&lt;/a&gt; ·
 &lt;a href="docs/bfi2xs-form15-XShort-Form.pdf" target="_blank"&gt;Extra-Short Form (15 items)&lt;/a&gt;]
+
+
+---
+class: hide-count, inverse
+background-image: linear-gradient(rgba(15,34,64,.45), rgba(15,34,64,.45)), url(images/luke-jones-tBvF46kmwBw-unsplash.jpg)
+background-size: cover
+
+
+## Task No. 7
+### Test whether a .pink[subset of HiPIC questions] that appears to overlap with the BFI-2 produces a more interpretable Factor Analysis result.
+
+---
+
+## How Many Overlapping Items Can Be Factor-Analyzed? (Parent Report)
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Subset &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Items &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; N &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Reversed &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; KMO &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Bartlett p &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Equivalent &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 24 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 77 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.67 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &amp;lt; 0.001 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Equivalent/Similar &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 68 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 77 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 22 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.38 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &amp;lt; 0.001 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Equivalent/Similar/Related &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 120 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 77 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 31 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; Not computable &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; Not computable &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;br&gt;
+
+- **Factorability depends on how many items 77 parents have to support.** Each added tier of matches lowers the Keiser-Meyer-Okin score (KMO).
+
+- **Only the 24 Equivalent items pass** (KMO .67, "mediocre" but usable). Adding "Similar" items drops the KMO score to .38, below the recommended .50 threshold, and adding "Related" items makes the correlation matrix singular — a similar finding when attempting to analyze all 144 questions from the HiPIC
+
+- **The Equivalent items are spread evenly across the BFI-2 domains** (4–6 items each), so a five-factor solution is a fair test. 
+
+.note[KMO: .80+ good · .70s middling · .60s mediocre · .50s poor · below .50 unsuitable.
+&lt;br&gt;The children's results follow the same pattern (.59, .27, not computable).]
+
+
+---
+## Scree Plot &amp; Eigenvalues: Parent Report (Equivalent Items)
+
+.pull-left[
+&lt;img src="images/scree_equivalent_parent.png" style="width: 100%;" /&gt;
+]
+
+.pull-right[
+&lt;table style="font-size: 75%; margin-top: 2em;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; Factor &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Eigenvalue &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Difference &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Proportion &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Cumulative &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 5.75 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.14 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.240 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.240 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 2.61 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.37 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.109 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.348 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 2.25 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.80 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.094 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.442 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 1.45 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.08 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.060 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.503 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 1.37 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.17 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.057 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.560 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 1.20 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.17 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.050 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.610 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 1.03 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.09 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.043 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.653 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.95 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.05 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.039 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.692 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 9 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.89 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.06 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.037 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.729 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.83 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.04 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.035 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.764 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+&lt;center&gt;
+.note-standard[Parallel analysis retains 3 factors (actual eigenvalues above random).&lt;br&gt;Table: eigenvalues of the correlation matrix; plot: factor-analysis eigenvalues.] &lt;/center&gt;
+
+---
+class: load-cmp
+
+## Factor Loadings: 24 Equivalent Items (Parent Report)
+
+.panelset[
+.panel[.panel-name[3 Factors]
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; HiQ &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Item (Parent form) &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; BFI-2 Domain &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F1 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F2 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F3 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; h2 &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 46 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a broad range of interests &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.74&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.54 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 126 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; gives to others &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.67&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.49 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is interested in everything &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.66&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.51 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 72 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is ready to help anybody &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.66&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.47 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 113 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a rich imagination &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.65&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.38 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.60 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 95 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has original ideas &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.64&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.36 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.55 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 125 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; perseveres until the goal is achieved &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.62&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.41 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 33 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; bursts with enthusiasm &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.61&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.42 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 12 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; respects rules of politeness &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.51&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.45 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.46 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 67 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; finishes tasks to the very end &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.50&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.26 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 26 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a sense of order &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.42&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.39 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.34 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 79 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has self-control in difficult situations (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.42&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.22 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 117 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; feels at ease with him/herself &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.13 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has little imagination (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.70&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.52 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 40 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is quick to worry about things &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.69&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.51 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 27 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; feels inferior to others (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.61&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.39 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 41 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; lacks creativity (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.50&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.29 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 112 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is easily depressed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.41&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.27 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 25 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; quick to argue &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.70&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.54 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 80 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; hates cleaning up (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.51&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.28 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 78 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; talks all day long &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.45&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.29 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 51 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has excessive energy &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.32&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.18 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 16 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is a follower rather than a leader (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.12 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 44 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; makes a mess of things (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.05 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;border-top: 1px solid #666;"&gt; Variance explained &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;border-top: 1px solid #666;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 19.8% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 9.3% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 7.8% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 36.9% &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+.panel[.panel-name[4 Factors]
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; HiQ &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Item (Parent form) &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; BFI-2 Domain &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F1 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F2 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F3 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F4 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; h2 &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 72 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is ready to help anybody &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.84&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.76 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 126 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; gives to others &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.77&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.67 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 113 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a rich imagination &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.55&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.43 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.37 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.63 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 95 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has original ideas &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.49&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.43 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.35 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.55 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 67 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; finishes tasks to the very end &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.38&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.26 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 25 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; quick to argue &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.60&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.33 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.53 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 12 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; respects rules of politeness &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.38 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.55&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.45 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 26 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a sense of order &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.53&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.35 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 80 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; hates cleaning up (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.50&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.29 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is interested in everything &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.39 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.49&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.33 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.52 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 16 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is a follower rather than a leader (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.42&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.22 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 33 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; bursts with enthusiasm &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.31 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.55&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.42 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 46 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a broad range of interests &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.34 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.43 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.54&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.60 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 78 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; talks all day long &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.48&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.30 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 51 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has excessive energy &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.48&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.23 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 125 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; perseveres until the goal is achieved &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.43 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.45&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.48 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 79 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has self-control in difficult situations (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.45&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.26 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 117 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; feels at ease with him/herself &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.13 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has little imagination (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.70&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.55 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 40 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is quick to worry about things &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.68&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.49 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 27 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; feels inferior to others (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.60&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.41 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 41 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; lacks creativity (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.57&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.46 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 112 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is easily depressed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.43&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.29 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 44 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; makes a mess of things (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.05 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;border-top: 1px solid #666;"&gt; Variance explained &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;border-top: 1px solid #666;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 11.9% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 10.0% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 9.8% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 9.5% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 41.3% &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+.panel[.panel-name[5 Factors]
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; HiQ &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Item (Parent form) &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; BFI-2 Domain &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F1 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F2 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F3 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F4 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; F5 &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; h2 &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 72 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is ready to help anybody &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.87&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.80 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 126 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; gives to others &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.77&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.66 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 113 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a rich imagination &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.51&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.39 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.46 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.63 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 95 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has original ideas &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.46&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.37 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.42 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.55 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 67 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; finishes tasks to the very end &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.38&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.26 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 26 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a sense of order &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.54&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.38 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 125 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; perseveres until the goal is achieved &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.54&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.33 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.55 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is interested in everything &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.40 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.52&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.52 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 25 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; quick to argue &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.50&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; -0.37 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.53 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 12 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; respects rules of politeness &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Agreeableness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.40 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.50&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.47 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 46 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has a broad range of interests &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.34 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.50&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.46 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.60 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 16 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is a follower rather than a leader (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.45&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.23 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 80 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; hates cleaning up (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.44&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.31 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 40 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is quick to worry about things &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.71&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.56 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has little imagination (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.69&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.54 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 27 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; feels inferior to others (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.60&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.40 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 41 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; lacks creativity (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Open-Mindedness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.33 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.55&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.44 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 112 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is easily depressed &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.41&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.29 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 33 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; bursts with enthusiasm &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.60&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.47 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 51 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has excessive energy &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.54&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.30 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 79 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; has self-control in difficult situations (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;-0.48&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.28 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 78 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; talks all day long &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Extraversion &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.43&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.31 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 117 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; feels at ease with him/herself &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Negative Emotionality &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.34&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.16 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 44 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; makes a mess of things (R) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Conscientiousness &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; &lt;b&gt;0.75&lt;/b&gt; &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.59 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;border-top: 1px solid #666;"&gt; Variance explained &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;border-top: 1px solid #666;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 12.0% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 10.0% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 9.5% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 9.3% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 4.5% &lt;/td&gt;
+   &lt;td style="text-align:center;font-weight: bold;border-top: 1px solid #666;"&gt; 45.3% &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

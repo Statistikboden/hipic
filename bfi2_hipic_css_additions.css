@@ -1,0 +1,11 @@
+/* Add to the deck's CSS chunk. */
+
+/* One-line notes under a slide title (panel slide, table slide, no-counterpart slide) */
+.small-note { font-size: 60%; margin: 0.2em 0 0.6em 0; }
+
+/* Interactive HiPIC-BFI-2 table: shrink everything DT draws, including the filter boxes */
+.map-table .dataTables_wrapper { font-size: 55%; }
+.map-table table.dataTable td,
+.map-table table.dataTable th { padding: 3px 6px; vertical-align: top; }
+.map-table .dataTables_wrapper input,
+.map-table .dataTables_wrapper select { font-size: 90%; }
