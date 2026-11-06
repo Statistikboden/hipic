@@ -10,3 +10,6 @@
 .Rproj.user/QC
 PARENT_REVERSED
 *.csv
+
+QC
+.Rproj.user/
