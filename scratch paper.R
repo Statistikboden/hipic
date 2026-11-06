@@ -1206,7 +1206,7 @@ function(DATA) {
     
     
     
-    test <- NULL                                  # "nothing at all": cbind() simply ignores it
+    test <- NULL  
     
     for (x in 0:2) {
       
@@ -1224,22 +1224,76 @@ function(DATA) {
         select(-MODEL) %>%                                   # the block's label replaces MODEL
         rename_with(~ paste(LABEL, .x), c(MAL, CON, t, p))   # e.g. "Males MAL", "Females p"
       
+#       pad <-  setNames(data.frame(""), paste0("z",x))
       
-      test <- if (x == 0) temp else cbind(test, temp)
-      
+#        test <- if (x == 0) temp else cbind(test, pad, temp)
+       test <- if (x == 0) temp else cbind(test, select(temp, -VARNAME))
     }
     
+    
+    
+    
+    (test)
+    print(test)
+ 
+    
+    
+    # a<- c("BENEVOLENCE", 'Altruism', 'Compliance','Dominance','Egocentrism','Irritability',
+    #      "CONSCIENTIOUSNESS", 'Achievement','Concentration','Order','Perserverance',
+    #      "EMOTIONAL STABILITY", 'Anxiety','Self-Confidence',
+    #      "EXTRAVERSION",'Energy','Expressivity','Optimism','Shyness',
+    #      "IMAGINATION", 'Creativity','Curiosity','Intellect')
+    #  test[ , 1] <- a
+    
+    
+    LABELS <- c(BE     = "BENEVOLENCE",
+                BE_ALT = "Altruism",
+                BE_COM = "Compliance",
+                BE_DOM = "Dominance",
+                BE_EGO = "Egocentrism",
+                BE_IRR = "Irritability",
+                CO     = "CONSCIENTIOUSNESS",
+                CO_ACH = "Achievement",
+                CO_CNC = "Concentration",
+                CO_ORD = "Order",
+                CO_PER = "Perseverance",
+                ES     = "EMOTIONAL STABILITY",
+                ES_ANX = "Anxiety",
+                ES_CON = "Self-Confidence",
+                EX     = "EXTRAVERSION",
+                EX_ENE = "Energy",
+                EX_EXP = "Expressiveness",
+                EX_OPT = "Optimism",
+                EX_SHY = "Shyness",
+                IM     = "IMAGINATION",
+                IM_CRE = "Creativity",
+                IM_CUR = "Curiosity",
+                IM_INT = "Intellect")
+    
+    test$VARNAME <- unname(LABELS[test$VARNAME])
+    
+    
+    
+    library(kableExtra)
+    
+    p_bg <- function(p) ifelse(p < .05, "#d73027", ifelse(p < .10, "orange", "white"))   # background
+    p_fg <- function(p) ifelse(p < .05, "white", "black")                                 # text colour
+    
+    
+    TAB <- test %>%
+      kbl(col.names = c("Variable", rep(c("MAL", "CON", "t", "p-Value"), 3)),
+          align = c("l", rep("c", 12))) %>%
+      kable_styling(full_width = FALSE, font_size = 12) %>%
+      add_header_above(c(" " = 1, "Males" = 4, "Females" = 4, "All" = 4)) %>%
+      column_spec(c(1, 5, 9), border_right = TRUE)
+    
+    for (j in c(5, 9, 13)) {
+      TAB <- column_spec(TAB, j, background = p_bg(test[[j]]), color = p_fg(test[[j]]))
+    }
+    
+    TAB
+    
+    
+    
+    
     names(test)
-    dim(test)        # expect 23 rows, 13 columns
-    
-    
-    print(temp)
-    
-    
-    
-    
-    
-    
-    
-    
-    

@@ -242,7 +242,8 @@ ul li ul, ol li ul {
 
 .kmo-slide .remark-code { font-size: 60%; }
 
-
+.gd-table table { font-size: 55%; }
+.gd-table td, .gd-table th { padding: 2px 8px; }
 
 
 ```
@@ -345,9 +346,9 @@ PARENT_RAW  <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat")
 
 DSN <- c(CHILD_RAW, PARENT_RAW)        
                                        
-for (x in DSN) {                        #<<
-                                        #<<
-    make.names( names(x), unique= TRUE) } #<<
+for (x in DSN) {                                       #<<
+                                                      #<<
+names(x)  <-  make.names( names(x), unique= TRUE) }   #<<
 
 
 ```
@@ -514,6 +515,8 @@ background-size: cover
 
 
 ---
+exclude: true
+
 ## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=EbiWJc&nav=MTJfQjM3OlE2N197MDAwMDAwMDAtMDAwMS0wMDAwLTA1MDAtMDAwMDAwMDAwMDAwfQ" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Child Self-Report</a>
 
 
@@ -525,7 +528,105 @@ background-size: cover
 Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
 </p>
 
+
 ---
+class: gd-table
+
+## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=EbiWJc&nav=MTJfQjM3OlE2N197MDAwMDAwMDAtMDAwMS0wMDAwLTA1MDAtMDAwMDAwMDAwMDAwfQ" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Child Self-Report</a>
+
+```{r child-self-report-redux, echo=FALSE, message=FALSE, warning=FALSE }
+
+
+BASEC <- readRDS("cbase_wide.rds")
+
+    CSUMMARY <- NULL  
+    
+    for (x in 0:2) {
+      
+      LABEL <- c("Males", "Females", "All")[x + 1]        # 0 -> Males, 1 -> Females, 2 -> All
+      
+      temp <- BASEC %>%
+        filter(as.numeric(MODEL) == x) %>%
+        group_by(MODEL, VARNAME) %>%
+        summarise(
+          MAL = sprintf("%.2f ± %.2f", MAL[`_STAT_` == "MEAN"], MAL[`_STAT_` == "STD"]),
+          CON = sprintf("%.2f ± %.2f", CON[`_STAT_` == "MEAN"], CON[`_STAT_` == "STD"]),
+          t   = round(ALL[`_STAT_` == "TTEST WELCH"], 2),
+          p   = round(ALL[`_STAT_` == "PVALUE"], 3),
+          .groups = "drop") %>%
+        select(-MODEL) %>%                                   # the block's label replaces MODEL
+        rename_with(~ paste(LABEL, .x), c(MAL, CON, t, p))   # e.g. "Males MAL", "Females p"
+      
+
+       CSUMMARY <- if (x == 0) temp else cbind(CSUMMARY, select(temp, -VARNAME))
+    }
+    
+
+    LABELS <- c(BE     = "BENEVOLENCE",
+                BE_ALT = "Altruism",
+                BE_COM = "Compliance",
+                BE_DOM = "Dominance",
+                BE_EGO = "Egocentrism",
+                BE_IRR = "Irritability",
+                CO     = "CONSCIENTIOUSNESS",
+                CO_ACH = "Achievement",
+                CO_CNC = "Concentration",
+                CO_ORD = "Order",
+                CO_PER = "Perseverance",
+                ES     = "EMOTIONAL STABILITY",
+                ES_ANX = "Anxiety",
+                ES_CON = "Self-Confidence",
+                EX     = "EXTRAVERSION",
+                EX_ENE = "Energy",
+                EX_EXP = "Expressiveness",
+                EX_OPT = "Optimism",
+                EX_SHY = "Shyness",
+                IM     = "IMAGINATION",
+                IM_CRE = "Creativity",
+                IM_CUR = "Curiosity",
+                IM_INT = "Intellect")
+    
+    CSUMMARY$VARNAME <- unname(LABELS[CSUMMARY$VARNAME])
+    
+    
+    
+    library(kableExtra)
+    
+    p_bg <- function(p) ifelse(p < .05, "#d73027", ifelse(p < .10, "orange", "white"))   # background
+    p_fg <- function(p) ifelse(p < .05, "white", "black")                                 # text colour
+    
+DOM <- which(CSUMMARY$VARNAME == toupper(CSUMMARY$VARNAME))   # rows 1, 7, 12, 15, 20
+FAC <- setdiff(seq_len(nrow(CSUMMARY)), DOM)                  # all the other rows
+
+TAB <- CSUMMARY %>%
+  kbl(col.names = c("Variable", rep(c("MAL", "CON", "t", "p-Value"), 3)),
+      align = c("l", rep("c", 12))) %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 1, "Males" = 4, "Females" = 4, "All" = 4)) %>%
+  column_spec(c(1, 5, 9), border_right = TRUE) %>%
+  row_spec(DOM, bold = TRUE) %>%                                         # bold domains
+  row_spec(DOM[-1], extra_css = "border-top: 1px solid #666;") %>%      # line above each new domain
+  add_indent(FAC)                                                        # indent facets
+
+for (j in c(5, 9, 13)) {
+  TAB <- column_spec(TAB, j, background = p_bg(CSUMMARY[[j]]), color = p_fg(CSUMMARY[[j]]))
+}
+
+TAB
+
+
+
+
+
+```
+
+<p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
+Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+</p>
+---
+exclude: true
+
+
 ## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=ExfmCO&nav=MTJfQjQ6UTM0X3swMDAwMDAwMC0wMDAxLTAwMDAtMDUwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Parent Report</a>
 
 <img src="images/mean-diffs-parents.png"
@@ -536,6 +637,102 @@ Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. 
 Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
 </p>
 
+
+
+---
+class: gd-table
+
+## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=ExfmCO&nav=MTJfQjQ6UTM0X3swMDAwMDAwMC0wMDAxLTAwMDAtMDUwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Parent Report</a>
+
+```{r parent-self-report-redux, echo=FALSE, message=FALSE, warning=FALSE }
+
+
+BASEP <- readRDS("pbase_wide.rds")
+
+    PSUMMARY <- NULL  
+    
+    for (x in 0:2) {
+      
+      LABEL <- c("Males", "Females", "All")[x + 1]        # 0 -> Males, 1 -> Females, 2 -> All
+      
+      temp <- BASEP %>%
+        filter(as.numeric(MODEL) == x) %>%
+        group_by(MODEL, VARNAME) %>%
+        summarise(
+          MAL = sprintf("%.2f ± %.2f", MAL[`_STAT_` == "MEAN"], MAL[`_STAT_` == "STD"]),
+          CON = sprintf("%.2f ± %.2f", CON[`_STAT_` == "MEAN"], CON[`_STAT_` == "STD"]),
+          t   = round(ALL[`_STAT_` == "TTEST WELCH"], 2),
+          p   = round(ALL[`_STAT_` == "PVALUE"], 3),
+          .groups = "drop") %>%
+        select(-MODEL) %>%                                   # the block's label replaces MODEL
+        rename_with(~ paste(LABEL, .x), c(MAL, CON, t, p))   # e.g. "Males MAL", "Females p"
+      
+
+       PSUMMARY <- if (x == 0) temp else cbind(PSUMMARY, select(temp, -VARNAME))
+    }
+    
+
+    LABELS <- c(BE     = "BENEVOLENCE",
+                BE_ALT = "Altruism",
+                BE_COM = "Compliance",
+                BE_DOM = "Dominance",
+                BE_EGO = "Egocentrism",
+                BE_IRR = "Irritability",
+                CO     = "CONSCIENTIOUSNESS",
+                CO_ACH = "Achievement",
+                CO_CNC = "Concentration",
+                CO_ORD = "Order",
+                CO_PER = "Perseverance",
+                ES     = "EMOTIONAL STABILITY",
+                ES_ANX = "Anxiety",
+                ES_CON = "Self-Confidence",
+                EX     = "EXTRAVERSION",
+                EX_ENE = "Energy",
+                EX_EXP = "Expressiveness",
+                EX_OPT = "Optimism",
+                EX_SHY = "Shyness",
+                IM     = "IMAGINATION",
+                IM_CRE = "Creativity",
+                IM_CUR = "Curiosity",
+                IM_INT = "Intellect")
+    
+    PSUMMARY$VARNAME <- unname(LABELS[PSUMMARY$VARNAME])
+    
+    
+    
+    library(kableExtra)
+    
+    p_bg <- function(p) ifelse(p < .05, "#d73027", ifelse(p < .10, "orange", "white"))   # background
+    p_fg <- function(p) ifelse(p < .05, "white", "black")                                 # text colour
+    
+DOM <- which(PSUMMARY$VARNAME == toupper(PSUMMARY$VARNAME))   # rows 1, 7, 12, 15, 20
+FAC <- setdiff(seq_len(nrow(PSUMMARY)), DOM)                  # all the other rows
+
+TAB <- PSUMMARY %>%
+  kbl(col.names = c("Variable", rep(c("MAL", "CON", "t", "p-Value"), 3)),
+      align = c("l", rep("c", 12))) %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 1, "Males" = 4, "Females" = 4, "All" = 4)) %>%
+  column_spec(c(1, 5, 9), border_right = TRUE) %>%
+  row_spec(DOM, bold = TRUE) %>%                                         # bold domains
+  row_spec(DOM[-1], extra_css = "border-top: 1px solid #666;") %>%      # line above each new domain
+  add_indent(FAC)                                                        # indent facets
+
+for (j in c(5, 9, 13)) {
+  TAB <- column_spec(TAB, j, background = p_bg(PSUMMARY[[j]]), color = p_fg(PSUMMARY[[j]]))
+}
+
+TAB
+
+
+
+
+
+```
+
+<p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
+Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+</p>
 
 ---
 class: hide-count, inverse

@@ -2941,7 +2941,11 @@ if (!&quot;BASEP&quot; %in% names(wb)) {
   openxlsx::addWorksheet(wb, &quot;BASEP&quot;)
 }
 openxlsx::writeData(wb, &quot;BASEP&quot;, BASEP)
-openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)</code></pre>
+openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
+
+
+saveRDS(BASEC, &quot;cbase_wide.rds&quot;) 
+saveRDS(BASEP, &quot;pbase_wide.rds&quot;) </code></pre>
 </div>
 <div id="f.-examine-the-questions-on-both-surveys-that-had-the-highest-concentration-of-answers-along-any-one-response." class="section level2">
 <h2>F. Examine the questions on both surveys that had the highest

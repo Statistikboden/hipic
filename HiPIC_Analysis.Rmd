@@ -810,6 +810,10 @@ openxlsx::writeData(wb, "BASEP", BASEP)
 openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
 
 
+saveRDS(BASEC, "cbase_wide.rds") 
+saveRDS(BASEP, "pbase_wide.rds") 
+
+
 ```
 
 
