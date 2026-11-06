@@ -266,7 +266,7 @@ background-size: 60px 60px
 --
 1. Among the  &lt;font color="#006cc5"&gt;**R packages**&lt;/font&gt; to be used in this analysis include:
 
-    - &lt;font color="#006cc5"&gt;haven&lt;/font&gt; and &lt;font color="#006cc5"&gt;writexl&lt;/font&gt; for importing and exporting raw data and SAS datasets from prior work
+    - &lt;font color="#006cc5"&gt;haven&lt;/font&gt; and &lt;font color="#006cc5"&gt;openxlsx2&lt;/font&gt; for importing and exporting raw data and SAS datasets from prior work
     - &lt;font color="#006cc5"&gt;tidyverse,&lt;/font&gt; which includes packages like dplyr, magrittr, and ggplot, all helpful with data wrangling and beautification
     - &lt;font color="#006cc5"&gt;statx&lt;/font&gt; and &lt;font color="#006cc5"&gt;misty&lt;/font&gt; for general descriptive statistical calculations
     - &lt;font color="#006cc5"&gt;psych&lt;/font&gt; and &lt;font color="#006cc5"&gt;lavaan&lt;/font&gt; for more complex principal components and factor analyses
@@ -300,8 +300,9 @@ background-size: cover
 
 
 ``` r
-require(readr)  # use if importing a comma- or tab-delimited dataset #
-require(haven)  # if importing a SAS dataset #
+require(readr)      # use if importing a comma- or tab-delimited dataset #
+require(haven)      # if importing a SAS dataset #
+require(openxlsx2)  # if exporting to an Excel workbook#
 
 
 
@@ -670,7 +671,7 @@ background-size: cover
 ---
 exclude: true
 
-## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=EbiWJc&amp;nav=MTJfQjM3OlE2N197MDAwMDAwMDAtMDAwMS0wMDAwLTA1MDAtMDAwMDAwMDAwMDAwfQ" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Child Self-Report&lt;/a&gt;
+## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=yH75tx&amp;nav=MTJfQjM4X3swMDAwMDAwMC0wMDAxLTAwMDAtMDQwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Child Self-Report&lt;/a&gt;
 
 
 &lt;img src="images/mean-diffs-children.png"
@@ -685,7 +686,7 @@ Mean ± SD; Welch t-tests. Red: &lt;i&gt;p&lt;/i&gt; &lt; .05; yellow: .05 ≤ &
 ---
 class: gd-table
 
-## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=EbiWJc&amp;nav=MTJfQjM3OlE2N197MDAwMDAwMDAtMDAwMS0wMDAwLTA1MDAtMDAwMDAwMDAwMDAwfQ" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Child Self-Report&lt;/a&gt;
+## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=yH75tx&amp;nav=MTJfQjM4X3swMDAwMDAwMC0wMDAxLTAwMDAtMDQwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Child Self-Report&lt;/a&gt;
 
 &lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
  &lt;thead&gt;
@@ -1067,7 +1068,7 @@ Mean ± SD; Welch t-tests. Red: &lt;i&gt;p&lt;/i&gt; &lt; .05; yellow: .05 ≤ &
 exclude: true
 
 
-## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=ExfmCO&amp;nav=MTJfQjQ6UTM0X3swMDAwMDAwMC0wMDAxLTAwMDAtMDUwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Parent Report&lt;/a&gt;
+## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=3mJv4t&amp;nav=MTJfQjVfezAwMDAwMDAwLTAwMDEtMDAwMC0wNDAwLTAwMDAwMDAwMDAwMH0" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Parent Report&lt;/a&gt;
 
 &lt;img src="images/mean-diffs-parents.png"
      style="display: block; margin: 0 auto; width: 85%;
@@ -1082,7 +1083,7 @@ Mean ± SD; Welch t-tests. Red: &lt;i&gt;p&lt;/i&gt; &lt; .05; yellow: .05 ≤ &
 ---
 class: gd-table
 
-## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=ExfmCO&amp;nav=MTJfQjQ6UTM0X3swMDAwMDAwMC0wMDAxLTAwMDAtMDUwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Parent Report&lt;/a&gt;
+## Group Differences: &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=3mJv4t&amp;nav=MTJfQjVfezAwMDAwMDAwLTAwMDEtMDAwMC0wNDAwLTAwMDAwMDAwMDAwMH0" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;"&gt;  Parent Report&lt;/a&gt;
 
 &lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
  &lt;thead&gt;
@@ -2072,7 +2073,7 @@ P_FACETS &lt;- PARENT_SCORED %&gt;% select(matches("^(ES|EX|IM|BE|CO)_"))
 &lt;/table&gt;
 &lt;br&gt;
 &lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;"&gt;
-Top 10 items per factor shown (F1–F3); loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=PABn2c&amp;nav=MTVfezMyRTNGMzhFLUNBQzUtRDU0OC1CRTA4LUE5MzEyNEE1RDU1RH0" target="_blank"&gt;Excel file&lt;/a&gt;.
+Top 10 items per factor shown (F1–F3); loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=lquYhH&amp;nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNzAwLTAwMDAwMDAwMDAwMH0" target="_blank"&gt;Excel file&lt;/a&gt;.
 &lt;/p&gt;
 ]
 
@@ -2268,7 +2269,7 @@ Top 10 items per factor shown (F1–F3); loadings below .30 not shown.&lt;br&gt;
 &lt;/table&gt;
 
 &lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;"&gt;
-F4: top 10 items shown. F5: all 9 items loading ≥ .30 shown. Loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=PABn2c&amp;nav=MTVfezMyRTNGMzhFLUNBQzUtRDU0OC1CRTA4LUE5MzEyNEE1RDU1RH0" target="_blank"&gt;Excel file&lt;/a&gt;.
+F4: top 10 items shown. F5: all 9 items loading ≥ .30 shown. Loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=lquYhH&amp;nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNzAwLTAwMDAwMDAwMDAwMH0" target="_blank"&gt;Excel file&lt;/a&gt;.
 &lt;/p&gt;
 
 
@@ -2597,7 +2598,7 @@ F4: top 10 items shown. F5: all 9 items loading ≥ .30 shown. Loadings below .3
 
 &lt;br&gt;
 &lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;"&gt;
-Top 10 items per factor shown; loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=WTc0qk&amp;nav=MTVfe0Y1REJFMzJELUZGMjctRjU0RC05N0I5LTBGMUE0NkQ3Mzk3Nn0" target="_blank" &gt;Excel file&lt;/a&gt;.
+Top 10 items per factor shown; loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=SuX8hW&amp;nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNTAwLTAwMDAwMDAwMDAwMH0" target="_blank" &gt;Excel file&lt;/a&gt;.
 &lt;/p&gt;
 ]
 
@@ -2730,7 +2731,7 @@ Top 10 items per factor shown; loadings below .30 not shown.&lt;br&gt;Full loadi
 &lt;/table&gt;
 
 &lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;"&gt;
-Top 10 items per factor shown; loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=WTc0qk&amp;nav=MTVfe0Y1REJFMzJELUZGMjctRjU0RC05N0I5LTBGMUE0NkQ3Mzk3Nn0" target="_blank" &gt;Excel file&lt;/a&gt;.
+Top 10 items per factor shown; loadings below .30 not shown.&lt;br&gt;Full loadings in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=SuX8hW&amp;nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNTAwLTAwMDAwMDAwMDAwMH0" target="_blank" &gt;Excel file&lt;/a&gt;.
 &lt;/p&gt;
 
 
@@ -3109,7 +3110,7 @@ sort(round(KMOP$MSAi, 2))
 &lt;/table&gt;
 
 &lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;"&gt;
-Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.&lt;br&gt;Full results in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=0SsbgY&amp;nav=MTVfe0JEMTFEMTdFLTVFQzctMDE0RC04RDQ4LTY5OTNBOEMwNjBGNn0" target="_blank"&gt;Excel file&lt;/a&gt;.
+Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.&lt;br&gt;Full results in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=uo2eUf&amp;nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0xMTAwLTAwMDAwMDAwMDAwMH0" target="_blank"&gt;Excel file&lt;/a&gt;.
 &lt;/p&gt;
 
 ---
@@ -3432,7 +3433,7 @@ class: facet-cmp
 &lt;/table&gt;
 
 &lt;p style="text-align: center; font-size: 0.6em; margin-top: 0.9em;"&gt;
-Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.&lt;br&gt;Rows in the same order across solutions; factor numbers are not comparable between solutions.&lt;br&gt;Full results in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=FOgBBC&amp;nav=MTVfezU5MjBDMEI2LTg5N0EtRTA0My1BNkI5LTJFODUzRTIzMkIxRX0" target="_blank"&gt;Excel file&lt;/a&gt;.
+Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.&lt;br&gt;Rows in the same order across solutions; factor numbers are not comparable between solutions.&lt;br&gt;Full results in the accompanying &lt;a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=X8W2uo&amp;nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0xMzAwLTAwMDAwMDAwMDAwMH0" target="_blank"&gt;Excel file&lt;/a&gt;.
 &lt;/p&gt;
 
 
@@ -3591,8 +3592,8 @@ background-image: none
 
 
 
-<div id="htmlwidget-959f57728c2d4ac7f44d" style="width:100%;height:470px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-959f57728c2d4ac7f44d">{"x":{"url":"hipic-update_files/figure-html//widgets/widget_map-table-dt.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-1163c82fb76b19939a88" style="width:100%;height:470px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1163c82fb76b19939a88">{"x":{"url":"hipic-update_files/figure-html//widgets/widget_map-table-dt.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 
 ---
