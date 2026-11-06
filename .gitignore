@@ -7,4 +7,6 @@
 # RStudio session files
 .Rhistory
 .RData
-.Rproj.user/
+.Rproj.user/QC
+PARENT_REVERSED
+*.csv
