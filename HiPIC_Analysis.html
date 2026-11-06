@@ -582,6 +582,41 @@ Preparation and Analysis</h1>
 </div>
 
 
+<div id="export-helpers-all-excel-exports-go-through-these" class="section level3">
+<h3>Export helpers (all Excel exports go through these)</h3>
+<pre class="r"><code># CHANGED: new chunk. The one workbook every export writes to -- check the file name matches yours.
+
+HIPIC_XLSX &lt;- path.expand(&quot;~/Documents/R/HiPIC/docs/HiPIC Exploratory.xlsx&quot;)
+
+# CHANGED: builds feeder-sheet names such as P5VAR_MR, P5NOROT_MR, P3VAR_MR_FACETS
+
+feeder_name &lt;- function(PREFIX, NFACT, ROT, METHOD, FACETS = FALSE) {
+  ROT_CODE  &lt;- unname(c(varimax = &quot;VAR&quot;, none = &quot;NOROT&quot;, promax = &quot;PRO&quot;, oblimin = &quot;OBL&quot;)[ROT])
+  METH_CODE &lt;- unname(c(minres = &quot;MR&quot;, pca = &quot;PCA&quot;, pa = &quot;PA&quot;, ml = &quot;ML&quot;)[METHOD])
+  if (is.na(ROT_CODE))  ROT_CODE  &lt;- toupper(ROT)        # any other rotation: its name in capitals
+  if (is.na(METH_CODE)) METH_CODE &lt;- toupper(METHOD)
+  paste0(PREFIX, NFACT, ROT_CODE, &quot;_&quot;, METH_CODE, if (FACETS) &quot;_FACETS&quot;)
+}
+
+# CHANGED: writes a table into a feeder sheet, starting at A1, without touching anything else.
+#          Never deletes a sheet (formulas pointing at it would break); never creates a new workbook.
+
+# CHANGED: uses openxlsx2, which preserves hand-built workbooks better than openxlsx
+
+write_feeder &lt;- function(DATA, SHEET, FILE = HIPIC_XLSX) {
+  tryCatch({
+    if (!file.exists(FILE)) stop(&quot;workbook not found: &quot;, FILE)
+    wb &lt;- openxlsx2::wb_load(FILE)
+    if (!SHEET %in% openxlsx2::wb_get_sheet_names(wb))
+      wb &lt;- openxlsx2::wb_add_worksheet(wb, SHEET)                 # new sheet: visible
+    wb &lt;- openxlsx2::wb_clean_sheet(wb, sheet = SHEET)             # clear old values
+    wb &lt;- openxlsx2::wb_add_data(wb, sheet = SHEET, x = as.data.frame(DATA),
+                                 start_col = 1, start_row = 1, na.strings = &quot;&quot;)
+    openxlsx2::wb_save(wb, FILE, overwrite = TRUE)
+    cat(&quot;Written to&quot;, SHEET, &quot;in&quot;, basename(FILE), &quot;\n&quot;)
+  }, error = function(e) cat(&quot;Excel export skipped:&quot;, conditionMessage(e), &quot;\n&quot;))
+}</code></pre>
+</div>
 <div id="step-1-import-inspect-the-original-sas-datasets" class="section level3">
 <h3>Step 1 — Import &amp; Inspect the original SAS datasets</h3>
 <p>Find the original SAS datasets in AllQsbyQ and import them into R for
@@ -592,15 +627,6 @@ library(dplyr)
 library(magrittr)
 library(misty)</code></pre>
 <pre><code>## Warning: package &#39;misty&#39; was built under R version 4.4.3</code></pre>
-<pre><code>## |-------------------------------------|
-## | misty 0.8.2 (2026-05-16)            |
-## | Miscellaneous Functions T. Yanagida |
-## |-------------------------------------|</code></pre>
-<pre><code>## 
-## Attaching package: &#39;misty&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:openxlsx&#39;:
-## 
-##     read.xlsx, write.xlsx</code></pre>
 <pre class="r"><code>CHILD_RAW  &lt;- read_sas(&quot;/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat&quot;)
 PARENT_RAW &lt;- read_sas(&quot;/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat&quot;)</code></pre>
 </div>
@@ -652,7 +678,7 @@ PARENT_MISSING &lt;- PARENT_RAW %&gt;%
 <h2>B. Remove Disqualified Observations</h2>
 <p>Any observation from both the Child and Parent datasets where a
 substantial portion of the survey was unanswered (approx. gt 1%). For
-remaining observations with NA values in select questions, use a simply
+remaining observations with NA values in select questions, use a simple
 mean substitution, where the rounded average for that question by
 nutritional group + sex (CVPK + MVF) serves as a proxy for missing
 values.</p>
@@ -716,10 +742,10 @@ sum(!complete.cases(CHILD))</code></pre>
 <pre class="r"><code>sum(!complete.cases(PARENT))</code></pre>
 <pre><code>## [1] 0</code></pre>
 </div>
-<div id="c.-examine-cohort-demographic-data---ensure-that-the-nutritional-groups-are-reasonably-balanced-and-that-there-isnt-a-statistically-significant-differece-between-them-along-demographic-characteristics-that-might-be-used-in-later-analyses." class="section level2">
+<div id="c.-examine-cohort-demographic-data---ensure-that-the-nutritional-groups-are-reasonably-balanced-and-that-there-isnt-a-statistically-significant-difference-between-them-along-demographic-characteristics-that-might-be-used-in-later-analyses." class="section level2">
 <h2>C. Examine Cohort Demographic Data - ensure that the nutritional
 groups are reasonably balanced and that there isn’t a statistically
-significant differece between them along demographic characteristics
+significant difference between them along demographic characteristics
 that might be used in later analyses.</h2>
 <pre class="r"><code>demog &lt;-   
     
@@ -1027,15 +1053,10 @@ dim(HIPIC_CROSSWALK)</code></pre>
 ## [4] &quot;BNS_NAME_C&quot;         &quot;PARENT_PREPEND&quot;     &quot;PARENT_Q_WORDING&quot;  
 ## [7] &quot;BNS_NAME_P&quot;         &quot;PARENT_CHILD_MATCH&quot;</code></pre>
 <pre class="r"><code>library(sqldf)</code></pre>
-<pre><code>## Loading required package: gsubfn</code></pre>
-<pre><code>## Loading required package: proto</code></pre>
 <pre><code>## Warning in doTryCatch(return(expr), name, parentenv, handler): unable to load shared object &#39;/Library/Frameworks/R.framework/Resources/modules//R_X11.so&#39;:
 ##   dlopen(/Library/Frameworks/R.framework/Resources/modules//R_X11.so, 0x0006): Library not loaded: &#39;/opt/X11/lib/libSM.6.dylib&#39;
 ##   Referenced from: &#39;/Library/Frameworks/R.framework/Versions/4.4-x86_64/Resources/modules/R_X11.so&#39;
 ##   Reason: tried: &#39;/opt/X11/lib/libSM.6.dylib&#39; (no such file), &#39;/Library/Frameworks/R.framework/Resources/lib/libSM.6.dylib&#39; (no such file), &#39;/Library/Java/JavaVirtualMachines/jdk-11.0.18+10/Contents/Home/lib/server/libSM.6.dylib&#39; (no such file)</code></pre>
-<pre><code>## tcltk DLL is linked to &#39;/opt/X11/lib/libX11.6.dylib&#39;</code></pre>
-<pre><code>## Could not load tcltk.  Will use slower R code instead.</code></pre>
-<pre><code>## Loading required package: RSQLite</code></pre>
 <pre><code>## Warning: package &#39;RSQLite&#39; was built under R version 4.4.3</code></pre>
 <pre class="r"><code>PARENT_ALIGNED &lt;-
 
@@ -1066,7 +1087,7 @@ sqldf(&quot;  select Q_NEW,
   
 
 
-#alternate dply solution
+#alternate dplyr solution
 
 
 # library(dplyr)
@@ -1431,7 +1452,7 @@ length(CHILD_NAMES)</code></pre>
 <h2>E. Item-Level Reverse Scoring</h2>
 <p>The scoring key provided by DeFruyt identifies the questions along
 each domain/facet that require reverse scoring.</p>
-<pre class="r"><code>#Items identified as requireing reverse scoring in DeFruyt&#39;s key (questions are moving in opposite directions from other questions in the instrument):
+<pre class="r"><code>#Items identified as requiring reverse scoring in DeFruyt&#39;s key (questions are moving in opposite directions from other questions in the instrument):
 
 
 REVERSE_ITEMS &lt;- c(  1, 5, 8, 16, 17, 20, 27, 35, 37, 41,
@@ -1441,7 +1462,7 @@ REVERSE_ITEMS &lt;- c(  1, 5, 8, 16, 17, 20, 27, 35, 37, 41,
 
 
 
-# use an ACROSS statement to compute a revers score for the items in the REVERSE_ITEMS vector
+# use an ACROSS statement to compute a reverse score for the items in the REVERSE_ITEMS vector
 
 
 CHILD_REVERSED &lt;-CHILD %&gt;% mutate(across( starts_with( paste0(&quot;C&quot;, REVERSE_ITEMS, &quot;_&quot;)),
@@ -1472,7 +1493,7 @@ write.csv(PARENT,
 ES_ANX &lt;- c(4, 22, 40, 58, 76, 94, 112, 130)
 ES_CON &lt;- c(9, 27, 45, 63, 81, 99, 117, 135)
 
-#Extroversion
+#Extraversion
 
 EX_ENE &lt;- c(15, 33, 51, 69, 87, 105, 123, 141)
 EX_EXP &lt;- c(6, 24, 42, 60, 78, 96, 114, 132)
@@ -1504,10 +1525,10 @@ CO_ACH &lt;- c(3, 21, 39, 57, 75, 93, 111, 129)
 
 
 
-# Compute dacets &amp; domain scores based on DeFruyt&#39;s formulas 
+# Compute facets &amp; domain scores based on DeFruyt&#39;s formulas 
 
 
-# Since code is similar except for the files called, the files creatd and the vaiable prefix, consider a simple function  -not quite a SAS do loop, but still more efficient that duplicate blocks of code
+# Since code is similar except for the files called, the files created and the variable prefix, consider a simple function  -not quite a SAS do loop, but still more efficient than duplicate blocks of code
 
 
 #SCORE HIPIC FUNCTION
@@ -2914,34 +2935,9 @@ BASEC &lt;- hipic_mean_diffs(CHILD_SCORED)</code></pre>
 <div id="e1.-if-you-need-to-export-the-results-of-the-mean-differences-analysis-run-this-block" class="section level2">
 <h2>E1. If you need to export the results of the Mean Differences
 analysis, run this block:</h2>
-<pre class="r"><code>library(openxlsx)
-
-file_path &lt;- &quot;/Users/Kevin/OneDrive/Documents/Excel/HiPIC Exploratory.xlsx&quot;
-
-wb &lt;- if (file.exists(file_path)) {
-  openxlsx::loadWorkbook(file_path)
-} else {
-  openxlsx::createWorkbook()
-}
-
-if (!&quot;BASEC&quot; %in% names(wb)) {
-  openxlsx::addWorksheet(wb, &quot;BASEC&quot;)
-}
-openxlsx::writeData(wb, &quot;BASEC&quot;, BASEC)
-openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
-
-
-wb &lt;- if (file.exists(file_path)) {
-  openxlsx::loadWorkbook(file_path)
-} else {
-  openxlsx::createWorkbook()
-}
-
-if (!&quot;BASEP&quot; %in% names(wb)) {
-  openxlsx::addWorksheet(wb, &quot;BASEP&quot;)
-}
-openxlsx::writeData(wb, &quot;BASEP&quot;, BASEP)
-openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
+<pre class="r"><code># CHANGED: both exports now go through write_feeder() (helpers chunk at the top)
+write_feeder(BASEC, &quot;BASEC&quot;)
+write_feeder(BASEP, &quot;BASEP&quot;)
 
 
 saveRDS(BASEC, &quot;cbase_wide.rds&quot;) 
@@ -2975,7 +2971,7 @@ revscored &lt;- c(
 
 
 
-#3. find quesiton prefix value
+#3. find question prefix value
 
 prefix &lt;- substr( grep(&quot;^[PC]1_&quot;, colnames(DATA), value = TRUE), 1, 1)
 
@@ -3077,17 +3073,7 @@ evil, good learning - return to later to consider iterative
 function)</h2>
 <pre class="r"><code>set.seed(2026)
 PA_C &lt;- psych::fa.parallel(C_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
-<pre><code>## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0</code></pre>
 <pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined.
-## Chi square is based upon observed residuals.</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined for the null model either.
-## The Chi square is thus based upon observed correlations.</code></pre>
-<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
 <pre><code>## Parallel analysis suggests that the number of factors =  6  and the number of components =  NA</code></pre>
 <pre class="r"><code>png(&quot;images/scree_items_child.png&quot;, width = 1400, height = 1100, res = 200)
 par(mar = c(4.5, 4.5, 1, 1))          # margins: bottom, left, top, right (in lines of text)
@@ -3194,17 +3180,7 @@ ALPHAS_C &lt;- sapply(1:5, function(k) {
 <pre class="r"><code>#CHILD %$% cor(C34_BOSS_Iactliketheboss, C124_GIVEINPEERS_Ireadilygiveintopeers)</code></pre>
 <pre class="r"><code>set.seed(2026)
 PA_P &lt;- psych::fa.parallel(P_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
-<pre><code>## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0</code></pre>
 <pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined.
-## Chi square is based upon observed residuals.</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined for the null model either.
-## The Chi square is thus based upon observed correlations.</code></pre>
-<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
 <pre><code>## Parallel analysis suggests that the number of factors =  6  and the number of components =  NA</code></pre>
 <pre class="r"><code>png(&quot;images/scree_items_parent.png&quot;, width = 1400, height = 1100, res = 200)
 par(mar = c(4.5, 4.5, 1, 1))
@@ -3288,17 +3264,7 @@ LOAD_P %&gt;% filter(Max &gt;= .30) %&gt;% count(Primary)</code></pre>
 <pre><code>## [1] 0.3770516 0.2753028 0.2621941 0.2718505 0.5779973</code></pre>
 <pre class="r"><code>#PARENT %$% cor(P34_BOSS_actsliketheboss, P124_GIVEINPEERS_readilygivesintopeers)</code></pre>
 <pre class="r"><code>FA2I_C &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)</code></pre>
-<pre><code>## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0</code></pre>
 <pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined.
-## Chi square is based upon observed residuals.</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined for the null model either.
-## The Chi square is thus based upon observed correlations.</code></pre>
-<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
 <pre class="r"><code>FA2I_C$Vaccounted</code></pre>
 <pre><code>##                              MR1         MR2
 ## SS loadings           21.5476519 14.31387251
@@ -3477,17 +3443,7 @@ tibble(MR2      = L2C[, &quot;MR2&quot;],
 # 
 # Possible slide?  The two cross-tabs side by side, with one line underneath. In both informants, the two broad item-level dimensions largely reflect rating style; in children, a cooperation/conduct dimension is also visible. An honest, nuanced assessment, and the children’s seven exceptions show I looked under the hood rather than forced a conclusion.</code></pre>
 <pre class="r"><code>FA2I_P &lt;- psych::fa(P_ITEMS, nfactors = 2, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)</code></pre>
-<pre><code>## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0</code></pre>
 <pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined.
-## Chi square is based upon observed residuals.</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined for the null model either.
-## The Chi square is thus based upon observed correlations.</code></pre>
-<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
 <pre class="r"><code>FA2I_P$Vaccounted                                    # variance explained by the two factors</code></pre>
 <pre><code>##                              MR1        MR2
 ## SS loadings           28.0975564 16.2695603
@@ -3661,7 +3617,7 @@ tibble(MR2      = L2[, &quot;MR2&quot;],
 ## 2 TRUE     negative     21</code></pre>
 <pre class="r"><code># Notes:
 # 
-# Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.  Curious - but may be an over-simplificaiton to attribute this to &quot;response style&quot; and not &quot;personality trait.&quot;</code></pre>
+# Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.  Curious - but may be an over-simplification to attribute this to &quot;response style&quot; and not &quot;personality trait.&quot;</code></pre>
 </div>
 <div id="attempt-to-write-a-function-that-runs-over-the-parents-and-child-reverse-scored-datasets-but-allows-you-to-key-in-parameters-for-the-rotation-desired-number-of-factors" class="section level1">
 <h1>Attempt to write a function that runs over the PARENTS and CHILD
@@ -3669,9 +3625,7 @@ reverse scored datasets but allows you to key in parameters for the
 rotation desired, number of factors</h1>
 <pre class="r"><code>run_fa &lt;- function(DSN, NFACT, ROT = &quot;none&quot;, METHOD = &quot;minres&quot;, SORT = &quot;factor&quot;) {
   
-  # &gt;&gt;&gt; EXCEL DESTINATION: change this line to write somewhere else &lt;&lt;&lt;
-  
-  FILE &lt;- &quot;/Users/Kevin/OneDrive/Documents/Excel/HiPIC FA Tests.xlsx&quot;
+  # CHANGED: the Excel destination is now set once, in HIPIC_XLSX (helpers chunk at the top)
   
   
   
@@ -3723,21 +3677,9 @@ rotation desired, number of factors</h1>
   print(VAR_ROW %&gt;% select(-Wording))
   
   
-  # 8. Write the table to its own sheet in the workbook (skipped with a message if it can&#39;t)
-  tryCatch({
-    SHEET &lt;- paste(PREFIX, NFACT, ROT, METHOD, sep = &quot;_&quot;)      # e.g. &quot;P_5_varimax_minres&quot;
-    
-    wb &lt;- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
-    if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
-    
-    openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
-    openxlsx::writeData(wb, SHEET, OUT)
-    openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
-    
-    cat(&quot;Written to sheet&quot;, SHEET, &quot;in&quot;, basename(FILE), &quot;\n&quot;)
-  }, error = function(e) {
-    cat(&quot;Excel export skipped:&quot;, conditionMessage(e), &quot;\n&quot;)
-  })
+  # 8. Write the table to its feeder sheet, e.g. &quot;P5VAR_MR&quot;
+  # CHANGED: replaces the old tryCatch block; write_feeder() handles errors itself
+  write_feeder(OUT, feeder_name(PREFIX, NFACT, ROT, METHOD))
   
   # 9. Hand back the table (and the full FA result) for inspection
   invisible(list(loadings = OUT, fa = FA))
@@ -3746,29 +3688,19 @@ rotation desired, number of factors</h1>
 
 
 R1 &lt;- run_fa(CHILD_REVERSED, 5, &#39;varimax&#39;, &quot;minres&quot;)</code></pre>
-<pre><code>## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0
-## In smc, smcs &lt; 0 were set to .0</code></pre>
 <pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined.
-## Chi square is based upon observed residuals.</code></pre>
-<pre><code>## The determinant of the smoothed correlation was zero.
-## This means the objective function is not defined for the null model either.
-## The Chi square is thus based upon observed correlations.</code></pre>
-<pre><code>## In factor.scores, the correlation matrix is singular, the pseudo inverse is  used</code></pre>
 <pre><code>## 
 ## ==== CHILD_REVERSED | 5 factors | varimax | minres ====
 ## # A tibble: 1 × 5
 ##      F1    F2    F3    F4    F5
 ##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1 0.136 0.079 0.058 0.043 0.037
-## Written to sheet C_5_varimax_minres in HiPIC FA Tests.xlsx</code></pre>
+## Written to C5VAR_MR in HiPIC Exploratory.xlsx</code></pre>
 <pre class="r"><code>if (interactive()) View(R1$loadings)</code></pre>
 </div>
-<div id="factor-analysis-on-a-questionnaire-this-unwieldy-144-items-across-this-few-subjects-my-not-be-reliable-the-correlation-matrix-is-singular-so-it-cannot-be-inverted-and-standard-adequacy-tests-cannot-be-computed.-is-a-facet-level-analysis-worth-taking-a-look-at-test-on-parents-only." class="section level1">
+<div id="factor-analysis-on-a-questionnaire-this-unwieldy-144-items-across-this-few-subjects-may-not-be-reliable-the-correlation-matrix-is-singular-so-it-cannot-be-inverted-and-standard-adequacy-tests-cannot-be-computed.-is-a-facet-level-analysis-worth-taking-a-look-at-test-on-parents-only." class="section level1">
 <h1>Factor analysis on a questionnaire this unwieldy (144-items) across
-this few subjects my not be reliable — the correlation matrix is
+this few subjects may not be reliable — the correlation matrix is
 singular, so it cannot be inverted, and standard adequacy tests cannot
 be computed. Is a Facet-level analysis worth taking a look at? Test on
 parents only.</h1>
@@ -3799,8 +3731,7 @@ saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
 # Parents, facet level (18 facets): parallel analysis retained 2 factors (eigenvalues ≈ 6.0 and 2.5, both well above random-data values). The third factor fell on the random-data line, and the remainder below it.</code></pre>
 <pre class="r"><code>run_fa_facets &lt;- function(DSN, NFACT, ROT = &quot;none&quot;, METHOD = &quot;minres&quot;, SORT = &quot;factor&quot;) {
 
-  # &gt;&gt;&gt; EXCEL DESTINATION: change this line to write somewhere else &lt;&lt;&lt;
-  FILE &lt;- &quot;/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx&quot;
+  # CHANGED: the Excel destination is now set once, in HIPIC_XLSX (helpers chunk at the top)
 
   # 1. Keep only the 18 facets (works with P_FACETS or PARENT_SCORED, C_FACETS or CHILD_SCORED)
   NAME   &lt;- deparse(substitute(DSN))                   # e.g. &quot;P_FACETS&quot;
@@ -3856,21 +3787,9 @@ saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
   # 8. Save for the slides: e.g. &quot;fac_p5_varimax.rds&quot;
   saveRDS(OUT, paste0(&quot;fac_&quot;, tolower(PREFIX), NFACT, &quot;_&quot;, ROT, &quot;.rds&quot;))
 
-  # 9. Write to its own sheet in the exports workbook (skipped with a message if it can&#39;t)
-  tryCatch({
-    SHEET &lt;- paste(PREFIX, &quot;FACETS&quot;, NFACT, ROT, METHOD, sep = &quot;_&quot;)   # e.g. &quot;P_FACETS_5_varimax_minres&quot;
-
-    wb &lt;- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
-    if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
-
-    openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
-    openxlsx::writeData(wb, SHEET, OUT)
-    openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
-
-    cat(&quot;Written to sheet&quot;, SHEET, &quot;in&quot;, basename(FILE), &quot;\n&quot;)
-  }, error = function(e) {
-    cat(&quot;Excel export skipped:&quot;, conditionMessage(e), &quot;\n&quot;)
-  })
+  # 9. Write to its feeder sheet, e.g. &quot;P3VAR_MR_FACETS&quot;
+  # CHANGED: replaces the old tryCatch block; write_feeder() handles errors itself
+  write_feeder(OUT, feeder_name(PREFIX, NFACT, ROT, METHOD, FACETS = TRUE))
 
   # 10. Hand back the table (and the full FA result)
   invisible(list(loadings = OUT, fa = FA))
@@ -3904,7 +3823,7 @@ saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
 ##      F1    F2
 ##   &lt;dbl&gt; &lt;dbl&gt;
 ## 1 0.289 0.205
-## Written to sheet P_FACETS_2_varimax_minres in HiPIC_facet_exports.xlsx</code></pre>
+## Written to P2VAR_MR_FACETS in HiPIC Exploratory.xlsx</code></pre>
 <pre class="r"><code>     R3 &lt;- run_fa_facets(P_FACETS, 3, ROT = &quot;varimax&quot;)</code></pre>
 <pre><code>## 
 ## ==== P_FACETS | facets | 3 factors | varimax | minres ====
@@ -3912,7 +3831,7 @@ saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
 ##      F1    F2    F3
 ##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1 0.219 0.205 0.129
-## Written to sheet P_FACETS_3_varimax_minres in HiPIC_facet_exports.xlsx</code></pre>
+## Written to P3VAR_MR_FACETS in HiPIC Exploratory.xlsx</code></pre>
 <pre class="r"><code>     R4 &lt;- run_fa_facets(P_FACETS, 4, ROT = &quot;varimax&quot;)     # saves fac_p4_varimax.rds</code></pre>
 <pre><code>## 
 ## ==== P_FACETS | facets | 4 factors | varimax | minres ====
@@ -3920,7 +3839,7 @@ saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
 ##      F1    F2    F3    F4
 ##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1 0.262 0.135 0.117 0.084
-## Written to sheet P_FACETS_4_varimax_minres in HiPIC_facet_exports.xlsx</code></pre>
+## Written to P4VAR_MR_FACETS in HiPIC Exploratory.xlsx</code></pre>
 <pre class="r"><code>     R5 &lt;- run_fa_facets(P_FACETS, 5, ROT = &quot;varimax&quot;)</code></pre>
 <pre><code>## 
 ## ==== P_FACETS | facets | 5 factors | varimax | minres ====
@@ -3928,10 +3847,10 @@ saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
 ##      F1    F2    F3    F4    F5
 ##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1 0.211 0.194 0.108 0.077 0.044
-## Written to sheet P_FACETS_5_varimax_minres in HiPIC_facet_exports.xlsx</code></pre>
+## Written to P5VAR_MR_FACETS in HiPIC Exploratory.xlsx</code></pre>
 <pre class="r"><code>     ###############################################################################################
      # Need assistance for this code:  Stitching, cbind-ing three frames together
-     # Review knitting within an r-block - assumed that was only a xaranigan step
+     # Review knitting within an r-block - assumed that was only a xaringan step
 
 
 library(dplyr)
@@ -4809,11 +4728,6 @@ VAR EXPLAINED
 </table>
 <pre class="r"><code>library(psych)</code></pre>
 <pre><code>Warning: package &#39;psych&#39; was built under R version 4.4.3</code></pre>
-<pre><code>
-Attaching package: &#39;psych&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:ggplot2&#39;:
-
-    %+%, alpha</code></pre>
 <pre class="r"><code># KMO and Bartlett&#39;s test for one set of facet scores
 kmo_row &lt;- function(DSN) {
   R    &lt;- cor(DSN)                                  # 18 x 18 correlation matrix
@@ -4829,8 +4743,6 @@ rbind(Children = kmo_row(C_FACETS),
 <pre><code>          KMO ChiSq  df       p
 Children 0.85 770.9 153 &lt; 0.001
 Parents  0.80 809.1 153 &lt; 0.001</code></pre>
-<pre class="r"><code>saveRDS(P_FACETS, &quot;kmo_facets_parent.rds&quot;)
-saveRDS(C_FACETS, &quot;kmo_facets_child.rds&quot;)</code></pre>
 <pre class="r"><code>library(psych)
 
 MSA &lt;- data.frame(Children = round(KMO(cor(C_FACETS))$MSAi, 2),
@@ -4856,6 +4768,403 @@ EX_EXP     0.90    0.68
 EX_SHY     0.91    0.69
 BE_COM     0.91    0.86
 CO_PER     0.91    0.66</code></pre>
+<pre class="r"><code>MAPQ &lt;- read.csv(&quot;hipic_bfi2_map.csv&quot;)
+HM   &lt;- MAPQ$HIPIC_Q[MAPQ$MATCH %in% c(&quot;Equivalent&quot;, &quot;Similar&quot;)]    # 68 items
+HML  &lt;- MAPQ$HIPIC_Q[MAPQ$MATCH != &quot;None&quot;]                          # 120 items
+
+# Factorability checks for one subset of one dataset
+check_subset &lt;- function(DSN, PREFIX, Q, LABEL) {
+  X    &lt;- DSN %&gt;% select(starts_with(paste0(PREFIX, Q, &quot;_&quot;)))
+  R    &lt;- cor(X)
+  FULL &lt;- qr(R)$rank == ncol(R)                       # can the matrix be inverted?
+  data.frame(Subset     = LABEL,
+             Items      = ncol(X),
+             N          = nrow(X),
+             Reversed   = sum(Q %in% REVERSE_ITEMS),
+             Rank       = qr(R)$rank,
+             KMO        = if (FULL) sprintf(&quot;%.2f&quot;, psych::KMO(R)$MSA) else &quot;Not computable&quot;,
+             Bartlett_p = if (FULL) format.pval(psych::cortest.bartlett(R, n = nrow(X))$p.value, eps = .001)
+                          else &quot;Not computable&quot;)
+}
+
+E_ONLY &lt;- MAPQ$HIPIC_Q[MAPQ$MATCH == &quot;Equivalent&quot;]                       # 24
+HM     &lt;- MAPQ$HIPIC_Q[MAPQ$MATCH %in% c(&quot;Equivalent&quot;, &quot;Similar&quot;)]       # 68
+HML    &lt;- MAPQ$HIPIC_Q[MAPQ$MATCH != &quot;None&quot;]                             # 120
+
+KMO_SUBSETS &lt;- rbind(
+  check_subset(PARENT_REVERSED, &quot;P&quot;, E_ONLY, &quot;Parents: Equivalent&quot;),
+  check_subset(PARENT_REVERSED, &quot;P&quot;, HM,     &quot;Parents: Equivalent/Similar&quot;),
+  check_subset(PARENT_REVERSED, &quot;P&quot;, HML,    &quot;Parents: Equivalent/Similar/Related&quot;),
+  check_subset(CHILD_REVERSED,  &quot;C&quot;, E_ONLY, &quot;Children: Equivalent&quot;),
+  check_subset(CHILD_REVERSED,  &quot;C&quot;, HM,     &quot;Children: Equivalent/Similar&quot;),
+  check_subset(CHILD_REVERSED,  &quot;C&quot;, HML,    &quot;Children: Equivalent/Similar/Related&quot;))
+
+KMO_SUBSETS</code></pre>
+<pre><code>##                                 Subset Items  N Reversed Rank            KMO
+## 1                  Parents: Equivalent    24 77        7   24           0.67
+## 2          Parents: Equivalent/Similar    68 77       22   68           0.38
+## 3  Parents: Equivalent/Similar/Related   120 77       31   76 Not computable
+## 4                 Children: Equivalent    24 74        7   24           0.59
+## 5         Children: Equivalent/Similar    68 74       22   68           0.27
+## 6 Children: Equivalent/Similar/Related   120 74       31   73 Not computable
+##       Bartlett_p
+## 1        &lt; 0.001
+## 2        &lt; 0.001
+## 3 Not computable
+## 4        &lt; 0.001
+## 5        &lt; 0.001
+## 6 Not computable</code></pre>
+<pre class="r"><code>saveRDS(KMO_SUBSETS, &quot;kmo_subsets.rds&quot;)</code></pre>
+<pre class="r"><code>B2 &lt;- read.csv(&quot;bfi2_items.csv&quot;)
+
+
+
+# The 24 Equivalent items, with the BFI-2 domain of their (first) matched item
+EQ &lt;- MAPQ %&gt;%
+  filter(MATCH == &quot;Equivalent&quot;) %&gt;%
+  mutate(BFI2_Q = as.integer(sub(&quot;;.*&quot;, &quot;&quot;, BFI2_Q))) %&gt;%
+  left_join(B2, by = &quot;BFI2_Q&quot;)
+
+X &lt;- PARENT_REVERSED %&gt;% select(starts_with(paste0(&quot;P&quot;, EQ$HIPIC_Q, &quot;_&quot;)))
+Q &lt;- as.integer(sub(&quot;^P(\\d+)_.*&quot;, &quot;\\1&quot;, names(X)))        # item numbers, in column order
+
+
+# CHANGED: scree block moved here, after X is created (it used X before X existed)
+#Scree Plot #
+
+
+set.seed(2026)
+PA_EQ &lt;- psych::fa.parallel(X, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
+<pre><code>## Parallel analysis suggests that the number of factors =  3  and the number of components =  NA</code></pre>
+<pre class="r"><code>png(&quot;images/scree_equivalent_parent.png&quot;, width = 1400, height = 1100, res = 200)
+par(mar = c(4.5, 4.5, 1, 1))
+plot(1:24, PA_EQ$fa.values, type = &quot;b&quot;, pch = 19, col = &quot;#006cc5&quot;,
+     xlab = &quot;Factor&quot;, ylab = &quot;Eigenvalue&quot;, main = &quot;&quot;)
+lines(1:24, PA_EQ$fa.sim, lty = 2, col = &quot;grey40&quot;)
+abline(v = 3.5, lty = 3, col = &quot;grey60&quot;)                 # where parallel analysis stops
+legend(&quot;topright&quot;, c(&quot;Actual data&quot;, &quot;Random data (parallel analysis)&quot;),
+       col = c(&quot;#006cc5&quot;, &quot;grey40&quot;), lty = c(1, 2), pch = c(19, NA), bty = &quot;n&quot;)
+dev.off()</code></pre>
+<pre><code>## quartz_off_screen 
+##                 2</code></pre>
+<pre class="r"><code># 1a. How many factors do the data support?
+set.seed(2026)
+psych::fa.parallel(X, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
+<pre><code>## Parallel analysis suggests that the number of factors =  3  and the number of components =  NA</code></pre>
+<pre class="r"><code># 1b. Five-factor solution
+FA_EQ &lt;- psych::fa(X, nfactors = 5, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)
+FA_EQ$Vaccounted[&quot;Proportion Var&quot;, ]                       # variance per factor</code></pre>
+<pre><code>##        MR1        MR4        MR2        MR5        MR3 
+## 0.11992283 0.10009291 0.09527678 0.09295368 0.04455528</code></pre>
+<pre class="r"><code># 1c. Bottom line: BFI-2 domain (rows) by each item&#39;s strongest factor (columns)
+L &lt;- unclass(FA_EQ$loadings)
+PRIMARY &lt;- paste0(&quot;F&quot;, apply(abs(L), 1, which.max))
+table(Domain = EQ$BFI2_DOMAIN[match(Q, EQ$HIPIC_Q)], Factor = PRIMARY)</code></pre>
+<pre><code>##                        Factor
+## Domain                  F1 F2 F3 F4 F5
+##   Agreeableness          2  2  0  0  0
+##   Conscientiousness      1  3  0  0  1
+##   Extraversion           0  1  0  3  0
+##   Negative Emotionality  0  0  3  2  0
+##   Open-Mindedness        2  2  2  0  0</code></pre>
+<pre class="r"><code># 2a. Three-factor solution
+FA_EQ3 &lt;- psych::fa(X, nfactors = 3, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)
+FA_EQ3$Vaccounted[&quot;Proportion Var&quot;, ]                       # variance per factor</code></pre>
+<pre><code>##        MR1        MR2        MR3 
+## 0.19783107 0.09275448 0.07822170</code></pre>
+<pre class="r"><code># 2b. Bottom line: BFI-2 domain (rows) by each item&#39;s strongest factor (columns)
+L3 &lt;- unclass(FA_EQ3$loadings)
+PRIMARY3 &lt;- paste0(&quot;F&quot;, apply(abs(L3), 1, which.max))
+table(Domain = EQ$BFI2_DOMAIN[match(Q, EQ$HIPIC_Q)], Factor = PRIMARY3)</code></pre>
+<pre><code>##                        Factor
+## Domain                  F1 F2 F3
+##   Agreeableness          3  0  1
+##   Conscientiousness      3  0  2
+##   Extraversion           1  0  3
+##   Negative Emotionality  2  3  0
+##   Open-Mindedness        4  2  0</code></pre>
+<pre class="r"><code># 2c. The detail, for reading the factors
+print(FA_EQ3$loadings, cutoff = .30, sort = TRUE)</code></pre>
+<pre><code>## 
+## Loadings:
+##                                                      MR1    MR2    MR3   
+## P12_POLITE_respectsrulesofpoliteness                  0.505         0.451
+## P33_BURST_burstswithenthusiasm                        0.606              
+## P46_INTERESTS_hasabroadrangeofinterests               0.736              
+## P72_HELPOTHERS_isreadytohelpanybody                   0.658              
+## P95_ORIGINALIDEA_hasoriginalideas                     0.641  0.361       
+## P100_INTERESTED_isinterestedineverything              0.665              
+## P113_RICHIMAGINE_hasarichimagination                  0.654  0.383       
+## P125_PERSEVERE_perseveresuntilthegoalisachieved       0.620              
+## P126_GIVETOOTHERS_givestoothers                       0.666              
+## P5_IMAGINE_haslittleimagination                              0.705       
+## P27_INFERIOR_feelsinferiortoothers                           0.611       
+## P40_QUICKWORRY_isquicktoworryaboutthings                    -0.689       
+## P41_NOCREAT_lackscreativity                                  0.503       
+## P25_ARGUE_quicktoargue                                             -0.705
+## P80_NOCLEAN_hatescleaningup                                         0.511
+## P16_FOLLOWER_isafollowerratherthanaleader                                
+## P26_ORDER_hasasenseoforder                            0.423         0.387
+## P44_MESS_makesamessofthings                                              
+## P51_ENERGY_hasexcessiveenergy                                      -0.319
+## P67_FINISHTASK_finishestaskstotheveryend              0.498              
+## P78_TALKDAY_talksalldaylong                                        -0.453
+## P79_SELFCONTROL_hasself-controlindifficultsituations -0.419              
+## P112_DEPRESSED_iseasilydepressed                            -0.408       
+## P117_ATEASE_feelsateasewithhim/herself                                   
+## 
+##                  MR1   MR2   MR3
+## SS loadings    4.748 2.226 1.877
+## Proportion Var 0.198 0.093 0.078
+## Cumulative Var 0.198 0.291 0.369</code></pre>
+<pre class="r"><code># 3a. Four-factor solution
+FA_EQ4 &lt;- psych::fa(X, nfactors = 4, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)
+FA_EQ4$Vaccounted[&quot;Proportion Var&quot;, ]                       # variance per factor</code></pre>
+<pre><code>##        MR1        MR3        MR4        MR2 
+## 0.11934657 0.10047354 0.09761499 0.09517631</code></pre>
+<pre class="r"><code># 3b. Bottom line: BFI-2 domain (rows) by each item&#39;s strongest factor (columns)
+L4 &lt;- unclass(FA_EQ4$loadings)
+PRIMARY4 &lt;- paste0(&quot;F&quot;, apply(abs(L4), 1, which.max))
+table(Domain = EQ$BFI2_DOMAIN[match(Q, EQ$HIPIC_Q)], Factor = PRIMARY4)</code></pre>
+<pre><code>##                        Factor
+## Domain                  F1 F2 F3 F4
+##   Agreeableness          2  2  0  0
+##   Conscientiousness      1  2  1  1
+##   Extraversion           0  1  3  0
+##   Negative Emotionality  0  0  2  3
+##   Open-Mindedness        2  1  1  2</code></pre>
+<pre class="r"><code># 3c. The detail, for reading the factors
+print(FA_EQ4$loadings, cutoff = .30, sort = TRUE)</code></pre>
+<pre><code>## 
+## Loadings:
+##                                                      MR1    MR3    MR4   
+## P72_HELPOTHERS_isreadytohelpanybody                   0.841              
+## P113_RICHIMAGINE_hasarichimagination                  0.551         0.432
+## P126_GIVETOOTHERS_givestoothers                       0.767              
+## P12_POLITE_respectsrulesofpoliteness                  0.383  0.550       
+## P25_ARGUE_quicktoargue                                      -0.596  0.330
+## P26_ORDER_hasasenseoforder                                   0.527       
+## P80_NOCLEAN_hatescleaningup                                  0.504       
+## P33_BURST_burstswithenthusiasm                        0.314         0.549
+## P46_INTERESTS_hasabroadrangeofinterests               0.337  0.433  0.544
+## P5_IMAGINE_haslittleimagination                                          
+## P27_INFERIOR_feelsinferiortoothers                                       
+## P40_QUICKWORRY_isquicktoworryaboutthings                                 
+## P41_NOCREAT_lackscreativity                                              
+## P16_FOLLOWER_isafollowerratherthanaleader                    0.423       
+## P44_MESS_makesamessofthings                                              
+## P51_ENERGY_hasexcessiveenergy                                       0.476
+## P67_FINISHTASK_finishestaskstotheveryend              0.379              
+## P78_TALKDAY_talksalldaylong                                         0.483
+## P79_SELFCONTROL_hasself-controlindifficultsituations               -0.449
+## P95_ORIGINALIDEA_hasoriginalideas                     0.486         0.429
+## P100_INTERESTED_isinterestedineverything              0.388  0.493  0.331
+## P112_DEPRESSED_iseasilydepressed                                         
+## P117_ATEASE_feelsateasewithhim/herself                                   
+## P125_PERSEVERE_perseveresuntilthegoalisachieved              0.433  0.454
+##                                                      MR2   
+## P72_HELPOTHERS_isreadytohelpanybody                        
+## P113_RICHIMAGINE_hasarichimagination                  0.368
+## P126_GIVETOOTHERS_givestoothers                            
+## P12_POLITE_respectsrulesofpoliteness                       
+## P25_ARGUE_quicktoargue                                     
+## P26_ORDER_hasasenseoforder                                 
+## P80_NOCLEAN_hatescleaningup                                
+## P33_BURST_burstswithenthusiasm                             
+## P46_INTERESTS_hasabroadrangeofinterests                    
+## P5_IMAGINE_haslittleimagination                       0.701
+## P27_INFERIOR_feelsinferiortoothers                    0.602
+## P40_QUICKWORRY_isquicktoworryaboutthings             -0.679
+## P41_NOCREAT_lackscreativity                           0.565
+## P16_FOLLOWER_isafollowerratherthanaleader                  
+## P44_MESS_makesamessofthings                                
+## P51_ENERGY_hasexcessiveenergy                              
+## P67_FINISHTASK_finishestaskstotheveryend                   
+## P78_TALKDAY_talksalldaylong                                
+## P79_SELFCONTROL_hasself-controlindifficultsituations       
+## P95_ORIGINALIDEA_hasoriginalideas                     0.349
+## P100_INTERESTED_isinterestedineverything                   
+## P112_DEPRESSED_iseasilydepressed                     -0.425
+## P117_ATEASE_feelsateasewithhim/herself                     
+## P125_PERSEVERE_perseveresuntilthegoalisachieved            
+## 
+##                  MR1   MR3   MR4   MR2
+## SS loadings    2.864 2.411 2.343 2.284
+## Proportion Var 0.119 0.100 0.098 0.095
+## Cumulative Var 0.119 0.220 0.317 0.413</code></pre>
+<pre class="r"><code>#4.  Eigen Values Patchwork 
+
+EV_EQ &lt;- eigen(cor(X))$values                       # eigenvalues of the 24-item correlation matrix
+
+EIG_EQ &lt;- tibble(Factor     = 1:10,
+                 Eigenvalue = round(EV_EQ[1:10], 2),
+                 Difference = round(EV_EQ[1:10] - EV_EQ[2:11], 2),
+                 Proportion = round(EV_EQ[1:10] / 24, 3),       # 24 items, not 144
+                 Cumulative = round(cumsum(EV_EQ)[1:10] / 24, 3))
+
+EIG_EQ</code></pre>
+<pre><code>## # A tibble: 10 × 5
+##    Factor Eigenvalue Difference Proportion Cumulative
+##     &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+##  1      1       5.75       3.14      0.24       0.24 
+##  2      2       2.61       0.37      0.109      0.348
+##  3      3       2.25       0.8       0.094      0.442
+##  4      4       1.45       0.08      0.06       0.503
+##  5      5       1.37       0.17      0.057      0.56 
+##  6      6       1.2        0.17      0.05       0.61 
+##  7      7       1.03       0.09      0.043      0.653
+##  8      8       0.95       0.05      0.039      0.692
+##  9      9       0.89       0.06      0.037      0.729
+## 10     10       0.83       0.04      0.035      0.764</code></pre>
+<pre class="r"><code>saveRDS(EIG_EQ, &quot;eig_equivalent_parent.rds&quot;)</code></pre>
+<pre class="r"><code># One loadings table per solution, sorted by each item&#39;s strongest factor,
+# with a variance-explained row at the bottom
+make_load_tab &lt;- function(FA) {
+  L &lt;- unclass(FA$loadings)
+  L &lt;- L[, order(-colSums(L^2)), drop = FALSE]                  # factors in size order, as in the cross-tabs
+  colnames(L) &lt;- paste0(&quot;F&quot;, 1:ncol(L))
+
+  q    &lt;- as.integer(sub(&quot;^P(\\d+)_.*&quot;, &quot;\\1&quot;, rownames(L)))
+  prim &lt;- apply(abs(L), 1, which.max)
+  mx   &lt;- apply(abs(L), 1, max)
+
+  # Loadings as text: blank below .30, strongest in bold
+  CELLS &lt;- sapply(1:ncol(L), function(k)
+    ifelse(abs(L[, k]) &lt; .30, &quot;&quot;,
+           ifelse(prim == k, sprintf(&quot;&lt;b&gt;%.2f&lt;/b&gt;&quot;, L[, k]), sprintf(&quot;%.2f&quot;, L[, k]))))
+  colnames(CELLS) &lt;- colnames(L)
+
+  WORD &lt;- PARENT_ALIGNED$PARENT_Q_WORDING[match(q, PARENT_ALIGNED$Q_NEW)]
+
+  TAB &lt;- data.frame(HiQ                  = as.character(q),
+                    `Item (Parent form)` = paste0(WORD, ifelse(q %in% REVERSE_ITEMS, &quot; (R)&quot;, &quot;&quot;)),
+                    `BFI-2 Domain`       = EQ$BFI2_DOMAIN[match(q, EQ$HIPIC_Q)],
+                    CELLS,
+                    h2                   = sprintf(&quot;%.2f&quot;, FA$communality),
+                    check.names = FALSE)
+  TAB &lt;- TAB[order(prim, -mx), ]
+
+  # Variance explained: each factor, and the total under h2
+  VAR  &lt;- colSums(L^2) / nrow(L)
+  VROW &lt;- c(&quot;&quot;, &quot;Variance explained&quot;, &quot;&quot;, sprintf(&quot;%.1f%%&quot;, 100 * VAR), sprintf(&quot;%.1f%%&quot;, 100 * sum(VAR)))
+  rbind(TAB, setNames(as.list(VROW), names(TAB)))
+}
+
+saveRDS(make_load_tab(FA_EQ3), &quot;load_eq3_parent.rds&quot;)
+saveRDS(make_load_tab(FA_EQ4), &quot;load_eq4_parent.rds&quot;)
+saveRDS(make_load_tab(FA_EQ),  &quot;load_eq5_parent.rds&quot;)</code></pre>
+<pre class="r"><code># Alphas for each factor of an n-factor solution.
+# Items are assigned to the factor they load on most strongly (if &gt;= CUT).
+
+
+alpha_by_factor &lt;- function(X, NFACT, ROT = &quot;varimax&quot;, CUT = .30) {
+
+  FA &lt;- psych::fa(X, nfactors = NFACT, fm = &quot;minres&quot;, rotate = ROT)
+  L  &lt;- unclass(FA$loadings)
+  L  &lt;- L[, order(-colSums(L^2)), drop = FALSE]        # F1, F2, ... in size order, as in the loading tables
+
+  PRIM &lt;- apply(abs(L), 1, which.max)
+  MX   &lt;- apply(abs(L), 1, max)
+
+  do.call(rbind, lapply(1:NFACT, function(k) {
+    items &lt;- X[, PRIM == k &amp; MX &gt;= CUT, drop = FALSE]
+    if (ncol(items) &lt; 2)                               # alpha needs at least 2 items
+      return(data.frame(Solution = paste(NFACT, &quot;factors&quot;), Factor = paste0(&quot;F&quot;, k),
+                        Items = ncol(items), Alpha = NA, `Avg r` = NA, check.names = FALSE))
+    a &lt;- suppressMessages(suppressWarnings(psych::alpha(items, check.keys = TRUE)))$total
+    data.frame(Solution = paste(NFACT, &quot;factors&quot;), Factor = paste0(&quot;F&quot;, k),
+               Items = ncol(items), Alpha = round(a$raw_alpha, 2), `Avg r` = round(a$average_r, 2),
+               check.names = FALSE)
+  }))
+}
+
+# All three solutions at once
+ALPHAS_EQ &lt;- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+ALPHAS_EQ</code></pre>
+<pre><code>##     Solution Factor Items Alpha Avg r
+## 1  3 factors     F1    12  0.87  0.36
+## 2  3 factors     F2     5  0.73  0.36
+## 3  3 factors     F3     4  0.56  0.24
+## 4  4 factors     F1     5  0.81  0.47
+## 5  4 factors     F2     6  0.71  0.29
+## 6  4 factors     F3     6  0.69  0.28
+## 7  4 factors     F4     5  0.73  0.36
+## 8  5 factors     F1     5  0.81  0.47
+## 9  5 factors     F2     8  0.77  0.30
+## 10 5 factors     F3     5  0.73  0.36
+## 11 5 factors     F4     5  0.61  0.24
+## 12 5 factors     F5     1    NA    NA</code></pre>
+<pre class="r"><code>saveRDS(ALPHAS_EQ, &quot;alphas_eq_parent.rds&quot;)         # ready for a slide, if needed
+
+# Alphas for each factor of an n-factor solution.
+
+
+
+
+# Items are assigned to the factor they load on most strongly (if &gt;= CUT).
+alpha_by_factor &lt;- function(X, NFACT, ROT = &quot;varimax&quot;, CUT = .30) {
+
+  FA &lt;- psych::fa(X, nfactors = NFACT, fm = &quot;minres&quot;, rotate = ROT)
+  L  &lt;- unclass(FA$loadings)
+  L  &lt;- L[, order(-colSums(L^2)), drop = FALSE]        # F1, F2, ... in size order, as in the loading tables
+
+  PRIM &lt;- apply(abs(L), 1, which.max)
+  MX   &lt;- apply(abs(L), 1, max)
+
+  do.call(rbind, lapply(1:NFACT, function(k) {
+    items &lt;- X[, PRIM == k &amp; MX &gt;= CUT, drop = FALSE]
+    if (ncol(items) &lt; 2)                               # alpha needs at least 2 items
+      return(data.frame(Solution = paste(NFACT, &quot;factors&quot;), Factor = paste0(&quot;F&quot;, k),
+                        Items = ncol(items), Alpha = NA, `Avg r` = NA, check.names = FALSE))
+    a &lt;- suppressMessages(suppressWarnings(psych::alpha(items, check.keys = TRUE)))$total
+    data.frame(Solution = paste(NFACT, &quot;factors&quot;), Factor = paste0(&quot;F&quot;, k),
+               Items = ncol(items), Alpha = round(a$raw_alpha, 2), `Avg r` = round(a$average_r, 2),
+               check.names = FALSE)
+  }))
+}
+
+# All three solutions at once
+ALPHAS_EQ &lt;- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+ALPHAS_EQ</code></pre>
+<pre><code>##     Solution Factor Items Alpha Avg r
+## 1  3 factors     F1    12  0.87  0.36
+## 2  3 factors     F2     5  0.73  0.36
+## 3  3 factors     F3     4  0.56  0.24
+## 4  4 factors     F1     5  0.81  0.47
+## 5  4 factors     F2     6  0.71  0.29
+## 6  4 factors     F3     6  0.69  0.28
+## 7  4 factors     F4     5  0.73  0.36
+## 8  5 factors     F1     5  0.81  0.47
+## 9  5 factors     F2     8  0.77  0.30
+## 10 5 factors     F3     5  0.73  0.36
+## 11 5 factors     F4     5  0.61  0.24
+## 12 5 factors     F5     1    NA    NA</code></pre>
+<pre class="r"><code>saveRDS(ALPHAS_EQ, &quot;alphas_eq_parent.rds&quot;)         # ready for a slide, if needed
+
+
+alpha_by_factor(X, 4, ROT= &#39;varimax&#39;, CUT = 0.40)</code></pre>
+<pre><code>##    Solution Factor Items Alpha Avg r
+## 1 4 factors     F1     4  0.82  0.54
+## 2 4 factors     F2     6  0.71  0.29
+## 3 4 factors     F3     6  0.69  0.28
+## 4 4 factors     F4     5  0.73  0.36</code></pre>
+<pre class="r"><code># All three solutions at once
+ALPHAS_EQ &lt;- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+ALPHAS_EQ</code></pre>
+<pre><code>##     Solution Factor Items Alpha Avg r
+## 1  3 factors     F1    12  0.87  0.36
+## 2  3 factors     F2     5  0.73  0.36
+## 3  3 factors     F3     4  0.56  0.24
+## 4  4 factors     F1     5  0.81  0.47
+## 5  4 factors     F2     6  0.71  0.29
+## 6  4 factors     F3     6  0.69  0.28
+## 7  4 factors     F4     5  0.73  0.36
+## 8  5 factors     F1     5  0.81  0.47
+## 9  5 factors     F2     8  0.77  0.30
+## 10 5 factors     F3     5  0.73  0.36
+## 11 5 factors     F4     5  0.61  0.24
+## 12 5 factors     F5     1    NA    NA</code></pre>
+<pre class="r"><code>saveRDS(X, &quot;x_equivalent_parent.rds&quot;)</code></pre>
 </div>
 
 

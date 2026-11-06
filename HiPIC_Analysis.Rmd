@@ -8,7 +8,47 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       warning = TRUE,
-                      messgae = FALSE)
+                      message = FALSE)
+```
+
+
+### Export helpers (all Excel exports go through these)
+
+```{r export-helpers}
+
+# CHANGED: new chunk. The one workbook every export writes to -- check the file name matches yours.
+
+HIPIC_XLSX <- path.expand("~/Documents/R/HiPIC/docs/HiPIC Exploratory.xlsx")
+
+# CHANGED: builds feeder-sheet names such as P5VAR_MR, P5NOROT_MR, P3VAR_MR_FACETS
+
+feeder_name <- function(PREFIX, NFACT, ROT, METHOD, FACETS = FALSE) {
+  ROT_CODE  <- unname(c(varimax = "VAR", none = "NOROT", promax = "PRO", oblimin = "OBL")[ROT])
+  METH_CODE <- unname(c(minres = "MR", pca = "PCA", pa = "PA", ml = "ML")[METHOD])
+  if (is.na(ROT_CODE))  ROT_CODE  <- toupper(ROT)        # any other rotation: its name in capitals
+  if (is.na(METH_CODE)) METH_CODE <- toupper(METHOD)
+  paste0(PREFIX, NFACT, ROT_CODE, "_", METH_CODE, if (FACETS) "_FACETS")
+}
+
+# CHANGED: writes a table into a feeder sheet, starting at A1, without touching anything else.
+#          Never deletes a sheet (formulas pointing at it would break); never creates a new workbook.
+
+# CHANGED: uses openxlsx2, which preserves hand-built workbooks better than openxlsx
+
+write_feeder <- function(DATA, SHEET, FILE = HIPIC_XLSX) {
+  tryCatch({
+    if (!file.exists(FILE)) stop("workbook not found: ", FILE)
+    wb <- openxlsx2::wb_load(FILE)
+    if (!SHEET %in% openxlsx2::wb_get_sheet_names(wb))
+      wb <- openxlsx2::wb_add_worksheet(wb, SHEET)                 # new sheet: visible
+    wb <- openxlsx2::wb_clean_sheet(wb, sheet = SHEET)             # clear old values
+    wb <- openxlsx2::wb_add_data(wb, sheet = SHEET, x = as.data.frame(DATA),
+                                 start_col = 1, start_row = 1, na.strings = "")
+    openxlsx2::wb_save(wb, FILE, overwrite = TRUE)
+    cat("Written to", SHEET, "in", basename(FILE), "\n")
+  }, error = function(e) cat("Excel export skipped:", conditionMessage(e), "\n"))
+}
+
 ```
 
 
@@ -90,7 +130,7 @@ PARENT_MISSING <- PARENT_RAW %>%
 
 ## B. Remove Disqualified Observations
 
-Any observation from both the Child and Parent datasets where a substantial portion of the survey was unanswered (approx. gt 1%). For remaining observations with NA values in select questions, use a simply mean substitution, where the rounded average for that question by nutritional group + sex (CVPK + MVF) serves as a proxy for missing values.
+Any observation from both the Child and Parent datasets where a substantial portion of the survey was unanswered (approx. gt 1%). For remaining observations with NA values in select questions, use a simple mean substitution, where the rounded average for that question by nutritional group + sex (CVPK + MVF) serves as a proxy for missing values.
 
 
 ``` {r mean-substitution}
@@ -159,7 +199,7 @@ sum(!complete.cases(PARENT))
 ```
 
 
-## C.  Examine Cohort Demographic Data - ensure that the nutritional groups are reasonably balanced and that there isn't a statistically significant differece between them along demographic characteristics that might be used in later analyses.
+## C.  Examine Cohort Demographic Data - ensure that the nutritional groups are reasonably balanced and that there isn't a statistically significant difference between them along demographic characteristics that might be used in later analyses.
 
 
 ``` {r cohort-demographics}
@@ -367,7 +407,7 @@ sqldf("  select Q_NEW,
   
 
 
-#alternate dply solution
+#alternate dplyr solution
 
 
 # library(dplyr)
@@ -454,12 +494,12 @@ length(unique(PARENT_NAMES))
 The scoring key provided by DeFruyt identifies the questions along each domain/facet that require reverse scoring.
 
 
-``` {r reverse-secoring}
+``` {r reverse-scoring}
 
 
 
 
-#Items identified as requireing reverse scoring in DeFruyt's key (questions are moving in opposite directions from other questions in the instrument):
+#Items identified as requiring reverse scoring in DeFruyt's key (questions are moving in opposite directions from other questions in the instrument):
 
 
 REVERSE_ITEMS <- c(  1, 5, 8, 16, 17, 20, 27, 35, 37, 41,
@@ -469,7 +509,7 @@ REVERSE_ITEMS <- c(  1, 5, 8, 16, 17, 20, 27, 35, 37, 41,
 
 
 
-# use an ACROSS statement to compute a revers score for the items in the REVERSE_ITEMS vector
+# use an ACROSS statement to compute a reverse score for the items in the REVERSE_ITEMS vector
 
 
 CHILD_REVERSED <-CHILD %>% mutate(across( starts_with( paste0("C", REVERSE_ITEMS, "_")),
@@ -500,7 +540,7 @@ write.csv(PARENT,
 ES_ANX <- c(4, 22, 40, 58, 76, 94, 112, 130)
 ES_CON <- c(9, 27, 45, 63, 81, 99, 117, 135)
 
-#Extroversion
+#Extraversion
 
 EX_ENE <- c(15, 33, 51, 69, 87, 105, 123, 141)
 EX_EXP <- c(6, 24, 42, 60, 78, 96, 114, 132)
@@ -532,10 +572,10 @@ CO_ACH <- c(3, 21, 39, 57, 75, 93, 111, 129)
 
 
 
-# Compute dacets & domain scores based on DeFruyt's formulas 
+# Compute facets & domain scores based on DeFruyt's formulas 
 
 
-# Since code is similar except for the files called, the files creatd and the vaiable prefix, consider a simple function  -not quite a SAS do loop, but still more efficient that duplicate blocks of code
+# Since code is similar except for the files called, the files created and the variable prefix, consider a simple function  -not quite a SAS do loop, but still more efficient than duplicate blocks of code
 
 
 #SCORE HIPIC FUNCTION
@@ -780,34 +820,9 @@ BASEP <- hipic_mean_diffs(PARENT_SCORED)
 
 ``` {r mean-diffs-print, eval=F}
 
-library(openxlsx)
-
-file_path <- "/Users/Kevin/OneDrive/Documents/Excel/HiPIC Exploratory.xlsx"
-
-wb <- if (file.exists(file_path)) {
-  openxlsx::loadWorkbook(file_path)
-} else {
-  openxlsx::createWorkbook()
-}
-
-if (!"BASEC" %in% names(wb)) {
-  openxlsx::addWorksheet(wb, "BASEC")
-}
-openxlsx::writeData(wb, "BASEC", BASEC)
-openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
-
-
-wb <- if (file.exists(file_path)) {
-  openxlsx::loadWorkbook(file_path)
-} else {
-  openxlsx::createWorkbook()
-}
-
-if (!"BASEP" %in% names(wb)) {
-  openxlsx::addWorksheet(wb, "BASEP")
-}
-openxlsx::writeData(wb, "BASEP", BASEP)
-openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
+# CHANGED: both exports now go through write_feeder() (helpers chunk at the top)
+write_feeder(BASEC, "BASEC")
+write_feeder(BASEP, "BASEP")
 
 
 saveRDS(BASEC, "cbase_wide.rds") 
@@ -850,7 +865,7 @@ revscored <- c(
 
 
 
-#3. find quesiton prefix value
+#3. find question prefix value
 
 prefix <- substr( grep("^[PC]1_", colnames(DATA), value = TRUE), 1, 1)
 
@@ -1141,7 +1156,7 @@ tibble(MR2      = L2[, "MR2"],
 
 # Notes:
 # 
-# Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.  Curious - but may be an over-simplificaiton to attribute this to "response style" and not "personality trait."
+# Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.  Curious - but may be an over-simplification to attribute this to "response style" and not "personality trait."
 
 
 
@@ -1158,9 +1173,7 @@ tibble(MR2      = L2[, "MR2"],
 
 run_fa <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor") {
   
-  # >>> EXCEL DESTINATION: change this line to write somewhere else <<<
-  
-  FILE <- "/Users/Kevin/OneDrive/Documents/Excel/HiPIC FA Tests.xlsx"
+  # CHANGED: the Excel destination is now set once, in HIPIC_XLSX (helpers chunk at the top)
   
   
   
@@ -1212,21 +1225,9 @@ run_fa <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor")
   print(VAR_ROW %>% select(-Wording))
   
   
-  # 8. Write the table to its own sheet in the workbook (skipped with a message if it can't)
-  tryCatch({
-    SHEET <- paste(PREFIX, NFACT, ROT, METHOD, sep = "_")      # e.g. "P_5_varimax_minres"
-    
-    wb <- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
-    if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
-    
-    openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
-    openxlsx::writeData(wb, SHEET, OUT)
-    openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
-    
-    cat("Written to sheet", SHEET, "in", basename(FILE), "\n")
-  }, error = function(e) {
-    cat("Excel export skipped:", conditionMessage(e), "\n")
-  })
+  # 8. Write the table to its feeder sheet, e.g. "P5VAR_MR"
+  # CHANGED: replaces the old tryCatch block; write_feeder() handles errors itself
+  write_feeder(OUT, feeder_name(PREFIX, NFACT, ROT, METHOD))
   
   # 9. Hand back the table (and the full FA result) for inspection
   invisible(list(loadings = OUT, fa = FA))
@@ -1242,7 +1243,7 @@ if (interactive()) View(R1$loadings)
 ```
 
 
-# Factor analysis on a questionnaire this unwieldy (144-items) across this few subjects my not be reliable — the correlation matrix is singular, so it cannot be inverted, and standard adequacy tests cannot be computed.  Is a Facet-level analysis worth taking a look at?  Test on parents only.
+# Factor analysis on a questionnaire this unwieldy (144-items) across this few subjects may not be reliable — the correlation matrix is singular, so it cannot be inverted, and standard adequacy tests cannot be computed.  Is a Facet-level analysis worth taking a look at?  Test on parents only.
 
 
 ```{r scree-plots-parents-facets}
@@ -1285,8 +1286,7 @@ saveRDS(EIG_PF, "eig_facets_parent.rds")
 
 run_fa_facets <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor") {
 
-  # >>> EXCEL DESTINATION: change this line to write somewhere else <<<
-  FILE <- "/Users/Kevin/OneDrive/Documents/Excel/HiPIC_facet_exports.xlsx"
+  # CHANGED: the Excel destination is now set once, in HIPIC_XLSX (helpers chunk at the top)
 
   # 1. Keep only the 18 facets (works with P_FACETS or PARENT_SCORED, C_FACETS or CHILD_SCORED)
   NAME   <- deparse(substitute(DSN))                   # e.g. "P_FACETS"
@@ -1342,21 +1342,9 @@ run_fa_facets <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "f
   # 8. Save for the slides: e.g. "fac_p5_varimax.rds"
   saveRDS(OUT, paste0("fac_", tolower(PREFIX), NFACT, "_", ROT, ".rds"))
 
-  # 9. Write to its own sheet in the exports workbook (skipped with a message if it can't)
-  tryCatch({
-    SHEET <- paste(PREFIX, "FACETS", NFACT, ROT, METHOD, sep = "_")   # e.g. "P_FACETS_5_varimax_minres"
-
-    wb <- if (file.exists(FILE)) openxlsx::loadWorkbook(FILE) else openxlsx::createWorkbook()
-    if (!SHEET %in% names(wb)) openxlsx::addWorksheet(wb, SHEET)
-
-    openxlsx::deleteData(wb, SHEET, cols = 1:30, rows = 1:300, gridExpand = TRUE)
-    openxlsx::writeData(wb, SHEET, OUT)
-    openxlsx::saveWorkbook(wb, FILE, overwrite = TRUE)
-
-    cat("Written to sheet", SHEET, "in", basename(FILE), "\n")
-  }, error = function(e) {
-    cat("Excel export skipped:", conditionMessage(e), "\n")
-  })
+  # 9. Write to its feeder sheet, e.g. "P3VAR_MR_FACETS"
+  # CHANGED: replaces the old tryCatch block; write_feeder() handles errors itself
+  write_feeder(OUT, feeder_name(PREFIX, NFACT, ROT, METHOD, FACETS = TRUE))
 
   # 10. Hand back the table (and the full FA result)
   invisible(list(loadings = OUT, fa = FA))
@@ -1396,7 +1384,7 @@ run_fa_facets <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "f
    
      ###############################################################################################
      # Need assistance for this code:  Stitching, cbind-ing three frames together
-     # Review knitting within an r-block - assumed that was only a xaranigan step
+     # Review knitting within an r-block - assumed that was only a xaringan step
 
 
 library(dplyr)
@@ -1513,6 +1501,17 @@ B2 <- read.csv("bfi2_items.csv")
 
 
 
+# The 24 Equivalent items, with the BFI-2 domain of their (first) matched item
+EQ <- MAPQ %>%
+  filter(MATCH == "Equivalent") %>%
+  mutate(BFI2_Q = as.integer(sub(";.*", "", BFI2_Q))) %>%
+  left_join(B2, by = "BFI2_Q")
+
+X <- PARENT_REVERSED %>% select(starts_with(paste0("P", EQ$HIPIC_Q, "_")))
+Q <- as.integer(sub("^P(\\d+)_.*", "\\1", names(X)))        # item numbers, in column order
+
+
+# CHANGED: scree block moved here, after X is created (it used X before X existed)
 #Scree Plot #
 
 
@@ -1533,14 +1532,6 @@ dev.off()
 
 
 
-# The 24 Equivalent items, with the BFI-2 domain of their (first) matched item
-EQ <- MAPQ %>%
-  filter(MATCH == "Equivalent") %>%
-  mutate(BFI2_Q = as.integer(sub(";.*", "", BFI2_Q))) %>%
-  left_join(B2, by = "BFI2_Q")
-
-X <- PARENT_REVERSED %>% select(starts_with(paste0("P", EQ$HIPIC_Q, "_")))
-Q <- as.integer(sub("^P(\\d+)_.*", "\\1", names(X)))        # item numbers, in column order
 
 # 1a. How many factors do the data support?
 set.seed(2026)
@@ -1643,5 +1634,83 @@ saveRDS(make_load_tab(FA_EQ4), "load_eq4_parent.rds")
 saveRDS(make_load_tab(FA_EQ),  "load_eq5_parent.rds")
 ```
 
+
+```{r cronbachs-reduced-item-fa}
+
+
+# Alphas for each factor of an n-factor solution.
+# Items are assigned to the factor they load on most strongly (if >= CUT).
+
+
+alpha_by_factor <- function(X, NFACT, ROT = "varimax", CUT = .30) {
+
+  FA <- psych::fa(X, nfactors = NFACT, fm = "minres", rotate = ROT)
+  L  <- unclass(FA$loadings)
+  L  <- L[, order(-colSums(L^2)), drop = FALSE]        # F1, F2, ... in size order, as in the loading tables
+
+  PRIM <- apply(abs(L), 1, which.max)
+  MX   <- apply(abs(L), 1, max)
+
+  do.call(rbind, lapply(1:NFACT, function(k) {
+    items <- X[, PRIM == k & MX >= CUT, drop = FALSE]
+    if (ncol(items) < 2)                               # alpha needs at least 2 items
+      return(data.frame(Solution = paste(NFACT, "factors"), Factor = paste0("F", k),
+                        Items = ncol(items), Alpha = NA, `Avg r` = NA, check.names = FALSE))
+    a <- suppressMessages(suppressWarnings(psych::alpha(items, check.keys = TRUE)))$total
+    data.frame(Solution = paste(NFACT, "factors"), Factor = paste0("F", k),
+               Items = ncol(items), Alpha = round(a$raw_alpha, 2), `Avg r` = round(a$average_r, 2),
+               check.names = FALSE)
+  }))
+}
+
+# All three solutions at once
+ALPHAS_EQ <- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+ALPHAS_EQ
+
+saveRDS(ALPHAS_EQ, "alphas_eq_parent.rds")         # ready for a slide, if needed
+
+# Alphas for each factor of an n-factor solution.
+
+
+
+
+# Items are assigned to the factor they load on most strongly (if >= CUT).
+alpha_by_factor <- function(X, NFACT, ROT = "varimax", CUT = .30) {
+
+  FA <- psych::fa(X, nfactors = NFACT, fm = "minres", rotate = ROT)
+  L  <- unclass(FA$loadings)
+  L  <- L[, order(-colSums(L^2)), drop = FALSE]        # F1, F2, ... in size order, as in the loading tables
+
+  PRIM <- apply(abs(L), 1, which.max)
+  MX   <- apply(abs(L), 1, max)
+
+  do.call(rbind, lapply(1:NFACT, function(k) {
+    items <- X[, PRIM == k & MX >= CUT, drop = FALSE]
+    if (ncol(items) < 2)                               # alpha needs at least 2 items
+      return(data.frame(Solution = paste(NFACT, "factors"), Factor = paste0("F", k),
+                        Items = ncol(items), Alpha = NA, `Avg r` = NA, check.names = FALSE))
+    a <- suppressMessages(suppressWarnings(psych::alpha(items, check.keys = TRUE)))$total
+    data.frame(Solution = paste(NFACT, "factors"), Factor = paste0("F", k),
+               Items = ncol(items), Alpha = round(a$raw_alpha, 2), `Avg r` = round(a$average_r, 2),
+               check.names = FALSE)
+  }))
+}
+
+# All three solutions at once
+ALPHAS_EQ <- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+ALPHAS_EQ
+
+saveRDS(ALPHAS_EQ, "alphas_eq_parent.rds")         # ready for a slide, if needed
+
+
+alpha_by_factor(X, 4, ROT= 'varimax', CUT = 0.40)
+
+# All three solutions at once
+ALPHAS_EQ <- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+ALPHAS_EQ
+
+saveRDS(X, "x_equivalent_parent.rds")
+
+```
 
 

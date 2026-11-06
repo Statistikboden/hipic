@@ -273,8 +273,15 @@ ul li ul, ol li ul {
 }
 
 
-.load-cmp table { font-size: 50%; }
+.load-cmp table { font-size: 75%; }
 .load-cmp td, .load-cmp th { padding: 1px 8px; }
+
+.alpha-slide table { font-size: 80%; }
+.alpha-slide td, .alpha-slide th { padding: 2px 8px; }
+.alpha-slide .remark-code { font-size: 55%; }
+.alpha-slide .pull-right { font-size: 90%; }
+
+
 
 ```
 
@@ -326,7 +333,7 @@ background-size: 60px 60px
 --
 1. Among the  <font color="#006cc5">**R packages**</font> to be used in this analysis include:
 
-    - <font color="#006cc5">haven</font> and <font color="#006cc5">writexl</font> for importing and exporting raw data and SAS datasets from prior work
+    - <font color="#006cc5">haven</font> and <font color="#006cc5">openxlsx2</font> for importing and exporting raw data and SAS datasets from prior work
     - <font color="#006cc5">tidyverse,</font> which includes packages like dplyr, magrittr, and ggplot, all helpful with data wrangling and beautification
     - <font color="#006cc5">statx</font> and <font color="#006cc5">misty</font> for general descriptive statistical calculations
     - <font color="#006cc5">psych</font> and <font color="#006cc5">lavaan</font> for more complex principal components and factor analyses
@@ -361,8 +368,9 @@ background-size: cover
 ```{r Data-Cleanup-Import, eval=F}
 
 
-require(readr)  # use if importing a comma- or tab-delimited dataset #
-require(haven)  # if importing a SAS dataset #
+require(readr)      # use if importing a comma- or tab-delimited dataset #
+require(haven)      # if importing a SAS dataset #
+require(openxlsx2)  # if exporting to an Excel workbook#
 
 
 
@@ -547,7 +555,7 @@ background-size: cover
 ---
 exclude: true
 
-## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=EbiWJc&nav=MTJfQjM3OlE2N197MDAwMDAwMDAtMDAwMS0wMDAwLTA1MDAtMDAwMDAwMDAwMDAwfQ" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Child Self-Report</a>
+## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=yH75tx&nav=MTJfQjM4X3swMDAwMDAwMC0wMDAxLTAwMDAtMDQwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Child Self-Report</a>
 
 
 <img src="images/mean-diffs-children.png"
@@ -562,7 +570,7 @@ Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. 
 ---
 class: gd-table
 
-## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=EbiWJc&nav=MTJfQjM3OlE2N197MDAwMDAwMDAtMDAwMS0wMDAwLTA1MDAtMDAwMDAwMDAwMDAwfQ" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Child Self-Report</a>
+## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=yH75tx&nav=MTJfQjM4X3swMDAwMDAwMC0wMDAxLTAwMDAtMDQwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Child Self-Report</a>
 
 ```{r child-self-report-redux, echo=FALSE, message=FALSE, warning=FALSE }
 
@@ -657,7 +665,7 @@ Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. 
 exclude: true
 
 
-## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=ExfmCO&nav=MTJfQjQ6UTM0X3swMDAwMDAwMC0wMDAxLTAwMDAtMDUwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Parent Report</a>
+## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=3mJv4t&nav=MTJfQjVfezAwMDAwMDAwLTAwMDEtMDAwMC0wNDAwLTAwMDAwMDAwMDAwMH0" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Parent Report</a>
 
 <img src="images/mean-diffs-parents.png"
      style="display: block; margin: 0 auto; width: 85%;
@@ -672,7 +680,7 @@ Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. 
 ---
 class: gd-table
 
-## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=ExfmCO&nav=MTJfQjQ6UTM0X3swMDAwMDAwMC0wMDAxLTAwMDAtMDUwMC0wMDAwMDAwMDAwMDB9" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Parent Report</a>
+## Group Differences: <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=3mJv4t&nav=MTJfQjVfezAwMDAwMDAwLTAwMDEtMDAwMC0wNDAwLTAwMDAwMDAwMDAwMH0" target="_blank" style="color: #8cc0f0; text-decoration: underline solid;">  Parent Report</a>
 
 ```{r parent-self-report-redux, echo=FALSE, message=FALSE, warning=FALSE }
 
@@ -933,7 +941,7 @@ knitr::kable(readRDS("top_load_child.rds")[21:30, ], format = "html",
 ```
 <br>
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-Top 10 items per factor shown (F1–F3); loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=PABn2c&nav=MTVfezMyRTNGMzhFLUNBQzUtRDU0OC1CRTA4LUE5MzEyNEE1RDU1RH0" target="_blank">Excel file</a>.
+Top 10 items per factor shown (F1–F3); loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=lquYhH&nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNzAwLTAwMDAwMDAwMDAwMH0" target="_blank">Excel file</a>.
 </p>
 ]
 
@@ -948,7 +956,7 @@ knitr::kable(readRDS("top_load_child.rds")[31:49, ], format = "html",
 ```
 
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-F4: top 10 items shown. F5: all 9 items loading ≥ .30 shown. Loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=PABn2c&nav=MTVfezMyRTNGMzhFLUNBQzUtRDU0OC1CRTA4LUE5MzEyNEE1RDU1RH0" target="_blank">Excel file</a>.
+F4: top 10 items shown. F5: all 9 items loading ≥ .30 shown. Loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=lquYhH&nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNzAwLTAwMDAwMDAwMDAwMH0" target="_blank">Excel file</a>.
 </p>
 
 
@@ -987,7 +995,7 @@ knitr::kable(readRDS("top_load_parent.rds")[21:30, ], format = "html",
 
 <br>
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=WTc0qk&nav=MTVfe0Y1REJFMzJELUZGMjctRjU0RC05N0I5LTBGMUE0NkQ3Mzk3Nn0" target="_blank" >Excel file</a>.
+Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=SuX8hW&nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNTAwLTAwMDAwMDAwMDAwMH0" target="_blank" >Excel file</a>.
 </p>
 ]
 
@@ -1002,7 +1010,7 @@ knitr::kable(readRDS("top_load_parent.rds")[31:42, ], format = "html",
 ```
 
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=WTc0qk&nav=MTVfe0Y1REJFMzJELUZGMjctRjU0RC05N0I5LTBGMUE0NkQ3Mzk3Nn0" target="_blank" >Excel file</a>.
+Top 10 items per factor shown; loadings below .30 not shown.<br>Full loadings in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=SuX8hW&nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0wNTAwLTAwMDAwMDAwMDAwMH0" target="_blank" >Excel file</a>.
 </p>
 
 
@@ -1129,7 +1137,7 @@ knitr::kable(TAB, format = "html", escape = FALSE,
 ```
 
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.8em;">
-Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.<br>Full results in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=0SsbgY&nav=MTVfe0JEMTFEMTdFLTVFQzctMDE0RC04RDQ4LTY5OTNBOEMwNjBGNn0" target="_blank">Excel file</a>.
+Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.<br>Full results in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=uo2eUf&nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0xMTAwLTAwMDAwMDAwMDAwMH0" target="_blank">Excel file</a>.
 </p>
 
 ---
@@ -1178,7 +1186,7 @@ knitr::kable(COMB, format = "html", escape = FALSE,
 ```
 
 <p style="text-align: center; font-size: 0.6em; margin-top: 0.9em;">
-Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.<br>Rows in the same order across solutions; factor numbers are not comparable between solutions.<br>Full results in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=FOgBBC&nav=MTVfezU5MjBDMEI2LTg5N0EtRTA0My1BNkI5LTJFODUzRTIzMkIxRX0" target="_blank">Excel file</a>.
+Bold: |loading| ≥ .40; grey: below. Minres extraction, varimax rotation; 18 facets, n = 77.<br>Rows in the same order across solutions; factor numbers are not comparable between solutions.<br>Full results in the accompanying <a href="https://1drv.ms/x/c/fe758b52557a37db/IQDerhxwhXmySIeEtrJO6eXcAYlTxwjbuAzmltC5tn2dU24?e=X8W2uo&nav=MTJfQjI6QzJfezAwMDAwMDAwLTAwMDEtMDAwMC0xMzAwLTAwMDAwMDAwMDAwMH0" target="_blank">Excel file</a>.
 </p>
 
 
@@ -1543,4 +1551,82 @@ TAB %>%
   row_spec(nrow(TAB), bold = TRUE, extra_css = "border-top: 1px solid #666;")
 ```
 ]
+]
+---
+class: alpha-slide
+
+## Preliminary Findings - FA on Subset of Questions (Parents)
+
+```{r alpha-setup, include=FALSE}
+X <- readRDS("x_equivalent_parent.rds")
+
+alpha_by_factor <- function(X, NFACT, ROT = "varimax", CUT = .30) {
+
+  FA <- psych::fa(X, nfactors = NFACT, fm = "minres", rotate = ROT)
+  L  <- unclass(FA$loadings)
+  L  <- L[, order(-colSums(L^2)), drop = FALSE]        # F1, F2, ... in size order
+
+  PRIM <- apply(abs(L), 1, which.max)
+  MX   <- apply(abs(L), 1, max)
+
+  do.call(rbind, lapply(1:NFACT, function(k) {
+    items <- X[, PRIM == k & MX >= CUT, drop = FALSE]
+    if (ncol(items) < 2)                               # alpha needs at least 2 items
+      return(data.frame(Solution = paste(NFACT, "factors"), Factor = paste0("F", k),
+                        Items = ncol(items), Alpha = NA, `Avg r` = NA, check.names = FALSE))
+    a <- suppressMessages(suppressWarnings(psych::alpha(items, check.keys = TRUE)))$total
+    data.frame(Solution = paste(NFACT, "factors"), Factor = paste0("F", k),
+               Items = ncol(items), Alpha = round(a$raw_alpha, 2), `Avg r` = round(a$average_r, 2),
+               check.names = FALSE)
+  }))
+}
+```
+
+.pull-left[
+```{r alpha-table, echo=FALSE, message=FALSE, warning=FALSE}
+
+ALPHAS <- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+
+ALPHAS %>%
+  dplyr::select(-Solution) %>%
+  dplyr::mutate(dplyr::across(c(Alpha, `Avg r`), ~ ifelse(is.na(.x), "—", sprintf("%.2f", .x)))) %>%
+  kbl(col.names = c("Factor", "Items", "α", "Avg r"), align = c("l", "c", "c", "c")) %>%
+  kable_styling(full_width = FALSE) %>%
+  pack_rows("3 factors", 1, 3) %>%
+  pack_rows("4 factors", 4, 7) %>%
+  pack_rows("5 factors", 8, 12) %>%
+  row_spec(4:7, background = "#eaf2fb")
+```
+]
+
+.pull-right[
+- **Three solutions** were tested on the 24 Equivalent items: 3 factors (supported by parallel analysis), 4 (borderline) and 5 (the BFI-2's count).
+
+- **Four factors give the most balanced result:** every factor reaches α ≈ .70 or better (.69–.81), with healthy average inter-item correlations (.28–.47).
+
+- **Three factors:** one dominant 12-item factor, and a weak third (α = .56).
+
+- **Five factors:** the fifth is a single item, and the fourth is the weakest (α = .61).
+
+- **Caution:** each factor's items were chosen from this sample's loadings, so these alphas are optimistic until confirmed in an independent sample.
+
+
+
+```{r alpha-code, eval=FALSE, include=F}
+# do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+
+ALPHAS <- do.call(rbind, lapply(3:5, function(n) alpha_by_factor(X, n)))
+
+ALPHAS %>%
+  dplyr::select(-Solution) %>%
+  dplyr::mutate(dplyr::across(c(Alpha, `Avg r`), ~ ifelse(is.na(.x), "—", sprintf("%.2f", .x)))) %>%
+  kbl(col.names = c("Factor", "Items", "α", "Avg r"), align = c("l", "c", "c", "c")) %>%
+  kable_styling(full_width = FALSE) %>%
+  pack_rows("3 factors", 1, 3) %>%  pack_rows("4 factors", 4, 7) %>%
+  pack_rows("5 factors", 8, 12) %>% row_spec(4:7, background = "#eaf2fb")
+
+
+
+
+```
 ]
