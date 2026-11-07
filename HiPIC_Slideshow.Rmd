@@ -25,12 +25,15 @@ output:
     
     lib_dir: libs
     
+
+# <!-- background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/title-bg.jpg) -->
+# <!-- background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/austin-pacheco-FtL07GM9Q7Y-unsplash.jpg) -->
+
+    
 --- 
 class: title-slide, left,middle, left, inverse, hide-count
 
-
-background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/title-bg.jpg)
-<!-- background-image: linear-gradient(rgba(60,60,140,.55), rgba(60,60,140,.55)), url(images/austin-pacheco-FtL07GM9Q7Y-unsplash.jpg) -->
+background-image: url(images/title-slide-illustrator-gradient_2.jpg)
 background-size: cover
 
 ```{r xaringan-themer, include=FALSE, warning=FALSE}
@@ -65,7 +68,7 @@ style_duo_accent(
   inverse_header_color=           "#FFFFFF",
   inverse_link_color=             "#ef8de4",
   title_slide_text_color=         "#FFFFFF",
-  title_slide_background_color=   "#ec9120",
+  title_slide_background_color=   "#2b3158",
   header_background_color=        "#006cc5",
   header_background_text_color=   "#006cc5",
   header_color=                   "#006cc5",
@@ -310,13 +313,13 @@ background-position: 2% 98.5%
 background-size: 60px 60px
 
 ---
-## So why redo this in R?
+## So why attempt this in R?
 
 
 <center><img src= "images/rlogo-transparent.jpeg" height="350px" /></center>
 
 ---
-## So why redo this in R?
+## So why attempt this in R?
 
 1. Excellent <font color="#006cc5">**learning opportunity**</font>
 
@@ -330,7 +333,7 @@ background-size: 60px 60px
 
 --
 
-1. Data scientists — particularly in the social sciences — have made a marked <font color="#006cc5">**shift to R and Python**</font> and away from SAS and SPSS
+1. Data scientists and researchers — particularly in the social sciences — have made a marked <font color="#006cc5">**shift to R and Python**</font> and away from SAS and SPSS
 
 --
 1. Among the  <font color="#006cc5">**R packages**</font> to be used in this analysis include:
