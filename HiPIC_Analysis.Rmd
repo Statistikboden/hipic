@@ -12,7 +12,9 @@ knitr::opts_chunk$set(echo = TRUE,
 ```
 
 
-### Export helpers (all Excel exports go through these)
+## Setup: Export Helpers
+
+All Excel exports go through these helpers.
 
 ```{r export-helpers}
 
@@ -52,7 +54,7 @@ write_feeder <- function(DATA, SHEET, FILE = HIPIC_XLSX) {
 ```
 
 
-### Step 1 — Import & Inspect the original SAS datasets
+## A. Import the SAS Datasets
 
 
 Find the original SAS datasets in AllQsbyQ and import them into R for inspection.  There should be one dataset for the self-reports completed by children and another for reports completed by their parents.
@@ -74,7 +76,7 @@ PARENT_RAW <- read_sas("/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat")
 
 ```
 
-## A. Initial Data Quality Assessment
+## B. Initial Data Quality Assessment
 
 Before making any modifications, we examine the original datasets
 for missing values. This establishes a baseline against which
@@ -128,7 +130,7 @@ PARENT_MISSING <- PARENT_RAW %>%
 ```
 
 
-## B. Remove Disqualified Observations
+## C. Remove Disqualified Observations and Impute Missing Values
 
 Any observation from both the Child and Parent datasets where a substantial portion of the survey was unanswered (approx. gt 1%). For remaining observations with NA values in select questions, use a simple mean substitution, where the rounded average for that question by nutritional group + sex (CVPK + MVF) serves as a proxy for missing values.
 
@@ -199,7 +201,9 @@ sum(!complete.cases(PARENT))
 ```
 
 
-## C.  Examine Cohort Demographic Data - ensure that the nutritional groups are reasonably balanced and that there isn't a statistically significant difference between them along demographic characteristics that might be used in later analyses.
+## D. Cohort Demographics
+
+Ensure that the nutritional groups are reasonably balanced, and that there isn't a statistically significant difference between them in demographic characteristics that might be used in later analyses.
 
 
 ``` {r cohort-demographics}
@@ -354,7 +358,7 @@ saveRDS(TAB_P, "tab_parent.rds")
 
 
 
-## D. Variable Names and Alignment
+## E. Variable Names and Alignment
 
 
 
@@ -489,7 +493,7 @@ length(unique(PARENT_NAMES))
 ```
 
 
-## E. Item-Level Reverse Scoring
+## F. Reverse Scoring and Facet Scores
 
 The scoring key provided by DeFruyt identifies the questions along each domain/facet that require reverse scoring.
 
@@ -696,7 +700,9 @@ write.csv(PARENT_SCORED,
 ```
 
 
-## E.  Find mean differences between nutritional groups across all domains and facets.  Produce results separately for males and females.
+## G. Mean Differences by Nutritional Group
+
+Find mean differences between nutritional groups across all domains and facets, separately for males and females, and for both sexes combined.
 
 
 ``` {r mean-diffs}
@@ -814,7 +820,9 @@ BASEP <- hipic_mean_diffs(PARENT_SCORED)
 ```
 
 
-## E1.  If you need to export the results of the Mean Differences analysis, run this block:
+### G1. Export the Mean Differences
+
+If you need to export the results of the mean-differences analysis, run this block.
 
 
 
@@ -834,7 +842,9 @@ saveRDS(BASEP, "pbase_wide.rds")
 
 
 
-## F. Examine the questions on both surveys that had the highest concentration of answers along any one response.
+## H. Questions with Concentrated Responses
+
+Examine the questions on both surveys that had the highest concentration of answers on any one response.
 
 
 ``` {r top-questions}
@@ -926,7 +936,12 @@ hipic_quest_distrib(CHILD_REVERSED)
 
 
 
-## Prepare for FA to avoid bombs in .rmd knitting later (a necessary evil, good learning - return to later to consider iterative function)
+## I. Item-Level Factor Analysis
+
+### I1. Setup
+
+Objects the later factor-analysis chunks need, created here so the file knits from top to bottom (return to later: consider an iterative function).
+
 ```{r fa-setup, include=F}
 
 # 144 items per sample (reverse-scored, imputed)
@@ -951,6 +966,8 @@ FA2I_P     <- psych::fa(P_ITEMS, nfactors = 2, fm = "minres", rotate = "varimax"
 ```
 
 
+
+### I2. Scree Plots and Eigenvalues
 
 ```{r scree-plots-children}
 
@@ -1108,6 +1125,8 @@ sapply(1:5, function(k) {
 ```
 
 
+### I3. Two-Factor Solutions
+
 ```{r child-two-factor}
 
 FA2I_C <- psych::fa(C_ITEMS, nfactors = 2, fm = "minres", rotate = "varimax")
@@ -1163,7 +1182,9 @@ tibble(MR2      = L2[, "MR2"],
 ```
 
 
-# Attempt to write a function that runs over the PARENTS and CHILD reverse scored datasets but allows you to key in parameters for the rotation desired, number of factors
+### I4. Reusable Factor-Analysis Function
+
+A function that runs over the parent and child reverse-scored datasets, with parameters for the number of factors, rotation and method.
 
 
 
@@ -1243,7 +1264,11 @@ if (interactive()) View(R1$loadings)
 ```
 
 
-# Factor analysis on a questionnaire this unwieldy (144-items) across this few subjects may not be reliable — the correlation matrix is singular, so it cannot be inverted, and standard adequacy tests cannot be computed.  Is a Facet-level analysis worth taking a look at?  Test on parents only.
+## J. Facet-Level Factor Analysis
+
+Factor analysis on a questionnaire this unwieldy (144 items) across this few subjects may not be reliable: the correlation matrix is singular, so it cannot be inverted, and standard adequacy tests cannot be computed. Is a facet-level analysis worth a look? Tested on parents only.
+
+### J1. Scree Plot (Parents)
 
 
 ```{r scree-plots-parents-facets}
@@ -1279,6 +1304,8 @@ saveRDS(EIG_PF, "eig_facets_parent.rds")
 
 ```
 
+
+### J2. Two- to Five-Factor Solutions
 
 ```{r parentcompare-factor-facets}
 
@@ -1423,6 +1450,9 @@ knitr::kable(COMB, format = "html", escape = FALSE,
 
 
 ```
+
+### J3. Factorability (KMO and Bartlett)
+
 ```{r kmo-facets, echo=TRUE, comment=""}
 library(psych)
 
@@ -1454,6 +1484,10 @@ MSA <- data.frame(Children = round(KMO(cor(C_FACETS))$MSAi, 2),
 
 MSA[order(MSA$Children), ]                 # weakest facets first
 ```
+
+## K. BFI-2 Overlap: Subset Factor Analysis
+
+### K1. Factorability of the Overlap Subsets
 
 ```{r hipic-bifd2-compare, echo=T}
 
@@ -1494,6 +1528,8 @@ KMO_SUBSETS
 saveRDS(KMO_SUBSETS, "kmo_subsets.rds")
 
 ```
+
+### K2. Factor Analysis of the 24 Equivalent Items
 
 ``` {r factor-analysis-bif2-crossmap}
 
@@ -1593,6 +1629,8 @@ saveRDS(EIG_EQ, "eig_equivalent_parent.rds")
 ```
 
 
+### K3. Loading Tables for the Slides
+
 ``` {r array-fa-comparison-bfi1}
 
 
@@ -1634,6 +1672,8 @@ saveRDS(make_load_tab(FA_EQ4), "load_eq4_parent.rds")
 saveRDS(make_load_tab(FA_EQ),  "load_eq5_parent.rds")
 ```
 
+
+### K4. Internal Consistency (Alphas)
 
 ```{r cronbachs-reduced-item-fa}
 

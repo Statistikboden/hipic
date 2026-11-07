@@ -582,8 +582,9 @@ Preparation and Analysis</h1>
 </div>
 
 
-<div id="export-helpers-all-excel-exports-go-through-these" class="section level3">
-<h3>Export helpers (all Excel exports go through these)</h3>
+<div id="setup-export-helpers" class="section level2">
+<h2>Setup: Export Helpers</h2>
+<p>All Excel exports go through these helpers.</p>
 <pre class="r"><code># CHANGED: new chunk. The one workbook every export writes to -- check the file name matches yours.
 
 HIPIC_XLSX &lt;- path.expand(&quot;~/Documents/R/HiPIC/docs/HiPIC Exploratory.xlsx&quot;)
@@ -617,8 +618,8 @@ write_feeder &lt;- function(DATA, SHEET, FILE = HIPIC_XLSX) {
   }, error = function(e) cat(&quot;Excel export skipped:&quot;, conditionMessage(e), &quot;\n&quot;))
 }</code></pre>
 </div>
-<div id="step-1-import-inspect-the-original-sas-datasets" class="section level3">
-<h3>Step 1 — Import &amp; Inspect the original SAS datasets</h3>
+<div id="a.-import-the-sas-datasets" class="section level2">
+<h2>A. Import the SAS Datasets</h2>
 <p>Find the original SAS datasets in AllQsbyQ and import them into R for
 inspection. There should be one dataset for the self-reports completed
 by children and another for reports completed by their parents.</p>
@@ -630,8 +631,8 @@ library(misty)</code></pre>
 <pre class="r"><code>CHILD_RAW  &lt;- read_sas(&quot;/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_c.sas7bdat&quot;)
 PARENT_RAW &lt;- read_sas(&quot;/Volumes/FDrive/AllQsbyQ/HIPIC/allhipic_p.sas7bdat&quot;)</code></pre>
 </div>
-<div id="a.-initial-data-quality-assessment" class="section level2">
-<h2>A. Initial Data Quality Assessment</h2>
+<div id="b.-initial-data-quality-assessment" class="section level2">
+<h2>B. Initial Data Quality Assessment</h2>
 <p>Before making any modifications, we examine the original datasets for
 missing values. This establishes a baseline against which subsequent
 exclusions and imputations can be verified.</p>
@@ -674,8 +675,8 @@ PARENT_MISSING &lt;- PARENT_RAW %&gt;%
 #rowSums(is.na(dplyr::select(CHILD_RAW, starts_with(&quot;HC&quot;))))
 #rowSums(is.na(dplyr::select(PARENT_RAW, starts_with(&quot;HP&quot;))))</code></pre>
 </div>
-<div id="b.-remove-disqualified-observations" class="section level2">
-<h2>B. Remove Disqualified Observations</h2>
+<div id="c.-remove-disqualified-observations-and-impute-missing-values" class="section level2">
+<h2>C. Remove Disqualified Observations and Impute Missing Values</h2>
 <p>Any observation from both the Child and Parent datasets where a
 substantial portion of the survey was unanswered (approx. gt 1%). For
 remaining observations with NA values in select questions, use a simple
@@ -742,11 +743,11 @@ sum(!complete.cases(CHILD))</code></pre>
 <pre class="r"><code>sum(!complete.cases(PARENT))</code></pre>
 <pre><code>## [1] 0</code></pre>
 </div>
-<div id="c.-examine-cohort-demographic-data---ensure-that-the-nutritional-groups-are-reasonably-balanced-and-that-there-isnt-a-statistically-significant-difference-between-them-along-demographic-characteristics-that-might-be-used-in-later-analyses." class="section level2">
-<h2>C. Examine Cohort Demographic Data - ensure that the nutritional
-groups are reasonably balanced and that there isn’t a statistically
-significant difference between them along demographic characteristics
-that might be used in later analyses.</h2>
+<div id="d.-cohort-demographics" class="section level2">
+<h2>D. Cohort Demographics</h2>
+<p>Ensure that the nutritional groups are reasonably balanced, and that
+there isn’t a statistically significant difference between them in
+demographic characteristics that might be used in later analyses.</p>
 <pre class="r"><code>demog &lt;-   
     
   
@@ -1030,8 +1031,8 @@ function(DATA) {
 <pre class="r"><code>saveRDS(TAB_C, &quot;tab_child.rds&quot;)
 saveRDS(TAB_P, &quot;tab_parent.rds&quot;)</code></pre>
 </div>
-<div id="d.-variable-names-and-alignment" class="section level2">
-<h2>D. Variable Names and Alignment</h2>
+<div id="e.-variable-names-and-alignment" class="section level2">
+<h2>E. Variable Names and Alignment</h2>
 <p>The child self-report and parent assessment versions of the HiPIC
 contain 144 corresponding items, but the questions are presented in
 different sequences. The child version distributes items across domains
@@ -1448,8 +1449,8 @@ length(CHILD_NAMES)</code></pre>
 <pre class="r"><code>length(unique(PARENT_NAMES))</code></pre>
 <pre><code>## [1] 144</code></pre>
 </div>
-<div id="e.-item-level-reverse-scoring" class="section level2">
-<h2>E. Item-Level Reverse Scoring</h2>
+<div id="f.-reverse-scoring-and-facet-scores" class="section level2">
+<h2>F. Reverse Scoring and Facet Scores</h2>
 <p>The scoring key provided by DeFruyt identifies the questions along
 each domain/facet that require reverse scoring.</p>
 <pre class="r"><code>#Items identified as requiring reverse scoring in DeFruyt&#39;s key (questions are moving in opposite directions from other questions in the instrument):
@@ -1670,10 +1671,11 @@ write.csv(PARENT_SCORED,
 ## 16   LIKEATTENT Expressiveness</code></pre>
 <pre class="r"><code>    saveRDS(XWALK_SLIDE, &quot;tab_crosswalk.rds&quot;)</code></pre>
 </div>
-<div id="e.-find-mean-differences-between-nutritional-groups-across-all-domains-and-facets.-produce-results-separately-for-males-and-females." class="section level2">
-<h2>E. Find mean differences between nutritional groups across all
-domains and facets. Produce results separately for males and
-females.</h2>
+<div id="g.-mean-differences-by-nutritional-group" class="section level2">
+<h2>G. Mean Differences by Nutritional Group</h2>
+<p>Find mean differences between nutritional groups across all domains
+and facets, separately for males and females, and for both sexes
+combined.</p>
 <pre class="r"><code>#BEGIN FUNCTION DEFINITION
 
 
@@ -2931,10 +2933,10 @@ BASEC &lt;- hipic_mean_diffs(CHILD_SCORED)</code></pre>
 ## [1] &quot;CO&quot;
 ## [1]        NA -1.323764
 ## [1]        NA 0.1897426</code></pre>
-</div>
-<div id="e1.-if-you-need-to-export-the-results-of-the-mean-differences-analysis-run-this-block" class="section level2">
-<h2>E1. If you need to export the results of the Mean Differences
-analysis, run this block:</h2>
+<div id="g1.-export-the-mean-differences" class="section level3">
+<h3>G1. Export the Mean Differences</h3>
+<p>If you need to export the results of the mean-differences analysis,
+run this block.</p>
 <pre class="r"><code># CHANGED: both exports now go through write_feeder() (helpers chunk at the top)
 write_feeder(BASEC, &quot;BASEC&quot;)
 write_feeder(BASEP, &quot;BASEP&quot;)
@@ -2943,9 +2945,11 @@ write_feeder(BASEP, &quot;BASEP&quot;)
 saveRDS(BASEC, &quot;cbase_wide.rds&quot;) 
 saveRDS(BASEP, &quot;pbase_wide.rds&quot;) </code></pre>
 </div>
-<div id="f.-examine-the-questions-on-both-surveys-that-had-the-highest-concentration-of-answers-along-any-one-response." class="section level2">
-<h2>F. Examine the questions on both surveys that had the highest
-concentration of answers along any one response.</h2>
+</div>
+<div id="h.-questions-with-concentrated-responses" class="section level2">
+<h2>H. Questions with Concentrated Responses</h2>
+<p>Examine the questions on both surveys that had the highest
+concentration of answers on any one response.</p>
 <pre class="r"><code>#DEFINE FUNCTION
 
 
@@ -3067,10 +3071,16 @@ hipic_quest_distrib(PARENT_REVERSED)</code></pre>
 ## 13 Q043   Q043     &quot;&quot;    C43_LASHOUT_Iamquicktolashout                   1 0.608
 ## 14 Q084   Q084     &quot;Y&quot;   C84_NOAUTHOR_Iresistauthority                   5 0.608</code></pre>
 </div>
-<div id="prepare-for-fa-to-avoid-bombs-in-.rmd-knitting-later-a-necessary-evil-good-learning---return-to-later-to-consider-iterative-function" class="section level2">
-<h2>Prepare for FA to avoid bombs in .rmd knitting later (a necessary
-evil, good learning - return to later to consider iterative
-function)</h2>
+<div id="i.-item-level-factor-analysis" class="section level2">
+<h2>I. Item-Level Factor Analysis</h2>
+<div id="i1.-setup" class="section level3">
+<h3>I1. Setup</h3>
+<p>Objects the later factor-analysis chunks need, created here so the
+file knits from top to bottom (return to later: consider an iterative
+function).</p>
+</div>
+<div id="i2.-scree-plots-and-eigenvalues" class="section level3">
+<h3>I2. Scree Plots and Eigenvalues</h3>
 <pre class="r"><code>set.seed(2026)
 PA_C &lt;- psych::fa.parallel(C_ITEMS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
 <pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
@@ -3263,6 +3273,9 @@ LOAD_P %&gt;% filter(Max &gt;= .30) %&gt;% count(Primary)</code></pre>
 ##  This is indicated by a negative sign for the variable name.</code></pre>
 <pre><code>## [1] 0.3770516 0.2753028 0.2621941 0.2718505 0.5779973</code></pre>
 <pre class="r"><code>#PARENT %$% cor(P34_BOSS_actsliketheboss, P124_GIVEINPEERS_readilygivesintopeers)</code></pre>
+</div>
+<div id="i3.-two-factor-solutions" class="section level3">
+<h3>I3. Two-Factor Solutions</h3>
 <pre class="r"><code>FA2I_C &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = &quot;minres&quot;, rotate = &quot;varimax&quot;)</code></pre>
 <pre><code>## Warning in cor.smooth(r): Matrix was not positive definite, smoothing was done</code></pre>
 <pre class="r"><code>FA2I_C$Vaccounted</code></pre>
@@ -3619,10 +3632,11 @@ tibble(MR2      = L2[, &quot;MR2&quot;],
 # 
 # Parents, item level, two-factor varimax (30.8% of variance): Factor 1 (19.5%) comprised desirable, positively worded items across all domains (overall impression); Factor 2 (11.3%) showed a perfect split by scoring direction (39 non-reversed items positive, 21 reversed items negative). The rotated solution was nearly identical to the first two unrotated factors, indicating that the two dominant item-level dimensions reflect rating style rather than trait content.  Curious - but may be an over-simplification to attribute this to &quot;response style&quot; and not &quot;personality trait.&quot;</code></pre>
 </div>
-<div id="attempt-to-write-a-function-that-runs-over-the-parents-and-child-reverse-scored-datasets-but-allows-you-to-key-in-parameters-for-the-rotation-desired-number-of-factors" class="section level1">
-<h1>Attempt to write a function that runs over the PARENTS and CHILD
-reverse scored datasets but allows you to key in parameters for the
-rotation desired, number of factors</h1>
+<div id="i4.-reusable-factor-analysis-function" class="section level3">
+<h3>I4. Reusable Factor-Analysis Function</h3>
+<p>A function that runs over the parent and child reverse-scored
+datasets, with parameters for the number of factors, rotation and
+method.</p>
 <pre class="r"><code>run_fa &lt;- function(DSN, NFACT, ROT = &quot;none&quot;, METHOD = &quot;minres&quot;, SORT = &quot;factor&quot;) {
   
   # CHANGED: the Excel destination is now set once, in HIPIC_XLSX (helpers chunk at the top)
@@ -3698,12 +3712,16 @@ R1 &lt;- run_fa(CHILD_REVERSED, 5, &#39;varimax&#39;, &quot;minres&quot;)</code>
 ## Written to C5VAR_MR in HiPIC Exploratory.xlsx</code></pre>
 <pre class="r"><code>if (interactive()) View(R1$loadings)</code></pre>
 </div>
-<div id="factor-analysis-on-a-questionnaire-this-unwieldy-144-items-across-this-few-subjects-may-not-be-reliable-the-correlation-matrix-is-singular-so-it-cannot-be-inverted-and-standard-adequacy-tests-cannot-be-computed.-is-a-facet-level-analysis-worth-taking-a-look-at-test-on-parents-only." class="section level1">
-<h1>Factor analysis on a questionnaire this unwieldy (144-items) across
-this few subjects may not be reliable — the correlation matrix is
+</div>
+<div id="j.-facet-level-factor-analysis" class="section level2">
+<h2>J. Facet-Level Factor Analysis</h2>
+<p>Factor analysis on a questionnaire this unwieldy (144 items) across
+this few subjects may not be reliable: the correlation matrix is
 singular, so it cannot be inverted, and standard adequacy tests cannot
-be computed. Is a Facet-level analysis worth taking a look at? Test on
-parents only.</h1>
+be computed. Is a facet-level analysis worth a look? Tested on parents
+only.</p>
+<div id="j1.-scree-plot-parents" class="section level3">
+<h3>J1. Scree Plot (Parents)</h3>
 <pre class="r"><code>set.seed(2026)
 PA_PF &lt;- psych::fa.parallel(P_FACETS, fm = &quot;minres&quot;, fa = &quot;fa&quot;, plot = FALSE)</code></pre>
 <pre><code>## Parallel analysis suggests that the number of factors =  2  and the number of components =  NA</code></pre>
@@ -3729,6 +3747,9 @@ saveRDS(EIG_PF, &quot;eig_facets_parent.rds&quot;)
 
 
 # Parents, facet level (18 facets): parallel analysis retained 2 factors (eigenvalues ≈ 6.0 and 2.5, both well above random-data values). The third factor fell on the random-data line, and the remainder below it.</code></pre>
+</div>
+<div id="j2.-two--to-five-factor-solutions" class="section level3">
+<h3>J2. Two- to Five-Factor Solutions</h3>
 <pre class="r"><code>run_fa_facets &lt;- function(DSN, NFACT, ROT = &quot;none&quot;, METHOD = &quot;minres&quot;, SORT = &quot;factor&quot;) {
 
   # CHANGED: the Excel destination is now set once, in HIPIC_XLSX (helpers chunk at the top)
@@ -4726,6 +4747,9 @@ VAR EXPLAINED
 </tr>
 </tbody>
 </table>
+</div>
+<div id="j3.-factorability-kmo-and-bartlett" class="section level3">
+<h3>J3. Factorability (KMO and Bartlett)</h3>
 <pre class="r"><code>library(psych)</code></pre>
 <pre><code>Warning: package &#39;psych&#39; was built under R version 4.4.3</code></pre>
 <pre class="r"><code># KMO and Bartlett&#39;s test for one set of facet scores
@@ -4768,6 +4792,12 @@ EX_EXP     0.90    0.68
 EX_SHY     0.91    0.69
 BE_COM     0.91    0.86
 CO_PER     0.91    0.66</code></pre>
+</div>
+</div>
+<div id="k.-bfi-2-overlap-subset-factor-analysis" class="section level2">
+<h2>K. BFI-2 Overlap: Subset Factor Analysis</h2>
+<div id="k1.-factorability-of-the-overlap-subsets" class="section level3">
+<h3>K1. Factorability of the Overlap Subsets</h3>
 <pre class="r"><code>MAPQ &lt;- read.csv(&quot;hipic_bfi2_map.csv&quot;)
 HM   &lt;- MAPQ$HIPIC_Q[MAPQ$MATCH %in% c(&quot;Equivalent&quot;, &quot;Similar&quot;)]    # 68 items
 HML  &lt;- MAPQ$HIPIC_Q[MAPQ$MATCH != &quot;None&quot;]                          # 120 items
@@ -4815,6 +4845,9 @@ KMO_SUBSETS</code></pre>
 ## 5        &lt; 0.001
 ## 6 Not computable</code></pre>
 <pre class="r"><code>saveRDS(KMO_SUBSETS, &quot;kmo_subsets.rds&quot;)</code></pre>
+</div>
+<div id="k2.-factor-analysis-of-the-24-equivalent-items" class="section level3">
+<h3>K2. Factor Analysis of the 24 Equivalent Items</h3>
 <pre class="r"><code>B2 &lt;- read.csv(&quot;bfi2_items.csv&quot;)
 
 
@@ -5017,6 +5050,9 @@ EIG_EQ</code></pre>
 ##  9      9       0.89       0.06      0.037      0.729
 ## 10     10       0.83       0.04      0.035      0.764</code></pre>
 <pre class="r"><code>saveRDS(EIG_EQ, &quot;eig_equivalent_parent.rds&quot;)</code></pre>
+</div>
+<div id="k3.-loading-tables-for-the-slides" class="section level3">
+<h3>K3. Loading Tables for the Slides</h3>
 <pre class="r"><code># One loadings table per solution, sorted by each item&#39;s strongest factor,
 # with a variance-explained row at the bottom
 make_load_tab &lt;- function(FA) {
@@ -5053,6 +5089,9 @@ make_load_tab &lt;- function(FA) {
 saveRDS(make_load_tab(FA_EQ3), &quot;load_eq3_parent.rds&quot;)
 saveRDS(make_load_tab(FA_EQ4), &quot;load_eq4_parent.rds&quot;)
 saveRDS(make_load_tab(FA_EQ),  &quot;load_eq5_parent.rds&quot;)</code></pre>
+</div>
+<div id="k4.-internal-consistency-alphas" class="section level3">
+<h3>K4. Internal Consistency (Alphas)</h3>
 <pre class="r"><code># Alphas for each factor of an n-factor solution.
 # Items are assigned to the factor they load on most strongly (if &gt;= CUT).
 
@@ -5165,6 +5204,7 @@ ALPHAS_EQ</code></pre>
 ## 11 5 factors     F4     5  0.61  0.24
 ## 12 5 factors     F5     1    NA    NA</code></pre>
 <pre class="r"><code>saveRDS(X, &quot;x_equivalent_parent.rds&quot;)</code></pre>
+</div>
 </div>
 
 
