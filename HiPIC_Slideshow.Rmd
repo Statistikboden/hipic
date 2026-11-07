@@ -901,7 +901,7 @@ FA2_PVMAX_SAS   <- psych::fa(P_ITEMS, nfactors = 2, fm = "pa", rotate = "varimax
 
 
 # Orthoganol Rotation (Varimax) vs. Oblique Rotation (Promax) using Maximum Likelhood estimations
-FA2_CVMAX   <- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "none")   #<<
+FA2_CVMAX   <- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "varimax")   #<<
 FA2_COBLQ   <- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "promax")  #<<
 
 

@@ -4,7 +4,7 @@
     <title>HiPIC Exploratory Analysis</title>
     <meta charset="utf-8" />
     <meta name="author" content="Kevin Williams" />
-    <meta name="date" content="2026-11-06" />
+    <meta name="date" content="2026-11-07" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view/tile-view.js"></script>
@@ -232,7 +232,7 @@ ul li ul, ol li ul {
 ### &lt;br&gt;
 ### USING THE R PROGRAMMING LANGUAGE
 #### Prepared by Kevin Williams  | Preliminary Findings   |   October 30, 2026
-#### Updated 2026-11-06
+#### Updated 2026-11-07
 #### &lt;br&gt;
 
 ---
@@ -1745,7 +1745,7 @@ P_FACETS &lt;- PARENT_SCORED %&gt;% select(matches("^(ES|EX|IM|BE|CO)_"))
 
 
 # Orthoganol Rotation (Varimax) vs. Oblique Rotation (Promax) using Maximum Likelhood estimations
-*FA2_CVMAX   &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "none")
+*FA2_CVMAX   &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "varimax")
 *FA2_COBLQ   &lt;- psych::fa(C_ITEMS, nfactors = 2, fm = "ML", rotate = "promax")
 ```
 ]
@@ -3594,8 +3594,8 @@ background-image: none
 
 
 
-<div id="htmlwidget-75c4cbe9cde6c2ccc236" style="width:100%;height:470px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-75c4cbe9cde6c2ccc236">{"x":{"url":"hipic-update_files/figure-html//widgets/widget_map-table-dt.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-3395154fa7c63f948a92" style="width:100%;height:470px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3395154fa7c63f948a92">{"x":{"url":"hipic-update_files/figure-html//widgets/widget_map-table-dt.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 
 
