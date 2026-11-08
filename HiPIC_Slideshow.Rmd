@@ -339,8 +339,9 @@ background-size: 60px 60px
 1. Among the  <font color="#006cc5">**R packages**</font> to be used in this analysis include:
 
     - <font color="#006cc5">haven</font> and <font color="#006cc5">openxlsx2</font> for importing and exporting raw data and SAS datasets from prior work
-    - <font color="#006cc5">tidyverse,</font> which includes packages like dplyr, magrittr, and ggplot, all helpful with data wrangling and beautification
-    - <font color="#006cc5">statx</font> and <font color="#006cc5">misty</font> for general descriptive statistical calculations
+    - <font color="#006cc5">tidyverse</font> — which includes packages like dplyr, magrittr, and ggplot — for data wrangling and beautification
+    - <font color="#006cc5">statx, sjPlot,</font> and <font color="#006cc5">misty</font> for general descriptive statistical calculations
+    - <font color="#006cc5">lmer</font> for fixed-effects and mixed model regressions
     - <font color="#006cc5">psych</font> and <font color="#006cc5">lavaan</font> for more complex principal components and factor analyses
 
 <br>
