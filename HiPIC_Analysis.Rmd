@@ -265,7 +265,7 @@ function(DATA) {
   
   cat("\n====", "Mean Age by Nutritional Group", "====\n")
   DSN %>% filter(!ID4 %in% pull(MDSN, ID4))  %>%                 #PRESERVED FOR EDUC PURPOSES - ALT METHOD
-    misty::test.welch( AGEEXAM ~ CVPK, data = .,  descript=T)  
+    misty::test.t( AGEEXAM ~ CVPK, data = .,  descript=T, p.digits=4)  
     
   
   
@@ -744,14 +744,16 @@ for (variable in analysis_vars) {
   
   test_formula <- reformulate("CVPK", response = variable)
   
-  test_result <- misty::test.welch(
+  test_result <- misty::test.t(
     test_formula,
     # data = DATA[DATA$MVF == sex, ],
     data = DATA[ if (sex < 2) DATA$MVF == sex else TRUE, ],
-    descript = TRUE
+    descript = TRUE, p.digits=4
   )
   
   r<- test_result$result
+  r <- dplyr::rename(r, pval = any_of("p"))
+  
   con <- r$group == 0
   mal <- r$group == 1
   
@@ -789,7 +791,7 @@ for (variable in analysis_vars) {
     VARNAME  = variable,
     
     `_STAT_` = c("MEAN", "STD", "N",
-                 "TTEST WELCH", "PVALUE"),
+                 "TTEST", "PVALUE"),
     
     MAL = c(r$m[mal], r$sd[mal], r$n[mal],
             NA_real_, NA_real_),
@@ -826,7 +828,7 @@ If you need to export the results of the mean-differences analysis, run this blo
 
 
 
-``` {r mean-diffs-print, eval=F}
+``` {r mean-diffs-print, eval=T}
 
 # CHANGED: both exports now go through write_feeder() (helpers chunk at the top)
 write_feeder(BASEC, "BASEC")

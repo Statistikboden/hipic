@@ -509,7 +509,7 @@ knitr::kable(readRDS("tab_parent.rds"), format = "html",
 ]
 
 
-.footnote-center[p-values: Original and final N, χ² goodness-of-fit against a 50:50 split; missing items,<br>Fisher's exact test; age, Welch t-test; sex, Pearson χ².]
+.footnote-center[p-values: Original and final N, χ² goodness-of-fit against a 50:50 split; missing items,<br>Fisher's exact test; age, Student's t-test; sex, Pearson χ².]
 
 
 ---
@@ -572,7 +572,7 @@ exclude: true
             box-shadow: 4px 6px 14px rgba(0, 0, 0, 0.30);" />
 
 <p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
-Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+Mean ± SD; Student's t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
 </p>
 
 
@@ -598,7 +598,7 @@ BASEC <- readRDS("cbase_wide.rds")
         summarise(
           MAL = sprintf("%.2f ± %.2f", MAL[`_STAT_` == "MEAN"], MAL[`_STAT_` == "STD"]),
           CON = sprintf("%.2f ± %.2f", CON[`_STAT_` == "MEAN"], CON[`_STAT_` == "STD"]),
-          t   = round(ALL[`_STAT_` == "TTEST WELCH"], 2),
+          t   = round(ALL[`_STAT_` == "TTEST"], 2),
           p   = round(ALL[`_STAT_` == "PVALUE"], 3),
           .groups = "drop") %>%
         select(-MODEL) %>%                                   # the block's label replaces MODEL
@@ -668,7 +668,7 @@ TAB
 ```
 
 <p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
-Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+Mean ± SD; Student's t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
 </p>
 ---
 exclude: true
@@ -681,7 +681,7 @@ exclude: true
             box-shadow: 4px 6px 14px rgba(0, 0, 0, 0.30);" />
 
 <p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
-Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+Mean ± SD; Student's t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
 </p>
 
 
@@ -708,7 +708,7 @@ BASEP <- readRDS("pbase_wide.rds")
         summarise(
           MAL = sprintf("%.2f ± %.2f", MAL[`_STAT_` == "MEAN"], MAL[`_STAT_` == "STD"]),
           CON = sprintf("%.2f ± %.2f", CON[`_STAT_` == "MEAN"], CON[`_STAT_` == "STD"]),
-          t   = round(ALL[`_STAT_` == "TTEST WELCH"], 2),
+          t   = round(ALL[`_STAT_` == "TTEST"], 2),
           p   = round(ALL[`_STAT_` == "PVALUE"], 3),
           .groups = "drop") %>%
         select(-MODEL) %>%                                   # the block's label replaces MODEL
@@ -778,7 +778,7 @@ TAB
 ```
 
 <p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
-Mean ± SD; Welch t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
+Mean ± SD; Student's t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
 </p>
 
 ---
