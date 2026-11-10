@@ -819,6 +819,11 @@ for (variable in analysis_vars) {
 BASEC <- hipic_mean_diffs(CHILD_SCORED)
 BASEP <- hipic_mean_diffs(PARENT_SCORED)
 
+
+
+saveRDS(CHILD_SCORED,   "child_scored.rds")
+saveRDS(PARENT_SCORED,  "parent_scored.rds")
+
 ```
 
 
@@ -965,6 +970,9 @@ FA5_CNOROT <- psych::fa(C_ITEMS, nfactors = 5, fm = "minres", rotate = "none")
 FA5_PNOROT <- psych::fa(P_ITEMS, nfactors = 5, fm = "minres", rotate = "none")
 FA2I_C     <- psych::fa(C_ITEMS, nfactors = 2, fm = "minres", rotate = "varimax")
 FA2I_P     <- psych::fa(P_ITEMS, nfactors = 2, fm = "minres", rotate = "varimax")
+
+
+
 ```
 
 

@@ -2935,16 +2935,18 @@ BASEC &lt;- hipic_mean_diffs(CHILD_SCORED)</code></pre>
 ## [1] &quot;CO&quot;
 ## [1]        NA -1.261295
 ## [1]        NA 0.2111118</code></pre>
+<pre class="r"><code>saveRDS(CHILD_SCORED,   &quot;child_scored.rds&quot;)
+saveRDS(PARENT_SCORED,  &quot;parent_scored.rds&quot;)</code></pre>
 <div id="g1.-export-the-mean-differences" class="section level3">
 <h3>G1. Export the Mean Differences</h3>
 <p>If you need to export the results of the mean-differences analysis,
 run this block.</p>
 <pre class="r"><code># CHANGED: both exports now go through write_feeder() (helpers chunk at the top)
-write_feeder(BASEC, &quot;BASEC&quot;)
-write_feeder(BASEP, &quot;BASEP&quot;)
-
-
-saveRDS(BASEC, &quot;cbase_wide.rds&quot;) 
+write_feeder(BASEC, &quot;BASEC&quot;)</code></pre>
+<pre><code>## Written to BASEC in HiPIC Exploratory.xlsx</code></pre>
+<pre class="r"><code>write_feeder(BASEP, &quot;BASEP&quot;)</code></pre>
+<pre><code>## Written to BASEP in HiPIC Exploratory.xlsx</code></pre>
+<pre class="r"><code>saveRDS(BASEC, &quot;cbase_wide.rds&quot;) 
 saveRDS(BASEP, &quot;pbase_wide.rds&quot;) </code></pre>
 </div>
 </div>

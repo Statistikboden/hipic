@@ -685,6 +685,46 @@ Mean ± SD; Student's t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .
 </p>
 
 
+---
+background-image: none
+
+## Group Differences — Facets:  Child, cont.
+
+```{r  ggbetween-children, echo=F, fig.height = 10, fig.width=16, out.width= "80%", fig.align='center'}
+
+library(ggstatsplot)
+
+CHILD_SCORED <- readRDS("child_scored.rds")
+
+CHILD_SCORED %>% select( ID4, CVPK, MVF,
+                starts_with( c('ES','EX','IM','BE','CO')) &
+                               !contains ("_")) %>% 
+          mutate( CVPK = factor( CVPK, levels = c(0,1), 
+                                       labels=  c('CON','MAL'))) %>% 
+          tidyr::pivot_longer( cols= ES:CO,
+                          names_to = "DOMAINS", 
+                          values_to = "SCORES") %>% arrange(ID4, DOMAINS) %>% 
+  mutate( DOMAINS = case_when ( DOMAINS == 'BE' ~ 'BENEVOLENCE',
+                                DOMAINS == 'CO' ~ 'CONSCIENTIOUSNESS',
+                                DOMAINS == 'ES' ~ 'EMOTIONAL STABILITY',
+                                DOMAINS == 'EX' ~ 'EXTRAVERSION',
+                                DOMAINS == 'IM' ~ 'IMAGINATION' )) %>% 
+   
+   
+grouped_ggbetweenstats(
+     data             = .,
+     x                = CVPK,
+     y                = SCORES,
+     grouping.var     = DOMAINS,
+     ggsignif.args    = list(textsize = 4, tip_length = 0.01),
+      p.adjust.method  = "bonferroni",
+     plotgrid.args    = list(nrow = 3),
+     bf.message = F
+     # annotation.args  = list(title = "Facet Scores by Nutritional Group")
+   ) 
+   
+
+```
 
 ---
 class: gd-table
@@ -780,6 +820,49 @@ TAB
 <p style="text-align: center; font-size: 0.65em; margin-top: 0.8em;">
 Mean ± SD; Student's t-tests. Red: <i>p</i> < .05; yellow: .05 ≤ <i>p</i> < .10. Not adjusted for multiple comparisons.
 </p>
+
+---
+background-image: none
+
+## Group Differences — Facets:  Parents, cont.
+
+```{r  ggbetween-parents, echo=F, fig.height = 10, fig.width=16, out.width= "80%", fig.align='center'}
+
+library(ggstatsplot)
+
+PARENT_SCORED <- readRDS("parent_scored.rds")
+
+PARENT_SCORED %>% select( ID4, CVPK, MVF,
+                starts_with( c('ES','EX','IM','BE','CO')) &
+                               !contains ("_")) %>% 
+          mutate( CVPK = factor( CVPK, levels = c(0,1), 
+                                       labels=  c('CON','MAL'))) %>% 
+          tidyr::pivot_longer( cols= ES:CO,
+                          names_to = "DOMAINS", 
+                          values_to = "SCORES") %>% arrange(ID4, DOMAINS) %>% 
+  mutate( DOMAINS = case_when ( DOMAINS == 'BE' ~ 'BENEVOLENCE',
+                                DOMAINS == 'CO' ~ 'CONSCIENTIOUSNESS',
+                                DOMAINS == 'ES' ~ 'EMOTIONAL STABILITY',
+                                DOMAINS == 'EX' ~ 'EXTRAVERSION',
+                                DOMAINS == 'IM' ~ 'IMAGINATION' )) %>% 
+   
+   
+grouped_ggbetweenstats(
+     data             = .,
+     x                = CVPK,
+     y                = SCORES,
+     grouping.var     = DOMAINS,
+     ggsignif.args    = list(textsize = 4, tip_length = 0.01),
+      p.adjust.method  = "bonferroni",
+     plotgrid.args    = list(nrow = 3),
+     bf.message = F
+     # annotation.args  = list(title = "Facet Scores by Nutritional Group")
+   ) 
+   
+
+```
+
+
 
 ---
 class: hide-count, inverse
