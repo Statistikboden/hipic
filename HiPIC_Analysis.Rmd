@@ -201,6 +201,66 @@ sum(!complete.cases(PARENT))
 ```
 
 
+
+## C1. Parental (G1) and Subjet (G2) IQ Data
+
+Since later analyses may involve adjusting for G1 or G2 IQ scores, append these scores to the CHILD and PARENT datasets so that this information is readily available.
+
+```{r g1-g2-iq-import}
+
+library(magrittr)
+
+
+ALLIQ  <- read_sas("/Volumes/FDrive/AllQsbyQ/NEURO2017/WASI/allwasi.sas7bdat")
+
+
+CHILD <- CHILD %>%  left_join(ALLIQ[ALLIQ$SP == 5 & !is.na(ALLIQ$DOE), c("ID4", "WASIEIQ")],
+                                     by = c("G1ID" = "ID4")) %>% rename( G1IQ = WASIEIQ)   %>% 
+  
+                   left_join (ALLIQ[ALLIQ$SP==6 & !is.na(ALLIQ$DOE), c("ID4", "WASIEIQ")],
+                             by =  c("ID4" = "ID4")) %>% rename(G2IQ = WASIEIQ)
+
+PARENT <- PARENT %>%  left_join(ALLIQ[ALLIQ$SP == 5 & !is.na(ALLIQ$DOE), c("ID4", "WASIEIQ")],
+                                     by = c("G1ID" = "ID4")) %>% rename( G1IQ = WASIEIQ)   %>% 
+  
+                   left_join (ALLIQ[ALLIQ$SP==6 & !is.na(ALLIQ$DOE), c("ID4", "WASIEIQ")],
+                             by =  c("ID4" = "ID4")) %>% rename(G2IQ = WASIEIQ)
+
+#investigate missingness
+    
+    
+sum(is.na(CHILD[,"G1IQ"]))
+sum(is.na(CHILD[,"G2IQ"]))
+    
+sum(is.na(PARENT[,"G1IQ"]))
+sum(is.na(PARENT[,"G2IQ"]))
+    
+
+
+CHILD %>%
+  mutate(MISSING_IQ = is.na(G2IQ)) %$%
+  table(CVPK, MISSING_IQ)  %T>%
+  print() %T>% 
+  { print(round((prop.table(., margin = 1)),2)) } %>% 
+  fisher.test()
+
+
+PARENT %>%
+  mutate(MISSING_IQ = is.na(G2IQ)) %$%
+  table(CVPK, MISSING_IQ)  %T>%
+  print() %T>% 
+  { print(round((prop.table(., margin = 1)),2)) } %>% 
+  fisher.test()
+
+
+    
+    
+
+```
+
+
+
+
 ## D. Cohort Demographics
 
 Ensure that the nutritional groups are reasonably balanced, and that there isn't a statistically significant difference between them in demographic characteristics that might be used in later analyses.
@@ -228,7 +288,7 @@ function(DATA) {
   
   #Missingness
   
-  MDSN <- DSN %>%
+  MDSN <- DSN %>% 
     select(ID4, CVPK, last_col(offset=143) : last_col()) %>%
     rowwise() %>% 
     mutate(MISSING = sum(is.na(c_across(last_col(offset = 143):last_col())))) %>%
@@ -256,18 +316,28 @@ function(DATA) {
   
   cat("Excluded for >= 3 missing items:", nrow(MDSN), "\n")
   
-  ANALYSIS <-  DSN %>% anti_join( MDSN[, c("ID4")], by="ID4") %>% select(ID4, CVPK, MVF, AGEEXAM) 
+  
+  # Dataset without Missing Obs and appended IQ values
+  
+  ANALYSIS <-  DATA %>% select(ID4, CVPK, MVF, AGEEXAM, G1IQ)
+  
+  # ANALYSIS <-  DSN %>% anti_join( MDSN[, c("ID4")], by="ID4") %>% select(ID4, CVPK, MVF, AGEEXAM) 
             
   ANALYSIS %>% select (CVPK) %>% table() %>% rstatix::chisq_test(., p= c(0.5, 0.5)) %>% print()
     
+   
+  
   
   # Mean Nutritional Groups
   
   cat("\n====", "Mean Age by Nutritional Group", "====\n")
-  DSN %>% filter(!ID4 %in% pull(MDSN, ID4))  %>%                 #PRESERVED FOR EDUC PURPOSES - ALT METHOD
+  ANALYSIS %>% filter(!ID4 %in% pull(MDSN, ID4))  %>%                 #PRESERVED FOR EDUC PURPOSES - ALT METHOD
     misty::test.t( AGEEXAM ~ CVPK, data = .,  descript=T, p.digits=4)  
     
   
+  cat("\n====", "Mean Parental IQ by Nutritional Group", "====\n")
+  ANALYSIS %>% filter(!ID4 %in% pull(MDSN, ID4))  %>%                 #PRESERVED FOR EDUC PURPOSES - ALT METHOD
+    misty::test.t( G1IQ ~ CVPK, data = .,  descript=T, p.digits=4)
   
   
   # Percent Male
@@ -300,45 +370,44 @@ function(DATA) {
   final_n <- table(ANALYSIS$CVPK)                # final N per group
   excl_n  <- EXCL_TAB[, "TRUE"]                  # excluded per group
   male_n  <- table(ANALYSIS$CVPK, ANALYSIS$MVF)[, "0"]   # MVF 0 = male
+  
+  fmt_p <- function(p) ifelse(p < .001, "<.001", sub("^0", "", sprintf("%.3f", p)))
 
   age_txt <- sapply(c("1", "0"), function(g) {
     x <- ANALYSIS$AGEEXAM[ANALYSIS$CVPK == as.numeric(g)]
     sprintf("%.2f (%.2f)", mean(x), sd(x))
   })
+  
+  iq_text <- sapply(c("1", "0"), function(g) {
+    x <- ANALYSIS$G1IQ[ANALYSIS$CVPK == as.numeric(g)]
+    sprintf("%.2f (%.2f)", mean(x), sd(x))
+  })
 
-  fmt_p <- function(p) sub("^0", "", sprintf("%.3f", p))   # 0.4487 -> ".449"
-
-  col_for <- function(g) {
+    col_for <- function(g) {
     c(orig_n[g],
       sprintf("%d (%.1f%%)", excl_n[g], 100 * excl_n[g] / orig_n[g]),
       final_n[g],
       age_txt[g],
+      iq_text[g],
       sprintf("%d (%.1f%%)", male_n[g], 100 * male_n[g] / final_n[g]))
   }
 
   TAB <- tibble(
-    ` ` = c("Original N", ">2% of items missing, n (%)", "Final analytic N",
-            "Testing age, years, mean (SD)", "Male, n (%)"),
+    ` ` = c("Original N", ">2% of items missing, n (%)", "Final Analytic N",
+            "Testing Age, mean (SD)", "Parental IQ, mean (SD)", "Male, n (%)"),
     MAL = unname(col_for("1")),
     CON = unname(col_for("0")),
     p   = c(fmt_p(chisq.test(table(DSN$CVPK))$p.value),
             fmt_p(fisher.test(EXCL_TAB)$p.value),
             fmt_p(chisq.test(table(ANALYSIS$CVPK))$p.value),
-            fmt_p(t.test(AGEEXAM ~ CVPK, data = ANALYSIS)$p.value),
+            fmt_p(t.test(AGEEXAM ~ CVPK, data = ANALYSIS, var.equal = TRUE)$p.value),
+            fmt_p(t.test(G1IQ ~ CVPK, data = ANALYSIS, var.equal = TRUE)$p.value),
             fmt_p(chisq.test(ANALYSIS$CVPK, ANALYSIS$MVF, correct = FALSE)$p.value)))
 
   cat("\n====", "Summary Table", "====\n")
   print(knitr::kable(TAB))
-  invisible(TAB)  
-   
-   
-
-   
-   
-   
-   
-   
-   
+  invisible(TAB)
+  
   
 }
     
@@ -450,8 +519,12 @@ CHILD_NAMES <- with(
 
 
   
-#names(CHILD)[11:154] <- CHILD_NAMES
-names(CHILD)[tail(seq_along(CHILD), 144)] <- CHILD_NAMES
+# names(CHILD)[11:154] <- CHILD_NAMES
+# names(CHILD)[tail(seq_along(CHILD), 144)] <- CHILD_NAMES
+
+START <- match("TALK", names(CHILD))
+names(CHILD)[ START:(START+143)]  <- CHILD_NAMES
+
 
 CHILD_NAMES
 
@@ -475,10 +548,13 @@ PARENT_NAMES <- with(
 
 
 
-#names(PARENT)[13:156] <- PARENT_NAMES
-names(PARENT)[tail(seq_along(PARENT), 144)] <- PARENT_NAMES
+# names(PARENT)[13:156] <- PARENT_NAMES
 
-PARENT_NAMES
+
+START <- match("TALK", names(PARENT))
+names(PARENT)[ START:(START+143)]  <- PARENT_NAMES
+
+
 
 
 #validation
@@ -631,7 +707,7 @@ score_hipic <- function(DATA, PREFIX) {
     CO = CO_CNC + CO_PER + CO_ORD + CO_ACH  
     
     
-  ) %>% select( SG, ID4:MVF, AGEEXAM, ES_ANX:CO)
+  ) %>% select( SG, ID4:MVF, AGEEXAM, c(G1IQ,G2IQ), ES_ANX:CO)
 
 }
 
@@ -952,8 +1028,12 @@ Objects the later factor-analysis chunks need, created here so the file knits fr
 ```{r fa-setup, include=F}
 
 # 144 items per sample (reverse-scored, imputed)
-C_ITEMS <- CHILD_REVERSED  %>% select(last_col(offset = 143):last_col())
-P_ITEMS <- PARENT_REVERSED %>% select(last_col(offset = 143):last_col())
+# C_ITEMS <- CHILD_REVERSED  %>% select(last_col(offset = 143):last_col())
+# P_ITEMS <- PARENT_REVERSED %>% select(last_col(offset = 143):last_col())
+
+
+C_ITEMS <- CHILD_REVERSED %>%  select ( matches("^C[0-9]+_"))
+P_ITEMS <- PARENT_REVERSED %>% select ( matches("^P[0-9]+_"))
 
 # item-level eigenvalues (correlation matrix)
 EV_C <- eigen(cor(C_ITEMS))$values
@@ -1209,8 +1289,8 @@ run_fa <- function(DSN, NFACT, ROT = "none", METHOD = "minres", SORT = "factor")
   
   
   
-  # 1. The 144 items are always the last 144 columns
-  ITEMS  <- DSN %>% select(last_col(offset = 143):last_col())
+  # 1. The 144 items, found by name (C or P, then digits, then an underscore)
+  ITEMS  <- DSN %>% select(matches("^[CP][0-9]+_"))
   PREFIX <- substr(names(ITEMS)[1], 1, 1)                 # "C" or "P"
   
   # 2. Run the analysis: PCA (SAS PROC FACTOR default) or a true factor analysis

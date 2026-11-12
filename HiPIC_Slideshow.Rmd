@@ -280,7 +280,7 @@ ul li ul, ol li ul {
 }
 
 
-.load-cmp table { font-size: 75%; }
+.load-cmp table { font-size: 60%;, width=80%, margin:0, auto; }
 .load-cmp td, .load-cmp th { padding: 1px 8px; }
 
 .alpha-slide table { font-size: 80%; }
